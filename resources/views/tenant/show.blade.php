@@ -1,0 +1,1393 @@
+@extends('layouts.app')
+@section('page-title')
+    {{ __('Tenant Details') }}
+@endsection
+@section('page-class')
+    cdxuser-profile
+@endsection
+@push('script-page')
+@endpush
+
+@section('breadcrumb')
+    <li class="breadcrumb-item">
+        <a href="{{ route('dashboard') }}">{{ __('Dashboard') }}</a>
+    </li>
+    <li class="breadcrumb-item" aria-current="page"><a href="{{ route('tenant.index') }}"> {{ __('Tenant') }}</a></li>
+    <li class="breadcrumb-item active">
+        <a href="#">{{ __('Details') }}</a>
+    </li>
+@endsection
+
+
+
+@section('content')
+<div class="custom-card-box">
+    
+    <div class="row">
+        <div class="col-lg-4 col-xxl-3 d-flex">
+            <div class="card box-card w-100">
+                <!-- <div class="card-header">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <img class="img-radius img-fluid wid-80"
+                                src="{{ !empty($tenant->user) && !empty($tenant->user->profile) ? asset(Storage::url('upload/profile/' . $tenant->user->profile)) : asset(Storage::url('upload/profile/avatar.png')) }}"
+                                alt="User image" />
+                        </div>
+                        <div class="flex-grow-1 mx-3">
+                            <h5 class="mb-1">
+                                {{ ucfirst(!empty($tenant->user) ? $tenant->user->first_name : '') . ' ' . ucfirst(!empty($tenant->user) ? $tenant->user->last_name : '') }}
+                            </h5>
+                            <h6 class="mb-0 text-secondary">{!! $tenant->LeaseLeftDay() !!}</h6>
+                            <h6 class="mb-0 text-secondary">{{ !empty($tenant->user) ? $tenant->user->email : '-' }}</h6>
+                            <h6 class="mb-0 text-secondary">{{ !empty($tenant->user) ? $tenant->user->phone_number : '-' }}</h6>
+                        </div>
+
+                    </div>
+                </div> -->
+                <div class="pb-0">
+                    <!-- <div class="list-group list-group-flush">
+                        <a href="#" class="list-group-item list-group-item-action">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-shrink-0">
+                                    <i class="material-icons-two-tone f-20">email</i>
+                                </div>
+                                <div class="flex-grow-1 mx-3">
+                                    <h5 class="m-0">{{ __('Email') }}</h5>
+                                </div>
+                                <div class="flex-shrink-0">
+                                    <small>{{ !empty($tenant->user) ? $tenant->user->email : '-' }}</small>
+                                </div>
+                            </div>
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-shrink-0">
+                                    <i class="material-icons-two-tone f-20">phonelink_ring</i>
+                                </div>
+                                <div class="flex-grow-1 mx-3">
+                                    <h5 class="m-0">{{ __('Phone') }}</h5>
+                                </div>
+                                <div class="flex-shrink-0">
+                                    <small>{{ !empty($tenant->user) ? $tenant->user->phone_number : '-' }}
+                                    </small>
+                                </div>
+                            </div>
+                        </a>
+
+
+                    </div> -->
+                    <ul class="nav flex-column nav-tabs account-tabs box-card custom-theme" id="myTab" role="tablist">
+
+                        <!-- Profile Tab -->
+                        <li class="nav-item" role="presentation">
+                            <!-- <a class="nav-link active" id="profile-tab" data-bs-toggle="tab" href="#profile_content" role="tab" aria-selected="false"> -->
+                            <a class="nav-link" style="background-color: transparent;">
+                                <div class="d-flex align-items-center">
+                                    <div class="flex-shrink-0">
+                                        <img class="img-radius img-fluid wid-80"
+                                            src="{{ !empty($tenant->user) && !empty($tenant->user->profile) ? asset(Storage::url('upload/profile/' . $tenant->user->profile)) : asset(Storage::url('upload/profile/avatar.png')) }}"
+                                            alt="User image" />
+                                    </div>
+                                    <div class="flex-grow-1 mx-3">
+                                        <h5 class="mb-1" style="color: initial;">
+                                            {{ ucfirst(optional($tenant->user)->first_name) . ' ' . ucfirst(optional($tenant->user)->last_name) }}
+                                        </h5>
+                                        <!-- <h6 class="mb-0 text-secondary">{!! $tenant->LeaseLeftDay() !!}</h6> -->
+                                        <!-- <h6 class="mb-0 text-secondary">{{ optional($tenant->user)->email ?? '-' }}</h6>
+                                        <h6 class="mb-0 text-secondary">{{ optional($tenant->user)->phone_number ?? '-' }}</h6> -->
+                                    </div>
+                                </div>
+                            </a>
+                        </li>
+
+                        <!-- Contract Tab -->
+                        <li class="nav-item" role="presentation">
+                            <a class="nav-link active" id="contract-tab" data-bs-toggle="tab" href="#contract_content" role="tab" aria-selected="true">
+                                <div class="d-flex align-items-center">
+                                    <div class="flex-shrink-0">
+                                        <i class="ti ti-user-check me-2 f-20"></i>
+                                    </div>
+                                    <div class="flex-grow-1 ms-2">
+                                        <h5 class="mb-0">Contract Setup</h5>
+                                        <!-- <small class="text-muted">Contract Setup</small> -->
+                                    </div>
+                                </div>
+                            </a>
+                        </li>
+
+                        <!-- Invoice Tab -->
+                        <li class="nav-item" role="presentation">
+                            <a class="nav-link" id="invoice-tab" data-bs-toggle="tab" href="#invoice_content" role="tab" aria-selected="false">
+                                <div class="d-flex align-items-center">
+                                    <div class="flex-shrink-0">
+                                        <i class="ti ti-key me-2 f-20"></i>
+                                    </div>
+                                    <div class="flex-grow-1 ms-2">
+                                        <h5 class="mb-0">Payment Schedule</h5>
+                                        <!-- <small class="text-muted">Invoice Setup</small> -->
+                                    </div>
+                                </div>
+                            </a>
+                        </li>
+
+                        <!-- Invoice Tab -->
+                        <li class="nav-item" role="presentation">
+                            <a class="nav-link" id="utilities-tab" data-bs-toggle="tab" href="#utilities" role="tab" aria-selected="false">
+                                <div class="d-flex align-items-center">
+                                    <div class="flex-shrink-0">
+                                        <i class="ti ti-bulb me-2 f-20"></i>
+                                    </div>
+                                    <div class="flex-grow-1 ms-2">
+                                        <h5 class="mb-0">Utilities</h5>
+                                        <!-- <small class="text-muted">Invoice Setup</small> -->
+                                    </div>
+                                </div>
+                            </a>
+                        </li>
+
+                        <!-- Notice Tab -->
+                        <li class="nav-item" role="presentation">
+                            <a class="nav-link" id="notice-tab" data-bs-toggle="tab" href="#notice_content" role="tab" aria-selected="false">
+                                <div class="d-flex align-items-center">
+                                    <div class="flex-shrink-0">
+                                        <i class="ti ti-settings me-2 f-20"></i>
+                                    </div>
+                                    <div class="flex-grow-1 ms-2">
+                                        <h5 class="mb-0">Generate Notice</h5>
+                                        <!-- <small class="text-muted">Exit Notice</small> -->
+                                    </div>
+                                </div>
+                            </a>
+                        </li>
+
+                        <!-- Document Tab -->
+                        <li class="nav-item" role="presentation">
+                            <a class="nav-link" id="document-tab" data-bs-toggle="tab" href="#document_content" role="tab" aria-selected="false">
+                                <div class="d-flex align-items-center">
+                                    <div class="flex-shrink-0">
+                                        <i class="ti ti-settings me-2 f-20"></i>
+                                    </div>
+                                    <div class="flex-grow-1 ms-2">
+                                        <h5 class="mb-0">Send Document</h5>
+                                        <!-- <small class="text-muted">Send Document</small> -->
+                                    </div>
+                                </div>
+                            </a>
+                        </li>
+
+                        <!-- Report Tab -->
+                        <li class="nav-item" role="presentation">
+                            <a class="nav-link" id="report-tab" data-bs-toggle="tab" href="#report_content" role="tab" aria-selected="false">
+                                <div class="d-flex align-items-center">
+                                    <div class="flex-shrink-0">
+                                        <i class="ti ti-mail me-2 f-20"></i>
+                                    </div>
+                                    <div class="flex-grow-1 ms-2">
+                                        <h5 class="mb-0">Report</h5>
+                                        <!-- <small class="text-muted">Report</small> -->
+                                    </div>
+                                </div>
+                            </a>
+                        </li>
+                        
+                    </ul>
+
+                </div>
+
+            </div>
+        </div>
+        <div class="col-lg-8 col-xxl-9">
+            <div class="tab-content" id="myTabContent">
+
+                    <!-- <div class="tab-pane fade show active" id="profile_content" role="tabpanel" aria-labelledby="profile-tab"> -->
+                    <div class="tab-pane d-none">
+                        <div class="card box-card w-100">
+                            <div class="card-header">
+                                <h5>{{ __('Additional Information') }}</h5>
+                            </div>
+                            <div class="card-body allwhite px-3">
+                                {{-- <p class="mb-4">
+                                    Hello,I’m Anshan Handgun Creative Graphic Designer & User Experience
+                                    Designer based in Website, I create
+                                    digital Products a more Beautiful and usable place. Morbid accusant ipsum.
+                                    Nam nec tellus at.
+                                </p> --}}
+                                {{-- <h5>Personal Details</h5>
+                                <hr class="my-3" /> --}}
+                                <div class="table-responsive">
+                                    <table class="table table-borderless">
+                                        <tbody>
+                                            <tr>
+                                                <td><b class="text-header">{{ __('Emergency Contact No.') }}</b></td>
+                                                <td>:</td>
+                                                <td>{{ !empty($tenant->user->emergency_phone_number) ? $tenant->user->emergency_phone_number : '-' }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td><b class="text-header">{{ __('Country') }}</b></td>
+                                                <td>:</td>
+                                                <td>{{ !empty($tenant->country) ? $tenant->country : '-' }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td><b class="text-header">{{ __('State') }}</b></td>
+                                                <td>:</td>
+                                                <td>{{ !empty($statesdata->name) ? $statesdata->name : '-' }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td><b class="text-header">{{ __('City') }}</b></td>
+                                                <td>:</td>
+                                                <td>{{ !empty($cities->name) ? $cities->name : '-' }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td><b class="text-header">{{ __('Zip Code') }}</b></td>
+                                                <td>:</td>
+                                                <td>{{ !empty($tenant->zip_code) ? $tenant->zip_code :'-' }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td><b class="text-header">{{ __('Property') }}</b></td>
+                                                <td>:</td>
+                                                <td>{{ !empty($tenant->properties) ? $tenant->properties->name : '-' }}
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td><b class="text-header">{{ __('Unit') }}</b></td>
+                                                <td>:</td>
+                                                <td>{{ !empty($tenant->units) ? $tenant->units->name : '-' }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td><b class="text-header">{{ __('Lease Start Date') }}</b></td>
+                                                <td>:</td>
+                                                <!-- <td>{{ dateFormat($tenant->lease_start_date) }}</td> -->
+                                                {{--<!-- <td>{{ \Carbon\Carbon::parse($tenant->lease_start_date)->format('m-d-y') }}</td> -->--}}
+                                                <td>{{ $tenant->lease_start_date }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td><b class="text-header">{{ __('Lease End Date') }}</b></td>
+                                                <td>:</td>
+                                                <!-- <td>{{ dateFormat($tenant->lease_end_date) }}</td> -->
+                                                {{--<!-- <td>{{ \Carbon\Carbon::parse($tenant->lease_end_date)->format('m-d-y') }}</td> -->--}}
+                                                <td>{{ $tenant->lease_end_date }}</td>
+                                            </tr>
+                                            @if (!empty($tenant->documents))
+                                                <tr>
+                                                    <td><b class="text-header">{{ __('Documents') }}</b></td>
+                                                    <td>:</td>
+                                                    <td>
+                                                        @foreach ($tenant->documents as $doc)
+                                                            <a href="{{ asset(Storage::url('upload/tenant')) . '/' . $doc->document }}"
+                                                                target="_blank"><i data-feather="download"></i></a>
+                                                        @endforeach
+                                                    </td>
+                                                </tr>
+                                            @endif
+                                            <tr>
+                                                <td><b class="text-header">{{ __('Address') }}</b></td>
+                                                <td>:</td>
+                                                <td>{{ !empty($tenant->address) ? $tenant->address : '-' }}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tab-pane fade show active" id="contract_content" role="tabpanel" aria-labelledby="contract-tab">
+                            <div class="card box-card w-100">
+                            <div class="card-header">
+                                <h5>{{ __('Contract Setup') }}</h5>
+                            </div>
+                            <div class="allwhite pt-0">
+                                    <div class="card-body theme-card">
+                                        <form id="setupContractForm">
+
+                                            <!-- Contract Duration -->
+                                            <div class="row g-3 mb-3">
+                                                <div class="col-md-6">
+                                                    <label class="form-label">Start Date</label>
+                                                    <input type="text" id="start_date" class="form-control" placeholder="MM-DD-YY" autocomplete="off">
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label class="form-label">End Date</label>
+                                                    <input type="text" id="lease_end_date" class="form-control" placeholder="MM-DD-YY" autocomplete="off">
+                                                </div>
+                                            
+
+                                                <!-- Standard Rent -->
+                                                <div class="col-md-6">
+                                                <label class="form-label">Standard Rent (USD)</label>
+                                                <input type="number" class="form-control" name="standard_rent" placeholder="e.g. 1200">
+                                                </div>
+
+                                                <!-- Late Fee -->
+                                                <div class="col-md-6">
+                                                <label class="form-label">Standard Late Fee (USD)</label>
+                                                <input type="number" class="form-control" name="late_fee" placeholder="e.g. 50">
+                                                </div>
+
+                                                <!-- Common Utilities -->
+                                                <!-- <div class="col-md-6">
+                                                <label class="form-label">Common Utilities</label>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" value="ABC" id="utility1">
+                                                    <label class="form-check-label" for="utility1">ABC (20% sharing)</label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" value="123" id="utility2">
+                                                    <label class="form-check-label" for="utility2">123</label>
+                                                </div>
+                                                </div> -->
+
+                                                <!-- Standard Amenities -->
+                                                <!-- <div class="col-md-6">
+                                                <label class="form-label">Standard Amenities</label>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" value="Gym" id="amenity1">
+                                                    <label class="form-check-label" for="amenity1">Gym</label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" value="Pool" id="amenity2">
+                                                    <label class="form-check-label" for="amenity2">Pool</label>
+                                                </div>
+                                                </div> -->
+
+                                                <!-- Security Deposit -->
+                                                <div class="col-md-6">
+                                                <label class="form-label">Security Deposit (USD)</label>
+                                                <input type="number" class="form-control" name="security_deposit" placeholder="e.g. 500">
+                                                </div>
+
+                                                <!-- Phone Number -->
+                                                <!-- <div class="col-md-6">
+                                                <label class="form-label">Phone Number</label>
+                                                <input type="text" class="form-control phone_number" name="phone" placeholder="xxx-xxx-xxxx">
+                                                </div> -->
+
+                                                
+
+                                                <!-- Notice Period -->
+                                                <div class="col-md-12">
+                                                <label class="form-label">Notice Period</label>
+                                                <select class="form-control form-select" name="" id="">
+                                                    <option value="">1 month</option>
+                                                    <option value="">2 month</option>
+                                                    <option value="">3 month</option>
+                                                </select>
+                                                <!-- <textarea class="form-control" name="notice_period" rows="3" placeholder="Enter notice period terms"></textarea> -->
+                                                </div>
+
+                                                <div class="col-lg-12">
+                                                    <h3 class="mb-0 mt-3">Contract Renewal Setup</h3>
+                                                </div>
+
+                                                <div class="col-md-6">
+                                                    <label class="form-label">Contract Renewal Month</label>
+                                                    <select class="form-control form-select" name="" id="">
+                                                        <option value="">3 month</option>
+                                                        <option value="">6 month</option>
+                                                        <option value="">9 month</option>
+                                                        <option value="">12 month</option>
+                                                    </select>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label class="form-label">Contract Renewal Amount Increase (USD)</label>
+                                                    <input type="number" class="form-control" name="standard_rent" placeholder="e.g. 1200">
+                                                </div>
+                                                <!-- Contract Renewal -->
+                                                <!-- <div class="col-md-12">
+                                                <label class="form-label">Contract Renewal Increase After 12 Months (%)</label>
+                                                <input type="number" class="form-control" name="renewal_increase" placeholder="e.g. 5%">
+                                                </div> -->
+
+                                                    <!-- Upload Contract -->
+                                                <div class="col-md-12">
+                                                    <div class="position-relative upload-image">
+                                                        <label class="form-label">Upload Contract</label>
+                                                        <input type="file" class="form-control" name="contract_file" id="contractFile" accept="image/*">
+                                                        <div id="preview" class="mt-2"></div>
+                                                    </div>
+                                                    
+                                                </div>
+
+                                                
+                                            </div>
+
+                                            <!-- Submit -->
+                                            <div class="text-end">
+                                            <button type="submit" class="btn btn-primary">Save Contract</button>
+                                            </div>
+
+                                        </form>
+                                    </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tab-pane fade" id="invoice_content" role="tabpanel" aria-labelledby="invoice-tab">
+                        <div class="card box-card w-100">
+                            <div class="card-header">
+                                <h5>{{ __('Payment Schedule') }}</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="card theme-card">
+                                    <!-- <div class="card-header d-flex justify-content-end">
+                                        <a href="javascript:void(0)" class="btn btn-secondary">Add New</a>
+                                    </div> -->
+                                    <div class="">
+                                        <!-- <div class="table-responsive">
+                                            <table class="table table-bordered mb-0">
+                                                <thead class="table-theme text-center">
+                                                    <tr>
+                                                        <th>#</th>
+                                                        <th>Start Duration</th>
+                                                        <th>End Duration</th>
+                                                        <th>Payment</th>
+                                                        <th>Rent</th>
+                                                        <th>Last Month Rent</th>
+                                                        <th>Amenities</th>
+                                                        <th>Security</th>
+                                                        <th>Late Payment</th>
+                                                        <th>Balance</th>
+                                                        <th>Transfer to Savings</th>
+                                                        <th>Utilities Billing</th>
+                                                        <th>Payment</th>
+                                                        <th>Due</th>
+                                                        <th style="width: 120px;">Actions</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr>
+                                                        <td>1</td>
+                                                        <td style="min-width:100px"><input type="text" class="form-control form-control-sm" value="08-01-2025" readonly></td>
+                                                        <td style="min-width:100px"><input type="text" class="form-control form-control-sm" value="08-31-2025" readonly></td>
+                                                        <td><input type="text" class="form-control form-control-sm" value="$500"></td>
+                                                        <td><input type="text" class="form-control form-control-sm" value="$1000"></td>
+                                                        <td><input type="text" class="form-control form-control-sm" value="$1000"></td>
+                                                        <td><input type="text" class="form-control form-control-sm" value="$200"></td>
+                                                        <td><input type="text" class="form-control form-control-sm" value="$500"></td>
+                                                        <td><input type="text" class="form-control form-control-sm" value="$50"></td>
+                                                        <td><input type="text" class="form-control form-control-sm" value="$0"></td>
+                                                        <td><input type="text" class="form-control form-control-sm" value="$150"></td>
+                                                        <td><input type="text" class="form-control form-control-sm" value="$300"></td>
+                                                        <td><input type="text" class="form-control form-control-sm" value="$2500"></td>
+                                                        <td><input style="width:50px" type="text" class="form-control form-control-sm" value="$00"></td>
+                                                        <td>
+                                                            <button class="btn btn-sm btn-warning" data-bs-toggle="tooltip" title="Edit"><i class="ti ti-edit"></i></button>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div> -->
+                                        
+                                        <div class="table-responsive">
+                                            <table class="table table-bordered mb-0" id="custom-bg-table">
+                                                <thead class="table-theme text-center">
+                                                    <tr>
+                                                        <th>Month</th>
+                                                        <th>Rent</th>
+                                                        <th>Security</th>
+                                                        <th>Last Month Rent</th>
+                                                        <th>Amenities</th>
+                                                        <th>Status</th>
+                                                        <th>Action</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                        <tr>
+                                                        <td>April 2025</td>
+                                                        <td contenteditable="true">$1,500.00</td>
+                                                        <td contenteditable="true">$300.00</td>
+                                                        <td contenteditable="true">$1,500.00</td>
+                                                        <td contenteditable="true">$110.00</td>
+                                                        <td>
+                                                            <select class="form-select form-select-sm">
+                                                                <option value="pending" selected>Pending</option>
+                                                                <option value="paid">Paid</option>
+                                                            </select>
+                                                        </td>
+                                                        <td>
+                                                            <i class="ti ti-eye" data-bs-toggle="tooltip" data-bs-title="View"></i>
+                                                            <i class="ti ti-download" data-bs-toggle="tooltip" data-bs-title="Download"></i>
+                                                        </td>
+                                                    </tr>
+
+                                                    <tr>
+                                                        <td>May 2025</td>
+                                                        <td contenteditable="true">$1,500.00</td>
+                                                        <td contenteditable="true">$300.00</td>
+                                                        <td contenteditable="true"></td>
+                                                        <td contenteditable="true">$110.00</td>
+                                                        <td>
+                                                            <select class="form-select form-select-sm">
+                                                                <option value="pending">Pending</option>
+                                                                <option value="paid" selected>Paid</option>
+                                                            </select>
+                                                        </td>
+                                                        <td>
+                                                            <i class="ti ti-eye" data-bs-toggle="tooltip" data-bs-title="View"></i>
+                                                            <i class="ti ti-download" data-bs-toggle="tooltip" data-bs-title="Download"></i>
+                                                        </td>
+                                                    </tr>
+
+                                                    <tr>
+                                                        <td>June 2025</td>
+                                                        <td contenteditable="true">$1,500.00</td>
+                                                        <td contenteditable="true">$400.00</td>
+                                                        <td contenteditable="true"></td>
+                                                        <td contenteditable="true">$110.00</td>
+                                                        <td>
+                                                            <select class="form-select form-select-sm">
+                                                                <option value="pending">Pending</option>
+                                                                <option value="paid">Paid</option>
+                                                            </select>
+                                                        </td>
+                                                        <td>
+                                                            <i class="ti ti-eye" data-bs-toggle="tooltip" data-bs-title="View"></i>
+                                                            <i class="ti ti-download" data-bs-toggle="tooltip" data-bs-title="Download"></i>
+                                                        </td>
+                                                    </tr>
+                                                    
+                                                    <tr>
+                                                        <td>July 2025</td>
+                                                        <td contenteditable="true">$1,500.00</td>
+                                                        <td contenteditable="true"></td>
+                                                        <td contenteditable="true"></td>
+                                                        <td contenteditable="true">$110.00</td>
+                                                        <td>
+                                                            <select class="form-select form-select-sm">
+                                                                <option value="pending">Pending</option>
+                                                                <option value="paid">Paid</option>
+                                                            </select>
+                                                        </td>
+                                                        <td>
+                                                            <i class="ti ti-eye" data-bs-toggle="tooltip" data-bs-title="View"></i>
+                                                            <i class="ti ti-download" data-bs-toggle="tooltip" data-bs-title="Download"></i>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>August 2025</td>
+                                                        <td>$1,500.00</td>
+                                                        <td></td>
+                                                        <td></td>
+                                                        <td>$110.00</td>
+                                                        <td>
+                                                            <select class="form-select form-select-sm">
+                                                                <option value="pending">Pending</option>
+                                                                <option value="paid">Paid</option>
+                                                            </select>
+                                                        </td>
+                                                        <td>
+                                                            <i class="ti ti-eye" data-bs-toggle="tooltip" data-bs-title="View"></i>
+                                                            <i class="ti ti-download" data-bs-toggle="tooltip" data-bs-title="Download"></i>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>September 2025</td>
+                                                        <td>$1,500.00</td>
+                                                        <td></td>
+                                                        <td></td>
+                                                        <td>$110.00</td>
+                                                        <td>
+                                                            <select class="form-select form-select-sm">
+                                                                <option value="pending">Pending</option>
+                                                                <option value="paid">Paid</option>
+                                                            </select>
+                                                        </td>
+                                                        <td>
+                                                            <i class="ti ti-eye" data-bs-toggle="tooltip" data-bs-title="View"></i>
+                                                            <i class="ti ti-download" data-bs-toggle="tooltip" data-bs-title="Download"></i>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>October 2025</td>
+                                                        <td>$1,500.00</td>
+                                                        <td></td>
+                                                        <td></td>
+                                                        <td>$110.00</td>
+                                                        <td>
+                                                            <select class="form-select form-select-sm">
+                                                                <option value="pending">Pending</option>
+                                                                <option value="paid">Paid</option>
+                                                            </select>
+                                                        </td>
+                                                        <td>
+                                                            <i class="ti ti-eye" data-bs-toggle="tooltip" data-bs-title="View"></i>
+                                                            <i class="ti ti-download" data-bs-toggle="tooltip" data-bs-title="Download"></i>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>November 2025</td>
+                                                        <td>$1,500.00</td>
+                                                        <td></td>
+                                                        <td></td>
+                                                        <td>$110.00</td>
+                                                        <td>
+                                                            <select class="form-select form-select-sm">
+                                                                <option value="pending">Pending</option>
+                                                                <option value="paid">Paid</option>
+                                                            </select>
+                                                        </td>
+                                                        <td>
+                                                            <i class="ti ti-eye" data-bs-toggle="tooltip" data-bs-title="View"></i>
+                                                            <i class="ti ti-download" data-bs-toggle="tooltip" data-bs-title="Download"></i>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>December 2025</td>
+                                                        <td>$1,500.00</td>
+                                                        <td></td>
+                                                        <td></td>
+                                                        <td>$110.00</td>
+                                                        <td>
+                                                            <select class="form-select form-select-sm">
+                                                                <option value="pending">Pending</option>
+                                                                <option value="paid">Paid</option>
+                                                            </select>
+                                                        </td>
+                                                        <td>
+                                                            <i class="ti ti-eye" data-bs-toggle="tooltip" data-bs-title="View"></i>
+                                                            <i class="ti ti-download" data-bs-toggle="tooltip" data-bs-title="Download"></i>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>January 2026</td>
+                                                        <td>$1,500.00</td>
+                                                        <td></td>
+                                                        <td></td>
+                                                        <td>$110.00</td>
+                                                        <td>
+                                                            <select class="form-select form-select-sm">
+                                                                <option value="pending">Pending</option>
+                                                                <option value="paid">Paid</option>
+                                                            </select>
+                                                        </td>
+                                                        <td>
+                                                            <i class="ti ti-eye" data-bs-toggle="tooltip" data-bs-title="View"></i>
+                                                            <i class="ti ti-download" data-bs-toggle="tooltip" data-bs-title="Download"></i>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>February 2026</td>
+                                                        <td>$1,500.00</td>
+                                                        <td></td>
+                                                        <td></td>
+                                                        <td>$110.00</td>
+                                                        <td>
+                                                            <select class="form-select form-select-sm">
+                                                                <option value="pending">Pending</option>
+                                                                <option value="paid">Paid</option>
+                                                            </select>
+                                                        </td>
+                                                        <td>
+                                                            <i class="ti ti-eye" data-bs-toggle="tooltip" data-bs-title="View"></i>
+                                                            <i class="ti ti-download" data-bs-toggle="tooltip" data-bs-title="Download"></i>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>March 2026</td>
+                                                        <td>$1,500.00</td>
+                                                        <td></td>
+                                                        <td></td>
+                                                        <td>$110.00</td>
+                                                        <td>
+                                                            <select class="form-select form-select-sm">
+                                                                <option value="pending">Pending</option>
+                                                                <option value="paid">Paid</option>
+                                                            </select>
+                                                        </td>
+                                                        <td>
+                                                            <i class="ti ti-eye" data-bs-toggle="tooltip" data-bs-title="View"></i>
+                                                            <i class="ti ti-download" data-bs-toggle="tooltip" data-bs-title="Download"></i>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>April 2026</td>
+                                                        <td>$1,600.00</td>
+                                                        <td></td>
+                                                        <td></td>
+                                                        <td>$110.00</td>
+                                                        <td>
+                                                            <select class="form-select form-select-sm">
+                                                                <option value="pending">Pending</option>
+                                                                <option value="paid">Paid</option>
+                                                            </select>
+                                                        </td>
+                                                        <td>
+                                                            <i class="ti ti-eye" data-bs-toggle="tooltip" data-bs-title="View"></i>
+                                                            <i class="ti ti-download" data-bs-toggle="tooltip" data-bs-title="Download"></i>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>May 2026</td>
+                                                        <td>$1,600.00</td>
+                                                        <td></td>
+                                                        <td></td>
+                                                        <td>$110.00</td>
+                                                        <td>
+                                                            <select class="form-select form-select-sm">
+                                                                <option value="pending">Pending</option>
+                                                                <option value="paid">Paid</option>
+                                                            </select>
+                                                        </td>
+                                                        <td>
+                                                            <i class="ti ti-eye" data-bs-toggle="tooltip" data-bs-title="View"></i>
+                                                            <i class="ti ti-download" data-bs-toggle="tooltip" data-bs-title="Download"></i>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>June 2026</td>
+                                                        <td>$1,600.00</td>
+                                                        <td></td>
+                                                        <td></td>
+                                                        <td>$110.00</td>
+                                                        <td>
+                                                            <select class="form-select form-select-sm">
+                                                                <option value="pending">Pending</option>
+                                                                <option value="paid">Paid</option>
+                                                            </select>
+                                                        </td>
+                                                        <td>
+                                                            <i class="ti ti-eye" data-bs-toggle="tooltip" data-bs-title="View"></i>
+                                                            <i class="ti ti-download" data-bs-toggle="tooltip" data-bs-title="Download"></i>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>July 2026</td>
+                                                        <td>$1,600.00</td>
+                                                        <td></td>
+                                                        <td></td>
+                                                        <td>$110.00</td>
+                                                        <td>
+                                                            <select class="form-select form-select-sm">
+                                                                <option value="pending">Pending</option>
+                                                                <option value="paid">Paid</option>
+                                                            </select>
+                                                        </td>
+                                                        <td>
+                                                            <i class="ti ti-eye" data-bs-toggle="tooltip" data-bs-title="View"></i>
+                                                            <i class="ti ti-download" data-bs-toggle="tooltip" data-bs-title="Download"></i>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>August 2026</td>
+                                                        <td>$1,600.00</td>
+                                                        <td></td>
+                                                        <td></td>
+                                                        <td>$110.00</td>
+                                                        <td>
+                                                            <select class="form-select form-select-sm">
+                                                                <option value="pending">Pending</option>
+                                                                <option value="paid">Paid</option>
+                                                            </select>
+                                                        </td>
+                                                        <td>
+                                                            <i class="ti ti-eye" data-bs-toggle="tooltip" data-bs-title="View"></i>
+                                                            <i class="ti ti-download" data-bs-toggle="tooltip" data-bs-title="Download"></i>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>September 2026</td>
+                                                        <td>$1,600.00</td>
+                                                        <td></td>
+                                                        <td></td>
+                                                        <td>$110.00</td>
+                                                        <td>
+                                                            <select class="form-select form-select-sm">
+                                                                <option value="pending">Pending</option>
+                                                                <option value="paid">Paid</option>
+                                                            </select>
+                                                        </td>
+                                                        <td>
+                                                            <i class="ti ti-eye" data-bs-toggle="tooltip" data-bs-title="View"></i>
+                                                            <i class="ti ti-download" data-bs-toggle="tooltip" data-bs-title="Download"></i>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>October 2026</td>
+                                                        <td>$1,600.00</td>
+                                                        <td></td>
+                                                        <td></td>
+                                                        <td>$110.00</td>
+                                                        <td>
+                                                            <select class="form-select form-select-sm">
+                                                                <option value="pending">Pending</option>
+                                                                <option value="paid">Paid</option>
+                                                            </select>
+                                                        </td>
+                                                        <td>
+                                                            <i class="ti ti-eye" data-bs-toggle="tooltip" data-bs-title="View"></i>
+                                                            <i class="ti ti-download" data-bs-toggle="tooltip" data-bs-title="Download"></i>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>November 2026</td>
+                                                        <td>$1,700.00</td>
+                                                        <td></td>
+                                                        <td>$200.00</td>
+                                                        <td>$110.00</td>
+                                                        <td>
+                                                            <select class="form-select form-select-sm">
+                                                                <option value="pending">Pending</option>
+                                                                <option value="paid">Paid</option>
+                                                            </select>
+                                                        </td>
+                                                        <td>
+                                                            <i class="ti ti-eye" data-bs-toggle="tooltip" data-bs-title="View"></i>
+                                                            <i class="ti ti-download" data-bs-toggle="tooltip" data-bs-title="Download"></i>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>December 2026</td>
+                                                        <td>$1,700.00</td>
+                                                        <td></td>
+                                                        <td></td>
+                                                        <td>$110.00</td>
+                                                        <td>
+                                                            <select class="form-select form-select-sm">
+                                                                <option value="pending">Pending</option>
+                                                                <option value="paid">Paid</option>
+                                                            </select>
+                                                        </td>
+                                                        <td>
+                                                            <i class="ti ti-eye" data-bs-toggle="tooltip" data-bs-title="View"></i>
+                                                            <i class="ti ti-download" data-bs-toggle="tooltip" data-bs-title="Download"></i>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>January 2027</td>
+                                                        <td>$1,700.00</td>
+                                                        <td></td>
+                                                        <td></td>
+                                                        <td>$110.00</td>
+                                                        <td>
+                                                            <select class="form-select form-select-sm">
+                                                                <option value="pending">Pending</option>
+                                                                <option value="paid">Paid</option>
+                                                            </select>
+                                                        </td>
+                                                        <td>
+                                                            <i class="ti ti-eye" data-bs-toggle="tooltip" data-bs-title="View"></i>
+                                                            <i class="ti ti-download" data-bs-toggle="tooltip" data-bs-title="Download"></i>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>February 2027</td>
+                                                        <td>$1,700.00</td>
+                                                        <td></td>
+                                                        <td></td>
+                                                        <td>$110.00</td>
+                                                        <td>
+                                                            <select class="form-select form-select-sm">
+                                                                <option value="pending">Pending</option>
+                                                                <option value="paid">Paid</option>
+                                                            </select>
+                                                        </td>
+                                                        <td>
+                                                            <i class="ti ti-eye" data-bs-toggle="tooltip" data-bs-title="View"></i>
+                                                            <i class="ti ti-download" data-bs-toggle="tooltip" data-bs-title="Download"></i>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>March 2027</td>
+                                                        <td>$1,700.00</td>
+                                                        <td></td>
+                                                        <td></td>
+                                                        <td>$110.00</td>
+                                                        <td>
+                                                            <select class="form-select form-select-sm">
+                                                                <option value="pending">Pending</option>
+                                                                <option value="paid">Paid</option>
+                                                            </select>
+                                                        </td>
+                                                        <td>
+                                                            <i class="ti ti-eye" data-bs-toggle="tooltip" data-bs-title="View"></i>
+                                                            <i class="ti ti-download" data-bs-toggle="tooltip" data-bs-title="Download"></i>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>April 2027</td>
+                                                        <td>$1,700.00</td>
+                                                        <td></td>
+                                                        <td></td>
+                                                        <td>$110.00</td>
+                                                        <td>
+                                                            <select class="form-select form-select-sm">
+                                                                <option value="pending">Pending</option>
+                                                                <option value="paid">Paid</option>
+                                                            </select>
+                                                        </td>
+                                                        <td>
+                                                            <i class="ti ti-eye" data-bs-toggle="tooltip" data-bs-title="View"></i>
+                                                            <i class="ti ti-download" data-bs-toggle="tooltip" data-bs-title="Download"></i>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                                <tfoot class="table-secondary">
+                                                    <tr>
+                                                        <th>Total</th>
+                                                        <th></th>
+                                                        <th>$1,000.00</th>
+                                                        <th>$1,500.00</th>
+                                                        <th>$2,090.00</th>
+                                                        <td>
+                                                            
+                                                        </td>
+                                                        <td>
+                                                            
+                                                        </td>
+                                                    </tr>
+                                                </tfoot>
+                                            </table>
+                                        </div>
+
+
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tab-pane fade" id="utilities" role="tabpanel" aria-labelledby="utilities-tab">
+                        <div class="card box-card w-100">
+                            <div class="card-header">
+                                <h5>{{ __('Utilities') }}</h5>
+                            </div>
+                            <div class="card-body">
+                               <div class="table-responsive">
+                                    <table class="table table-bordered mb-0" id="custom-bg-table">
+                                        <thead class="table-theme text-center">
+                                            <tr>
+                                                <th>Month</th>
+                                                <th>Amount</th>
+                                                <th>Status</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="text-center">
+                                            <tr>
+                                                <td>April 2025</td>
+                                                <td>₹10,000</td>
+                                                <td>
+                                                    <span class="badge bg-success">Delivered</span>
+                                                    <!-- <span class="badge bg-warning">Pending</span> -->
+                                                </td>
+                                                <td>
+                                                    <i class="ti ti-eye mx-1" data-bs-toggle="tooltip" data-bs-title="View"></i>
+                                                    <i class="ti ti-download mx-1" data-bs-toggle="tooltip" data-bs-title="Download"></i>
+                                                    <i class="ti ti-refresh mx-1" data-bs-toggle="tooltip" data-bs-title="Resend Invoice"></i>
+                                                </td>
+                                            </tr>
+                                            <!-- Pending Example -->
+                                            <tr>    
+                                                <td>May 2025</td>
+                                                <td>₹8,000</td>
+                                                <td>
+                                                    <span class="badge bg-warning text-dark">Pending</span>
+                                                </td>
+                                                <td>
+                                                    <i class="ti ti-eye mx-1" data-bs-toggle="tooltip" data-bs-title="View"></i>
+                                                    <i class="ti ti-download mx-1" data-bs-toggle="tooltip" data-bs-title="Download"></i>
+                                                    <i class="ti ti-refresh mx-1" data-bs-toggle="tooltip" data-bs-title="Resend Invoice"></i>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tab-pane fade" id="notice_content" role="tabpanel" aria-labelledby="notice-tab">
+                        <div class="card box-card w-100">
+                            <div class="card-header">
+                                <h5>{{ __('Generate Notice') }}</h5>
+                            </div>
+                            <div class="card-body allwhite">
+                                <div class="card theme-card">
+                                    <!-- <div class="d-flex align-items-center justify-content-center text-center mb-4">
+                                    <button class="btn btn-secondary btn-lg" data-bs-toggle="modal" data-bs-target="#exitNoticeModal">
+                                        Generate Notice
+                                    </button>
+                                    </div> -->
+                                    <ul class="row g-3 list-unstyled justify-content-center">
+                                        <li class="col-md-4">
+                                            <a href="#" class="btn btn-secondary btn-md w-100">Late Due Notice </a>
+                                        </li>
+                                        <li class="col-md-4">
+                                            <a href="#" class="btn btn-secondary btn-md w-100">Late Due Notice </a>
+                                        </li>
+                                    </ul>
+
+                                    <!-- Exit Notice Card Container -->
+                                    <div id="exitNoticeCards" class="row g-3 px-3">
+                                    <!-- Cards will be added here dynamically -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tab-pane fade" id="document_content" role="tabpanel" aria-labelledby="document-tab">
+                        <!-- List Document -->
+                        <div class="card box-card w-100 list-document document-card">
+                            <div class="card-header">
+                                <h5 class="d-flex justify-content-between align-items-center">
+                                    {{ __('Document List') }} 
+                                    <span class="btn btn-secondary add-new-btn">Send New</span>
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div>
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered mb-0" id="custom-bg-table">
+                                            <thead class="table-theme text-center">
+                                                <tr>
+                                                    <th>Document Name</th>
+                                                    <th>Status</th>
+                                                    <th>Action</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class="text-center">
+                                                <tr>
+                                                    <td>Document 1</td>
+                                                    <td><span class="badge bg-success">Delivered</span></td>
+                                                    <td>
+                                                        <a href="#" class="view-btn"><i class="ti ti-eye mx-1"></i></a>
+                                                    </td>
+                                                </tr> 
+                                                <tr>    
+                                                    <td>Document 2</td>
+                                                    <td><span class="badge bg-warning text-dark">Pending</span></td>
+                                                    <td>
+                                                        <a href="#" class="view-btn"><i class="ti ti-eye mx-1"></i></a>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Send Document -->
+                        <div class="card box-card w-100 send-document document-card d-none">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h5>{{ __('Send Document') }}</h5>
+                                <span class="btn btn-outline-secondary back-btn">Back</span>
+                            </div>
+                            <div class="card-body allwhite mb-0">
+                                <div class="card theme-card">
+                                    <form id="sendDocForm" enctype="multipart/form-data">
+                                        <div class="mb-3">
+                                            <label for="toEmail" class="form-label">Select Document</label>
+                                            <select name="" id="" class="form-control">
+                                                <option value="">-- Select --</option>
+                                                <option value="">Document 1</option>
+                                                <option value="">Document 2</option>
+                                                <option value="">Document 3</option>
+                                            </select>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label for="subject" class="form-label">Subject</label>
+                                            <input type="text" class="form-control" id="subject" name="subject" placeholder="Document subject..." required="">
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label for="description" class="form-label">Comment</label>
+                                            <textarea class="form-control" id="description" name="description" rows="4" placeholder="Enter details..."></textarea>
+                                        </div>
+
+                                        <div class="text-end">
+                                            <button type="submit" class="btn btn-secondary">Send</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- View Document -->
+                        <div class="card box-card w-100 view-document document-card d-none">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h5>{{ __('View Document') }}</h5>
+                                <span class="btn btn-outline-secondary back-btn">Back</span>
+                            </div>
+                            <div class="card-body">
+                                <div class="card theme-card">
+                                    <div class="card border bg-light w-100">
+                                        <div class="card-header">
+                                            <h5 class="mb-0">📄 Document Details</h5>
+                                        </div>
+                                        <div class="card-body">
+                                            
+                                            <!-- Document -->
+                                            <div class="mb-3">
+                                                <label class="form-label fw-bold">Selected Document</label>
+                                                <p class="form-control-plaintext">Document 1</p>
+                                            </div>
+
+                                            <!-- Subject -->
+                                            <div class="mb-3">
+                                                <label class="form-label fw-bold">Subject</label>
+                                                <p class="form-control-plaintext">Sample Subject for Document</p>
+                                            </div>
+
+                                            <!-- Comment -->
+                                            <div class="mb-3">
+                                                <label class="form-label fw-bold">Comment</label>
+                                                <p class="form-control-plaintext">
+                                                    This is the comment text entered by the user.  
+                                                    It shows the details about the document.
+                                                </p>
+                                            </div>
+
+                                            <div class="text-end">
+                                                <a href="#" class="btn btn-secondary back-btn">Back</a>
+                                            </div>
+
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tab-pane fade" id="report_content" role="tabpanel" aria-labelledby="report-tab">
+                        <div class="card box-card w-100">
+                            <div class="card-header">
+                                <h5>{{ __('Report') }}</h5>
+                            </div>
+                            <div class="card-body allwhite mb-0">
+                                <div class="card theme-card">
+                                    <form id="sendDocForm" enctype="multipart/form-data">
+                                        <div class="mb-3">
+                                            <label for="toEmail" class="form-label">Select Document</label>
+                                            <select name="" id="" class="form-control">
+                                                <option value="">-- Select --</option>
+                                                <option value="">Document 1</option>
+                                                <option value="">Document 2</option>
+                                                <option value="">Document 3</option>
+                                            </select>
+                                        </div>
+
+                                        <!-- Subject -->
+                                        <div class="mb-3">
+                                            <label for="subject" class="form-label">Subject</label>
+                                            <input type="text" class="form-control" id="subject" name="subject" placeholder="Document subject..." required="">
+                                        </div>
+
+                                        <!-- Description -->
+                                        <div class="mb-3">
+                                            <label for="description" class="form-label">Comment</label>
+                                            <textarea class="form-control" id="description" name="description" rows="4" placeholder="Enter details..."></textarea>
+                                        </div>
+
+                                        <!-- Send Button -->
+                                        <div class="text-end">
+                                            <button type="submit" class="btn btn-secondary">Send</button>
+                                        </div>
+
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+            
+        </div>
+    </div>
+            
+</div>
+@endsection
+
+
+<!-- Exit Notice Modal -->
+<div class="modal fade" id="exitNoticeModal" tabindex="-1" aria-labelledby="exitNoticeModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title" id="exitNoticeModalLabel">New Generate Notice</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <form id="exitNoticeForm">
+        <div class="modal-body">
+          <!-- Select Date -->
+          <div class="mb-3">
+            <label for="exitDate" class="form-label">Select Exit Date</label>
+            <input type="text" class="form-control" id="lease_start_date" name="exit_date" placeholder="MM-DD-YY" autocomplete="off" required>
+          </div>
+
+          <!-- Contract Info --> 
+          <div class="mb-3">
+            <label for="contractInfo" class="form-label">Contract Info</label>
+            <input type="text" class="form-control" id="contractInfo" name="contract_info" required>
+          </div>
+
+          <!-- Property Name -->
+          <div class="mb-3">
+            <label for="propertyName" class="form-label">Property Name</label>
+            <input type="text" class="form-control" id="propertyName" name="property_name" required>
+          </div>
+
+          <!-- Comments -->
+          <div class="mb-3">
+            <label for="comments" class="form-label">Comments</label>
+            <textarea class="form-control" id="comments" name="comments" rows="3"></textarea>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-primary">Create</button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+</div>
+
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function () {
+        // Show Send Document form
+        $('.add-new-btn').on('click', function () {
+            $('.document-card').addClass('d-none');
+            $('.send-document').removeClass('d-none');
+        });
+
+        // Show View Document
+        $('.view-btn').on('click', function (e) {
+            e.preventDefault();
+            $('.document-card').addClass('d-none');
+            $('.view-document').removeClass('d-none');
+        });
+
+        // Back Button → Always go back to list
+        $('.back-btn').on('click', function () {
+            $('.document-card').addClass('d-none');
+            $('.list-document').removeClass('d-none');
+        });
+    });
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const phoneInputs = document.getElementsByClassName('phone_number');
+
+    Array.from(phoneInputs).forEach(function(input) {
+        input.addEventListener('input', function (e) {
+            let x = e.target.value.replace(/\D/g, '').substring(0, 10); // only digits
+            let formattedNumber = '';
+
+            if (x.length > 6) {
+                formattedNumber = x.replace(/(\d{3})(\d{3})(\d{1,4})/, '$1-$2-$3');
+            } else if (x.length > 3) {
+                formattedNumber = x.replace(/(\d{3})(\d{1,3})/, '$1-$2');
+            } else {
+                formattedNumber = x;
+            }
+
+            e.target.value = formattedNumber;
+        });
+    });
+});
+</script>
+
+
+
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const form = document.getElementById('exitNoticeForm');
+    const cardContainer = document.getElementById('exitNoticeCards');
+
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+
+      // Fetch values
+      const dateInput = document.getElementById('lease_start_date').value;
+      const contractInfo = document.getElementById('contractInfo').value;
+      const propertyName = document.getElementById('propertyName').value;
+      const comments = document.getElementById('comments').value;
+
+      if (!dateInput || !contractInfo || !propertyName) {
+        alert("Please fill all required fields");
+        return;
+      }
+
+      // Format date from YYYY-MM-DD to MM-DD-YY (if needed)
+      const formattedDate = formatDateToMMDDYY(dateInput);
+
+      // Create card
+      const card = `
+        <div class="col-md-6">
+          <div class="card follower-card">
+            <div class="card-body">
+              <h5 class="card-title mb-2">Exit Date: ${formattedDate}</h5>
+              <p class="mb-1"><strong>Contract Info:</strong> ${contractInfo}</p>
+              <p class="mb-1"><strong>Property Name:</strong> ${propertyName}</p>
+              <p class="mb-0"><strong>Comments:</strong> ${comments}</p>
+            </div>
+          </div>
+        </div>
+      `;
+
+      // Append card
+      cardContainer.insertAdjacentHTML('beforeend', card);
+
+      // Reset form
+      form.reset();
+
+      // Close modal
+      const modal = bootstrap.Modal.getInstance(document.getElementById('exitNoticeModal'));
+      if (modal) modal.hide();
+    });
+
+    // Helper: Format YYYY-MM-DD to MM-DD-YY
+    function formatDateToMMDDYY(dateStr) {
+      const [year, month, day] = dateStr.split('-');
+      return `${month}-${day}-${year.slice(-2)}`;
+    }
+  });
+</script>
+<script>
+   window.addEventListener("DOMContentLoaded", function () {
+    const contractInput = document.getElementById("contractFile");
+    const preview = document.getElementById("preview");
+
+    contractInput.addEventListener("change", function () {
+      preview.innerHTML = ""; // reset preview
+
+      const file = this.files[0];
+      if (file) {
+        const reader = new FileReader();
+
+        reader.onload = function (e) {
+          const div = document.createElement("div");
+          div.classList.add("preview-container");
+
+          div.innerHTML = `
+            <img src="${e.target.result}" alt="Preview">
+            <span class="close-icon">&times;</span>
+          `;
+
+          // close button click -> clear preview + reset input
+          div.querySelector(".close-icon").addEventListener("click", function () {
+            preview.innerHTML = "";
+            contractInput.value = "";
+          });
+
+          preview.appendChild(div);
+        };
+
+        reader.readAsDataURL(file);
+      }
+    });
+  });
+</script>
