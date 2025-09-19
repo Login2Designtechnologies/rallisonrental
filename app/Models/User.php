@@ -134,4 +134,11 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return User::find(parentId());
     }
+
+    public function getProfileUrlAttribute()
+    {
+        return $this->profile
+            ? asset('storage/upload/profile/' . $this->profile)
+            : 'https://whitesmoke-jackal-127066.hostingersite.com/storage/upload/profile/avatar.png'; // fallback image
+    }
 }

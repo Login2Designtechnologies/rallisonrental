@@ -24,6 +24,7 @@ use Illuminate\Http\Request;
 use App\Models\OtherInvoice;
 
 use Carbon\Carbon;
+use Auth;
 
 class HomeController extends Controller
 {
@@ -289,7 +290,8 @@ class HomeController extends Controller
 
     // Tenant Dashbaord
     public function tenant_profile() {
-        return View('tenant_dashboard.tenant-profile');
+        $auth_tenant = Tenant::whereUserId(Auth::user()->id)->with(['user', 'property', 'unit', 'property.city', 'property.state'])->first();
+        return View('tenant_dashboard.tenant-profile', compact('auth_tenant'));
     } 
 
     public function property_details() {

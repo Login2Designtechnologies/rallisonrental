@@ -3,14 +3,14 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-// use Spatie\MediaLibrary\HasMedia;
-// use Spatie\MediaLibrary\InteractsWithMedia;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\Image\Enums\Fit;
 
 
-class Property extends Model
+class Property extends Model implements HasMedia
 {
-    // use InteractsWithMedia;
+    use InteractsWithMedia;
     public function registerMediaCollections(): void
     {
         // Store images as-is on 'public' (or your disk)
@@ -58,5 +58,15 @@ class Property extends Model
     }
     public function other_invoices(){
         return $this->hasMany(OtherInvoice::class);
+    }
+
+    public function city()
+    {
+        return $this->belongsTo(City::class, 'city_id');
+    }
+
+    public function state()
+    {
+        return $this->belongsTo(State::class, 'state_id');
     }
 }

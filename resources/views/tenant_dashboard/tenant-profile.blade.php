@@ -53,27 +53,25 @@
       <div class="card w-100">
         <div class="card-body">
             <div class="tab-content" id="v-profile-tabContent">
-
                 <!-- Profile Header -->
                 <div class="tab-pane fade show active" id="v-profile-header" role="tabpanel">
                     <div class="row align-items-center mb-4">
                         <div class="col-auto">
-                        <img src="https://whitesmoke-jackal-127066.hostingersite.com/storage/upload/profile/avatar.png"
-                            alt="Sarah Johnson" class="avatar">
+                            <img src="{{ $auth_tenant->user->profile_url }}"  alt="{{ $auth_tenant->user->name }}" class="avatar">
                         </div>
                         <div class="col">
                         <h2 class="h3 mb-1 editable" data-field="name">
-                            <span class="inline-text">Sarah Johnson</span>
+                            <span class="inline-text">{{ $auth_tenant->user->name }}</span>
                             <input type="text" class="form-control form-control inline-input" value="Sarah Johnson">
                         </h2>
 
                         <span class="info-label"><i class="bi bi-person-badge me-2 text-muted"></i> Tenant ID</span>
                         <p class="text-muted mb-2 editable" data-field="tenant-id">
-                            <span class="inline-text">TNT-2024-001</span>
-                            <input type="text" class="form-control form-control inline-input" value="TNT-2024-001">
+                            <span class="inline-text">{{ $auth_tenant->user_id }}</span>
+                            <input type="text" class="form-control form-control inline-input" value="{{ $auth_tenant->user_id }}">
                         </p>
 
-                        <span class="status-badge status-active">Active Lease</span>
+                        <span class="status-badge status-active">{{ $auth_tenant->user->is_active == 1 ? "Active" : "Not Active" }}  Lease</span>
                         </div>
                     </div>
                 </div>
@@ -86,15 +84,15 @@
                         <div class="col-md-6 editable" data-field="phone">
                             <div class="info-card p-3">
                             <span class="info-label"><i class="bi bi-telephone me-2 text-muted"></i> Phone</span>
-                            <span class="inline-text">+1 (555) 123-4567</span>
-                            <input type="text" class="form-control form-control inline-input" value="+1 (555) 123-4567">
+                            <span class="inline-text">{{ $auth_tenant->user->phone_number ?? 'N/A' }}</span>
+                            <input type="text" class="form-control form-control inline-input" value="{{ $auth_tenant->user->phone_number ?? 'N/A' }}">
                             </div>
                         </div>
                         <div class="col-md-6 editable" data-field="email">
                             <div class="info-card p-3">
                             <span class="info-label"><i class="bi bi-envelope me-2 text-muted"></i> Email</span>
-                            <span class="inline-text">sarah.johnson@email.com</span>
-                            <input type="email" class="form-control form-control inline-input" value="sarah.johnson@email.com">
+                            <span class="inline-text">{{ $auth_tenant->user->email ?? 'N/A' }}</span>
+                            <input type="email" class="form-control form-control inline-input" value="{{ $auth_tenant->user->email ?? 'N/A' }}">
                             </div>
                         </div>
                         </div>
@@ -116,8 +114,8 @@
                         <div class="col-md-4 editable" data-field="emergency-phone">
                             <div class="info-card p-3">
                             <span class="info-label"><i class="bi bi-telephone me-2 text-muted"></i> Phone</span>
-                            <span class="inline-text">+1 (555) 987-6543</span>
-                            <input type="text" class="form-control form-control inline-input" value="+1 (555) 987-6543">
+                            <span class="inline-text">{{ $auth_tenant->user->emergency_phone_number ?? 'N/A' }}</span>
+                            <input type="text" class="form-control form-control inline-input" value="{{ $auth_tenant->user->emergency_phone_number ?? 'N/A' }}">
                             </div>
                         </div>
                         <div class="col-md-4 editable" data-field="emergency-relationship">
@@ -139,15 +137,15 @@
                         <div class="col-md-6 editable" data-field="lease-start">
                             <div class="info-card p-3">
                             <span class="info-label"><i class="bi bi-calendar-check me-2 text-muted"></i> Lease Start Date</span>
-                            <span class="inline-text">January 15, 2024</span>
-                            <input type="text" class="form-control form-control inline-input" value="January 15, 2024">
+                            <span class="inline-text">{{ $auth_tenant->lease_start_date ?? 'N/A' }}</span>
+                            <input type="text" class="form-control form-control inline-input" value="{{ $auth_tenant->lease_start_date ?? 'N/A' }}">
                             </div>
                         </div>
                         <div class="col-md-6 editable" data-field="lease-end">
                             <div class="info-card p-3">
                             <span class="info-label"><i class="bi bi-calendar-x me-2 text-muted"></i> Lease End Date</span>
-                            <span class="inline-text">January 14, 2025</span>
-                            <input type="text" class="form-control form-control inline-input" value="January 14, 2025">
+                            <span class="inline-text">{{ $auth_tenant->lease_end_date ?? 'N/A' }}</span>
+                            <input type="text" class="form-control form-control inline-input" value="{{ $auth_tenant->lease_end_date ?? 'N/A' }}">
                             </div>
                         </div>
                         </div>
@@ -162,22 +160,31 @@
                         <div class="col-md-6 editable" data-field="property">
                             <div class="info-card p-3">
                             <span class="info-label"><i class="bi bi-building me-2 text-muted"></i> Property</span>
-                            <span class="inline-text">Sunset Gardens Apartments</span>
-                            <input type="text" class="form-control form-control inline-input" value="Sunset Gardens Apartments">
+                            <span class="inline-text">{{ $auth_tenant->property->name ?? 'N/A' }}</span>
+                            <input type="text" class="form-control form-control inline-input" value="{{ $auth_tenant->property->name ?? 'N/A' }}">
                             </div>
                         </div>
                         <div class="col-md-6 editable" data-field="address">
                             <div class="info-card p-3">
                             <span class="info-label"><i class="bi bi-geo-alt me-2 text-muted"></i> Address</span>
-                            <span class="inline-text">123 Oak Street, Manhattan, NY 10001, United States</span>
-                            <textarea class="form-control form-control inline-input">123 Oak Street, Manhattan, NY 10001, United States</textarea>
+                            <span class="inline-text">
+                                {{ $auth_tenant->property
+                                    ? $auth_tenant->property->address . ', ' .
+                                    optional($auth_tenant->property->city)->name . ', ' .
+                                    optional($auth_tenant->property->state)->name . ' ' .
+                                    $auth_tenant->property->zip_code . ', ' .
+                                    $auth_tenant->property->country
+                                    : 'N/A'
+                                }}
+                            </span>
+                            <textarea class="form-control form-control inline-input"></textarea>    
                             </div>
                         </div>
                         <div class="col-md-6 editable" data-field="unit">
                             <div class="info-card p-3">
                             <span class="info-label"><i class="bi bi-door-open me-2 text-muted"></i> Unit</span>
-                            <span class="inline-text">Unit 24B</span>
-                            <input type="text" class="form-control form-control inline-input" value="Unit 24B">
+                            <span class="inline-text">{{ $auth_tenant->unit->name ?? 'N/A' }}</span>
+                            <input type="text" class="form-control form-control inline-input" value="{{ $auth_tenant->unit->name ?? 'N/A' }}">
                             </div>
                         </div>
                         </div>
