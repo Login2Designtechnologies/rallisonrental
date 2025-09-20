@@ -18,7 +18,7 @@
     <!-- Top Edit Buttons -->
     <div class="col-lg-12 text-end">
       <button id="edit-btn" class="btn btn-secondary text-white">Edit</button>
-      <button id="save-btn" class="btn btn-primary d-none">Save</button>
+      <button id="save-btn" class="btn btn-primary d-none" data-base-route="{{ route('tenant-profile.update', $auth_tenant->id) }}" data-tenant-id="{{ $auth_tenant->user_id }}">Save</button>
       <button id="cancel-btn" class="btn btn-light d-none">Cancel</button>
     </div>
 
@@ -56,19 +56,33 @@
                 <!-- Profile Header -->
                 <div class="tab-pane fade show active" id="v-profile-header" role="tabpanel">
                     <div class="row align-items-center mb-4">
-                        <div class="col-auto">
-                            <img src="{{ $auth_tenant->user->profile_url }}"  alt="{{ $auth_tenant->user->name }}" class="avatar">
+                        <div class="col-auto position-relative">
+                            <img id="profile-preview" width="80%" height="80%"
+                                src="{{ $auth_tenant->user->profile_url }}"  
+                                alt="{{ $auth_tenant->user->name }}" 
+                                class="avatar">
+
+                            <input type="file" name="profile_image" id="profile-image-input" 
+                                accept="image/*" class="form-control form-control inline-input" style="display:none">
+
+                            <!-- hidden by default -->
+                            <span id="profile-edit-btn" 
+                                class="position-absolute top-0 end-0 bg-white p-1 rounded-circle d-none" 
+                                style="cursor:pointer;">
+                                <i class="bi bi-pencil"></i>
+                            </span>
                         </div>
+
                         <div class="col">
                         <h2 class="h3 mb-1 editable" data-field="name">
                             <span class="inline-text">{{ $auth_tenant->user->name }}</span>
-                            <input type="text" class="form-control form-control inline-input" value="Sarah Johnson">
+                            <input type="text" name="full_name" class="form-control form-control inline-input" value="{{ $auth_tenant->user->name }}">
                         </h2>
 
                         <span class="info-label"><i class="bi bi-person-badge me-2 text-muted"></i> Tenant ID</span>
                         <p class="text-muted mb-2 editable" data-field="tenant-id">
-                            <span class="inline-text">{{ $auth_tenant->user_id }}</span>
-                            <input type="text" class="form-control form-control inline-input" value="{{ $auth_tenant->user_id }}">
+                            <span class="inline-text">{{ $auth_tenant->id }}</span>
+                            <input type="text" class="form-control form-control inline-input" value="{{ $auth_tenant->id }}" disabled>
                         </p>
 
                         <span class="status-badge status-active">{{ $auth_tenant->user->is_active == 1 ? "Active" : "Not Active" }}  Lease</span>
@@ -85,14 +99,14 @@
                             <div class="info-card p-3">
                             <span class="info-label"><i class="bi bi-telephone me-2 text-muted"></i> Phone</span>
                             <span class="inline-text">{{ $auth_tenant->user->phone_number ?? 'N/A' }}</span>
-                            <input type="text" class="form-control form-control inline-input" value="{{ $auth_tenant->user->phone_number ?? 'N/A' }}">
+                            <input type="text" class="form-control form-control inline-input" name="phone_number" value="{{ $auth_tenant->user->phone_number}}">
                             </div>
                         </div>
                         <div class="col-md-6 editable" data-field="email">
                             <div class="info-card p-3">
                             <span class="info-label"><i class="bi bi-envelope me-2 text-muted"></i> Email</span>
                             <span class="inline-text">{{ $auth_tenant->user->email ?? 'N/A' }}</span>
-                            <input type="email" class="form-control form-control inline-input" value="{{ $auth_tenant->user->email ?? 'N/A' }}">
+                            <input type="email" name="email" class="form-control form-control inline-input" value="{{ $auth_tenant->user->email}}" disabled>
                             </div>
                         </div>
                         </div>
@@ -107,22 +121,22 @@
                         <div class="col-md-4 editable" data-field="emergency-name">
                             <div class="info-card p-3">
                             <span class="info-label"><i class="bi bi-person me-2 text-muted"></i> Name</span>
-                            <span class="inline-text">Michael Johnson</span>
-                            <input type="text" class="form-control form-control inline-input" value="Michael Johnson">
+                            <span class="inline-text">{{ $auth_tenant->user->emergency_contact_name ?? 'N/A' }}</span>
+                            <input type="text" class="form-control form-control inline-input"  name="emergency_contact_name" value="{{ $auth_tenant->user->emergency_contact_name}}">
                             </div>
                         </div>
                         <div class="col-md-4 editable" data-field="emergency-phone">
                             <div class="info-card p-3">
                             <span class="info-label"><i class="bi bi-telephone me-2 text-muted"></i> Phone</span>
                             <span class="inline-text">{{ $auth_tenant->user->emergency_phone_number ?? 'N/A' }}</span>
-                            <input type="text" class="form-control form-control inline-input" value="{{ $auth_tenant->user->emergency_phone_number ?? 'N/A' }}">
+                            <input type="text" name="emergency_phone_number" class="form-control form-control inline-input" value="{{ $auth_tenant->user->emergency_phone_number}}">
                             </div>
                         </div>
                         <div class="col-md-4 editable" data-field="emergency-relationship">
                             <div class="info-card p-3">
                             <span class="info-label"><i class="bi bi-heart me-2 text-muted"></i> Relationship</span>
-                            <span class="inline-text">Spouse</span>
-                            <input type="text" class="form-control form-control inline-input" value="Spouse">
+                            <span class="inline-text">{{ $auth_tenant->user->emergency_contact_relationship ?? 'N/A' }}</span>
+                            <input type="text" name="emergency_contact_relationship" class="form-control form-control inline-input" value="{{ $auth_tenant->user->emergency_contact_relationship }}">
                             </div>
                         </div>
                         </div>
@@ -138,14 +152,16 @@
                             <div class="info-card p-3">
                             <span class="info-label"><i class="bi bi-calendar-check me-2 text-muted"></i> Lease Start Date</span>
                             <span class="inline-text">{{ $auth_tenant->lease_start_date ?? 'N/A' }}</span>
-                            <input type="text" class="form-control form-control inline-input" value="{{ $auth_tenant->lease_start_date ?? 'N/A' }}">
+                            <input type="date" name="lease_start_date" class="inline-input form-control" style="display:none;" 
+                                value="{{ old('lease_start_date', $auth_tenant->lease_start_date ? \Carbon\Carbon::parse($auth_tenant->lease_start_date)->format('Y-m-d') : '') }}">
                             </div>
                         </div>
                         <div class="col-md-6 editable" data-field="lease-end">
                             <div class="info-card p-3">
                             <span class="info-label"><i class="bi bi-calendar-x me-2 text-muted"></i> Lease End Date</span>
                             <span class="inline-text">{{ $auth_tenant->lease_end_date ?? 'N/A' }}</span>
-                            <input type="text" class="form-control form-control inline-input" value="{{ $auth_tenant->lease_end_date ?? 'N/A' }}">
+                            <input type="date" name="lease_end_date" class="inline-input form-control" style="display:none;" 
+                                value="{{ old('lease_end_date', $auth_tenant->lease_end_date ? \Carbon\Carbon::parse($auth_tenant->lease_end_date)->format('Y-m-d') : '') }}">
                             </div>
                         </div>
                         </div>
@@ -161,7 +177,7 @@
                             <div class="info-card p-3">
                             <span class="info-label"><i class="bi bi-building me-2 text-muted"></i> Property</span>
                             <span class="inline-text">{{ $auth_tenant->property->name ?? 'N/A' }}</span>
-                            <input type="text" class="form-control form-control inline-input" value="{{ $auth_tenant->property->name ?? 'N/A' }}">
+                            <input type="text" class="form-control form-control inline-input" name="property_name" value="{{ $auth_tenant->property->name}}">
                             </div>
                         </div>
                         <div class="col-md-6 editable" data-field="address">
@@ -177,14 +193,20 @@
                                     : 'N/A'
                                 }}
                             </span>
-                            <textarea class="form-control form-control inline-input"></textarea>    
+                            <textarea disabled class="form-control form-control inline-input">
+                                {{$auth_tenant->property->address . ', ' .
+                                    optional($auth_tenant->property->city)->name . ', ' .
+                                    optional($auth_tenant->property->state)->name . ' ' .
+                                    $auth_tenant->property->zip_code . ', ' .
+                                    $auth_tenant->property->country}}
+                            </textarea>    
                             </div>
                         </div>
                         <div class="col-md-6 editable" data-field="unit">
                             <div class="info-card p-3">
                             <span class="info-label"><i class="bi bi-door-open me-2 text-muted"></i> Unit</span>
                             <span class="inline-text">{{ $auth_tenant->unit->name ?? 'N/A' }}</span>
-                            <input type="text" class="form-control form-control inline-input" value="{{ $auth_tenant->unit->name ?? 'N/A' }}">
+                            <input type="text" class="form-control form-control inline-input" name="unit_name" value="{{ $auth_tenant->unit->name ?? ''}}">
                             </div>
                         </div>
                         </div>
@@ -422,6 +444,10 @@
   const saveBtn = document.getElementById("save-btn");
   const cancelBtn = document.getElementById("cancel-btn");
 
+  const profileEditBtn = document.getElementById("profile-edit-btn");
+  const profileInput = document.getElementById("profile-image-input");
+  const profilePreview = document.getElementById("profile-preview");
+
   editBtn.addEventListener("click", () => {
     document.querySelectorAll(".editable").forEach(el => {
       el.querySelector(".inline-text").style.display = "none";
@@ -430,7 +456,23 @@
     editBtn.classList.add("d-none");
     saveBtn.classList.remove("d-none");
     cancelBtn.classList.remove("d-none");
+    profileEditBtn.classList.remove("d-none");
   });
+
+    profileEditBtn.addEventListener("click", () => {
+        profileInput.click(); // open file selector
+        });
+
+        profileInput.addEventListener("change", () => {
+        const file = profileInput.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = e => {
+            profilePreview.src = e.target.result; // live preview
+            };
+            reader.readAsDataURL(file);
+        }
+    });
 
   cancelBtn.addEventListener("click", () => {
     document.querySelectorAll(".editable").forEach(el => {
@@ -443,21 +485,51 @@
     saveBtn.classList.add("d-none");
     cancelBtn.classList.add("d-none");
     editBtn.classList.remove("d-none");
+    profileEditBtn.classList.add("d-none");
   });
 
   saveBtn.addEventListener("click", () => {
-    document.querySelectorAll(".editable").forEach(el => {
-      const input = el.querySelector(".inline-input");
-      const span = el.querySelector(".inline-text");
-      span.textContent = input.value;
-      input.style.display = "none";
-      span.style.display = "inline";
-    });
+    const tenantId = saveBtn.dataset.tenantId;
+    const url = `${saveBtn.dataset.baseRoute}`;
+    fetch(url, {
+        method: "POST", 
+        headers: {
+            "X-CSRF-TOKEN": "{{ csrf_token() }}"
+        },
+        body: (() => {
+            const formData = new FormData();
+            // Collect inline inputs
+            document.querySelectorAll(".editable").forEach(el => {
+                const input = el.querySelector(".inline-input");
+                if (input && input.name) {
+                    formData.append(input.name, input.value);
+                }
+            });
+
+            // Add profile image if selected
+            const profileFile = profileInput.files[0];
+            if (profileFile) {
+                formData.append("profile_image", profileFile);
+            }
+
+            return formData;
+        })()
+    })
+    .then(res => res.json())
+    .then(res => {
+        if (res.success) {
+            alert("Profile updated successfully!");
+            // Update UI...
+        } else {
+            alert("Something went wrong!");
+        }
+    })
+    .catch(err => console.error(err));
+
     saveBtn.classList.add("d-none");
     cancelBtn.classList.add("d-none");
     editBtn.classList.remove("d-none");
-  });
+});
+
 </script>
-
-
 @endsection

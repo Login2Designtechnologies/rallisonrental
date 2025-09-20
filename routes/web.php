@@ -168,6 +168,9 @@ Route::get('tenant-profile', [HomeController::class, 'tenant_profile'])->name('t
         'XSS',
     ]
 );
+
+Route::post('/tenant-profile/{tenant}', [HomeController::class, 'update'])->name('tenant-profile.update');
+
 Route::get('property-details', [HomeController::class, 'property_details'])->name('property_details')->middleware(
     [
         'XSS',

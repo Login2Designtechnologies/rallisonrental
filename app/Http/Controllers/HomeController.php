@@ -20,11 +20,11 @@ use App\Models\User;
 use App\Models\FAQ;
 use App\Models\Page;
 use App\Models\HomePage;
-use Illuminate\Http\Request;
-use App\Models\OtherInvoice;
 
 use Carbon\Carbon;
 use Auth;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class HomeController extends Controller
 {
@@ -200,10 +200,10 @@ class HomeController extends Controller
         return View('dashbaordpage.view-ticket');
     } 
 
-    public function late_fees(Request $request) {
+    public function late_fees() {
 
-        $owner = auth()->user();
-        // $owner = Owner::findOrFail($ownerId);
+        $ownerId = auth()->user()->owner_id;
+        $owner = Owner::findOrFail($ownerId);
 
         if ($request->isMethod('post')) {
             // Save everything (except framework fields) as JSON
@@ -229,34 +229,6 @@ class HomeController extends Controller
     } 
 
 
-    public function setUpLateFee(Request $request)
-    {
-        $owner = auth()->user();
-        // $owner = Owner::findOrFail($ownerId);
-
-        if ($request->isMethod('post')) {
-            // Save everything (except framework fields) as JSON
-            $payload = $request->except(['_token', '_method']);
-
-            // (optional) reindex tiers if present
-            if (isset($payload['tiers']) && is_array($payload['tiers'])) {
-                $payload['tiers'] = array_values(array_filter($payload['tiers'], function ($r) {
-                    // keep rows that have any non-empty field
-                    return is_array($r) && array_filter($r, fn($v) => $v !== null && $v !== '');
-                }));
-            }
-
-            $owner->update(['late_fee_setup' => $payload]);   // owners.late_fee is JSON
-            return back()->with('success', 'Late fee settings saved.');
-        }
-
-        // GET: show the form with existing config
-        return view('dashbaordpage.late-fees', [
-            'late_fee' => $owner->late_fee_setup, // array (cast), or null
-        ]);
-    }
-
-
     public function add_fee() {
         return View('dashbaordpage.add-fee');
     } 
@@ -270,16 +242,7 @@ class HomeController extends Controller
             ->paginate(20);
         return View('dashbaordpage.other', compact('invoices'));
     } 
-
-     public function other_invoices(Request $request)
-    {
-        $invoices = OtherInvoice::with('details')
-            ->latest('invoice_date')
-            ->paginate(20);
-
-        return view('dashbaordpage.other_invoices_index', compact('invoices'));
-    }
-
+    
     public function add_other() {
         return View('dashbaordpage.add-other');
     } 
@@ -292,7 +255,68 @@ class HomeController extends Controller
     public function tenant_profile() {
         $auth_tenant = Tenant::whereUserId(Auth::user()->id)->with(['user', 'property', 'unit', 'property.city', 'property.state'])->first();
         return View('tenant_dashboard.tenant-profile', compact('auth_tenant'));
-    } 
+    }
+    
+    public function update(Request $request, Tenant $tenant)
+    {
+        $data = $request->all();
+        if (!empty($data['full_name'])) {
+            $parts = preg_split('/\s+/', trim($data['full_name']), -1, PREG_SPLIT_NO_EMPTY);
+            $firstName = $parts[0] ?? '';
+            $lastName  = count($parts) > 1 ? implode(' ', array_slice($parts, 1)) : '';
+        } else {
+            $firstName = $tenant->user->first_name;
+            $lastName  = $tenant->user->last_name;
+        }
+
+        if ($request->hasFile('profile_image')) {
+            $request->validate([
+                'profile_image' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
+            ]);
+
+            $file = $request->file('profile_image');
+            $filename = time().'_'.$file->getClientOriginalName();
+            $path = $file->storeAs('upload/profile', $filename);
+
+            $tenant->user->profile = $filename;
+        }
+        
+        // Example mapping (match your DB fields)
+        $tenant->user->update([
+            'first_name' => $firstName,
+            'last_name'  => $lastName,
+            'phone_number' => $data['phone_number'] ?? $tenant->user->phone_number,
+            'emergency_phone_number' => $data['emergency_phone_number'] ?? $tenant->user->emergency_phone_number,
+            'emergency_contact_name' => $data['emergency_contact_name'] ?? $tenant->user->emergency_contact_name,
+            'emergency_contact_relationship' => $data['emergency_contact_relationship'] ?? $tenant->user->emergency_contact_relationship,
+        ]);
+
+        $tenant->update([
+            'lease_start_date' => $data['lease_start_date'] ?? $tenant->lease_start_date,
+            'lease_end_date' => $data['lease_end_date'] ?? $tenant->lease_end_date,
+        ]);
+
+        if (isset($data['property_name']) && $tenant->property) {
+            $tenant->property->update([
+                'name' => $data['property_name'] ?? $tenant->property->name, 
+            ]);
+        } 
+        else{
+            $tenant->property()->create(['name' => $data['property_name']]);
+        }
+
+        if (isset($data['unit_name']) && $tenant->unit) {
+            $tenant->unit->update([
+                'name' => $data['unit_name'] ?? $tenant->unit->name,
+            ]);
+        } 
+        else{
+            $tenant->unit()->create(['name' => $data['unit_name']]);
+        }
+
+        return response()->json(['success' => true]);
+    }
+
 
     public function property_details() {
         return View('tenant_dashboard.property-details');
