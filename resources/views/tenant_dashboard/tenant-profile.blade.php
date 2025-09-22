@@ -17,22 +17,25 @@
                 <!-- Profile Header -->
                 <div class="row align-items-center mb-4">
                 <div class="col-auto">
-                    <img src="https://whitesmoke-jackal-127066.hostingersite.com/storage/upload/profile/avatar.png"
-                        alt="Sarah Johnson" class="avatar">
+                    <img src="{{ $auth_tenant->user->profile_url }}" alt="{{ $auth_tenant->user->name }}" class="avatar">
+
+                    <input type="file" name="profile_image" id="profile-image-input" 
+                        accept="image/*" class="form-control form-control inline-input" style="display:none">
+                    
+                    <!-- hidden by default -->
+                    <span id="profile-edit-btn" 
+                        class="position-absolute top-0 end-0 bg-white p-1 rounded-circle d-none" 
+                        style="cursor:pointer;">
+                        <i class="bi bi-pencil"></i>
+                    </span>
                 </div>
                 <div class="col">
                     <h2 class="h3 mb-1 editable" data-field="name">
-                    <span class="inline-text">Sarah Johnson</span>
-                    <input type="text" class="form-control form-control inline-input" value="Sarah Johnson">
+                    <span class="inline-text">{{ $auth_tenant->user->name }}</span>
+                    <input type="text" class="form-control form-control inline-input" value="{{ $auth_tenant->user->name }}">
                     </h2>
 
-                    <span class="info-label"><i class="bi bi-person-badge me-2 text-muted"></i> Tenant ID</span>
-                    <p class="text-muted mb-2 editable" data-field="tenant-id">
-                    <span class="inline-text">TNT-2024-001</span>
-                    <input type="text" class="form-control form-control inline-input" value="TNT-2024-001">
-                    </p>
-
-                    <span class="status-badge status-active">Active Lease</span>
+                    <span class="status-badge status-active">{{ $auth_tenant->user->is_active == 1 ? "Active" : "Not Active" }} Lease</span>
                 </div>
                 <div class="col-auto">
                     <button id="edit-btn" class="btn btn-secondary text-white">Edit</button>
@@ -49,15 +52,15 @@
                         
                         <div class="info-card p-3">
                             <span class="info-label"><i class="bi bi-telephone me-2 text-muted"></i> Phone</span>
-                            <span class="inline-text">+1 (555) 123-4567</span>
-                            <input type="text" class="form-control form-control inline-input" value="+1 (555) 123-4567">
+                            <span class="inline-text">{{ $auth_tenant->user->phone_number ?? 'N/A' }}</span>
+                            <input type="text" class="form-control form-control inline-input" value="{{ $auth_tenant->user->phone_number}}">
                         </div>
                         </div>
                         <div class="col-md-6 editable" data-field="email">
                         <div class="info-card p-3">
                             <span class="info-label"><i class="bi bi-envelope me-2 text-muted"></i> Email</span>
-                            <span class="inline-text">sarah.johnson@email.com</span>
-                            <input type="email" class="form-control form-control inline-input" value="sarah.johnson@email.com">
+                            <span class="inline-text">{{ $auth_tenant->user->email ?? 'N/A' }}</span>
+                            <input type="email" class="form-control form-control inline-input" value="{{ $auth_tenant->user->email ?? 'N/A' }}">
                         </div>
                         </div>
                     </div>
@@ -72,76 +75,23 @@
                     <div class="col-md-4 editable" data-field="emergency-name">
                     <div class="info-card p-3">
                         <span class="info-label"><i class="bi bi-person me-2 text-muted"></i> Name</span>
-                        <span class="inline-text">Michael Johnson</span>
-                        <input type="text" class="form-control form-control inline-input" value="Michael Johnson">
+                        <span class="inline-text">{{ $auth_tenant->user->emergency_contact_name ?? 'N/A' }}</span>
+                        <input type="text" class="form-control form-control inline-input" value="{{ $auth_tenant->user->emergency_contact_name }}">
                     </div>
                     </div>
                     <div class="col-md-4 editable" data-field="emergency-phone">
                     <div class="info-card p-3">
                         <span class="info-label"><i class="bi bi-telephone me-2 text-muted"></i> Phone</span>
-                        <span class="inline-text">+1 (555) 987-6543</span>
-                        <input type="text" class="form-control form-control inline-input" value="+1 (555) 987-6543">
+                        <span class="inline-text">{{ $auth_tenant->user->emergency_phone_number ?? 'N/A' }}</span>
+                        <input type="text" class="form-control form-control inline-input" value="{{ $auth_tenant->user->emergency_phone_number}}">
                     </div>
                     </div>
                     <div class="col-md-4 editable" data-field="emergency-relationship">
                     <div class="info-card p-3">
                         <span class="info-label"><i class="bi bi-heart me-2 text-muted"></i> Relationship</span>
-                        <span class="inline-text">Spouse</span>
-                        <input type="text" class="form-control form-control inline-input" value="Spouse">
+                        <span class="inline-text">{{ $auth_tenant->user->emergency_contact_relationship ?? 'N/A' }}</span>
+                        <input type="text" class="form-control form-control inline-input" value="{{ $auth_tenant->user->emergency_contact_relationship }}">
                     </div>
-                    </div>
-                </div>
-                </div>
-
-                <hr class="divider">
-
-                <!-- Lease Information -->
-                <div class="mb-4 eme-info lease-info">
-                <h3><i class="bi bi-calendar"></i> Lease Information</h3>
-                <div class="row g-3">
-                    <div class="col-md-6 editable" data-field="lease-start">
-                    <div class="info-card p-3">
-                        <span class="info-label"><i class="bi bi-calendar-check me-2 text-muted"></i> Lease Start Date</span>
-                        <span class="inline-text">January 15, 2024</span>
-                        <input type="text" class="form-control form-control inline-input" value="January 15, 2024">
-                    </div>
-                    </div>
-                    <div class="col-md-6 editable" data-field="lease-end">
-                    <div class="info-card p-3">
-                        <span class="info-label"><i class="bi bi-calendar-x me-2 text-muted"></i> Lease End Date</span>
-                        <span class="inline-text">January 14, 2025</span>
-                        <input type="text" class="form-control form-control inline-input" value="January 14, 2025">
-                    </div>
-                    </div>
-                </div>
-                </div>
-
-                <hr class="divider">
-
-                <!-- Property Information -->
-                <div class="mb-4">
-                <h3><i class="bi bi-house"></i> Property Information</h3>
-                <div class="row g-3 eme-info">
-                    <div class="col-md-6 editable" data-field="property">
-                        <div class="info-card p-3">
-                            <span class="info-label"><i class="bi bi-building me-2 text-muted"></i> Property</span>
-                            <span class="inline-text">Sunset Gardens Apartments</span>
-                            <input type="text" class="form-control form-control inline-input" value="Sunset Gardens Apartments">
-                        </div>
-                    </div>
-                    <div class="col-md-6 editable" data-field="address">
-                        <div class="info-card p-3">
-                            <span class="info-label"><i class="bi bi-geo-alt me-2 text-muted"></i> Address</span>
-                            <span class="inline-text">123 Oak Street, Manhattan, NY 10001, United States</span>
-                            <textarea class="form-control form-control inline-input">123 Oak Street, Manhattan, NY 10001, United States</textarea>
-                        </div>
-                    </div>
-                    <div class="col-md-6 editable" data-field="unit">
-                        <div class="info-card p-3">
-                            <span class="info-label"><i class="bi bi-door-open me-2 text-muted"></i> Unit</span>
-                            <span class="inline-text">Unit 24B</span>
-                            <input type="text" class="form-control form-control inline-input" value="Unit 24B">
-                        </div>
                     </div>
                 </div>
                 </div>
@@ -152,34 +102,27 @@
                 <div class="mb-4">
                 <h3><i class="bi bi-file-text"></i> Documents</h3>
                 <div class="row g-3 eme-info">
-                    <div class="col-sm-6 col-lg-3 editable" data-field="doc1">
-                    <div class="document-item">
-                        <span class="info-label"><i class="bi bi-file-earmark-text me-2 text-muted"></i> Document 1</span>
-                        <span class="inline-text">Lease Agreement</span>
-                        <input type="text" class="form-control form-control inline-input" value="Lease Agreement">
-                    </div>
-                    </div>
-                    <div class="col-sm-6 col-lg-3 editable" data-field="doc2">
-                    <div class="document-item">
-                        <span class="info-label"><i class="bi bi-person-badge me-2 text-muted"></i> Document 2</span>
-                        <span class="inline-text">ID Verification</span>
-                        <input type="text" class="form-control form-control inline-input" value="ID Verification">
-                    </div>
-                    </div>
-                    <div class="col-sm-6 col-lg-3 editable" data-field="doc3">
-                    <div class="document-item">
-                        <span class="info-label"><i class="bi bi-cash-stack me-2 text-muted"></i> Document 3</span>
-                        <span class="inline-text">Income Statement</span>
-                        <input type="text" class="form-control form-control inline-input" value="Income Statement">
-                    </div>
-                    </div>
-                    <div class="col-sm-6 col-lg-3 editable" data-field="doc4">
-                    <div class="document-item">
-                        <span class="info-label"><i class="bi bi-shield-check me-2 text-muted"></i> Document 4</span>
-                        <span class="inline-text">Background Check</span>
-                        <input type="text" class="form-control form-control inline-input" value="Background Check">
-                    </div>
-                    </div>
+                    <!-- @php
+                        $documents = [
+                            'Personal Document' => $auth_tenant->user->personal_document,
+                            'IC Document' => $auth_tenant->user->ic_document,
+                            'Miscellaneous' => $auth_tenant->user->miscellaneous,
+                        ];
+                    @endphp
+                    @foreach($documents as $label => $file)
+                        <div class="col-sm-6 col-lg-3 editable" data-field="{{ Str::slug($label, '-') }}">
+                            <div class="document-item">
+                                <span class="info-label">
+                                    <i class="bi bi-file-earmark-text me-2 text-muted"></i> {{ $label }}
+                                </span>
+                                @if($file)
+                                    <a href="{{ asset('storage/upload/tenantdocument/' . $file) }}" target="_blank">{{ $file }}</a>
+                                @else
+                                    <span class="inline-text text-muted">N/A</span>
+                                @endif
+                            </div>
+                        </div>
+                    @endforeach -->
                 </div>
                 </div>
 
@@ -190,46 +133,97 @@
 
 
 <script>
-  const editBtn = document.getElementById("edit-btn");
-  const saveBtn = document.getElementById("save-btn");
-  const cancelBtn = document.getElementById("cancel-btn");
+    const editBtn = document.getElementById("edit-btn");
+    const saveBtn = document.getElementById("save-btn");
+    const cancelBtn = document.getElementById("cancel-btn");
 
-  editBtn.addEventListener("click", () => {
-    document.querySelectorAll(".editable").forEach(el => {
-      el.querySelector(".inline-text").style.display = "none";
-      el.querySelector(".inline-input").style.display = "block";
+    const profileEditBtn = document.getElementById("profile-edit-btn");
+    const profileInput = document.getElementById("profile-image-input");
+    const profilePreview = document.getElementById("profile-preview");
+
+    editBtn.addEventListener("click", () => {
+        document.querySelectorAll(".editable").forEach(el => {
+        el.querySelector(".inline-text").style.display = "none";
+        el.querySelector(".inline-input").style.display = "block";
+        });
+        editBtn.classList.add("d-none");
+        saveBtn.classList.remove("d-none");
+        cancelBtn.classList.remove("d-none");
+        profileEditBtn.classList.remove("d-none");
     });
-    editBtn.classList.add("d-none");
-    saveBtn.classList.remove("d-none");
-    cancelBtn.classList.remove("d-none");
-  });
 
-  cancelBtn.addEventListener("click", () => {
-    document.querySelectorAll(".editable").forEach(el => {
-      const input = el.querySelector(".inline-input");
-      const span = el.querySelector(".inline-text");
-      input.value = span.textContent;
-      input.style.display = "none";
-      span.style.display = "inline";
+
+    profileEditBtn.addEventListener("click", () => {
+        profileInput.click(); // open file selector
+        });
+
+        profileInput.addEventListener("change", () => {
+        const file = profileInput.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = e => {
+            profilePreview.src = e.target.result; // live preview
+            };
+            reader.readAsDataURL(file);
+        }
     });
-    saveBtn.classList.add("d-none");
-    cancelBtn.classList.add("d-none");
-    editBtn.classList.remove("d-none");
-  });
 
-  saveBtn.addEventListener("click", () => {
-    document.querySelectorAll(".editable").forEach(el => {
-      const input = el.querySelector(".inline-input");
-      const span = el.querySelector(".inline-text");
-      span.textContent = input.value;
-      input.style.display = "none";
-      span.style.display = "inline";
+    cancelBtn.addEventListener("click", () => {
+        document.querySelectorAll(".editable").forEach(el => {
+        const input = el.querySelector(".inline-input");
+        const span = el.querySelector(".inline-text");
+        input.value = span.textContent;
+        input.style.display = "none";
+        span.style.display = "inline";
+        });
+        saveBtn.classList.add("d-none");
+        cancelBtn.classList.add("d-none");
+        editBtn.classList.remove("d-none");
+        profileEditBtn.classList.add("d-none");
     });
-    saveBtn.classList.add("d-none");
-    cancelBtn.classList.add("d-none");
-    editBtn.classList.remove("d-none");
-  });
-</script>
 
+    saveBtn.addEventListener("click", () => {
+        const tenantId = saveBtn.dataset.tenantId;
+        const url = `${saveBtn.dataset.baseRoute}`;
+        fetch(url, {
+            method: "POST", 
+            headers: {
+                "X-CSRF-TOKEN": "{{ csrf_token() }}"
+            },
+            body: (() => {
+                const formData = new FormData();
+                // Collect inline inputs
+                document.querySelectorAll(".editable").forEach(el => {
+                    const input = el.querySelector(".inline-input");
+                    if (input && input.name) {
+                        formData.append(input.name, input.value);
+                    }
+                });
 
+                // Add profile image if selected
+                const profileFile = profileInput.files[0];
+                if (profileFile) {
+                    formData.append("profile_image", profileFile);
+                }
+
+                return formData;
+            })()
+        })
+        .then(res => res.json())
+        .then(res => {
+            if (res.success) {
+                alert("Profile updated successfully!");
+                // Update UI...
+            } else {
+                alert("Something went wrong!");
+            }
+        })
+        .catch(err => console.error(err));
+
+        saveBtn.classList.add("d-none");
+        cancelBtn.classList.add("d-none");
+        editBtn.classList.remove("d-none");
+    });
+
+    </script>
 @endsection
