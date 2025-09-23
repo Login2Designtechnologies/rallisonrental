@@ -8,6 +8,7 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Spatie\Permission\Traits\HasRoles;
 use Lab404\Impersonate\Models\Impersonate;
 
@@ -26,12 +27,19 @@ class User extends Authenticatable implements MustVerifyEmail
         'password',
         'type',
         'phone_number',
+        'emergency_contact_name',
+        'emergency_phone_number',
+        'emergency_contact_relationship',
         'profile',
         'lang',
         'subscription',
         'subscription_expire_date',
         'parent_id',
         'is_active',
+        'contract_document',
+        'personal_document',
+        'ic_document',
+        'miscellaneous',
     ];
 
 
@@ -127,11 +135,21 @@ class User extends Authenticatable implements MustVerifyEmail
         'note',
         'logged history',
         'pricing transation',
-        'settings',
+        'settings',        
     ];
 
     public static function parentData()
     {
         return User::find(parentId());
+    }
+
+    public function getProfileUrlAttribute()
+    {
+        if ($this->profile) {
+            return asset('storage/upload/profile/' . $this->profile);
+        }
+
+        // fallback
+        return 'https://whitesmoke-jackal-127066.hostingersite.com/storage/upload/profile/avatar.png';
     }
 }

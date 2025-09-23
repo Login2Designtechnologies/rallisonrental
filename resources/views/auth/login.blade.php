@@ -20,7 +20,7 @@
                 <div class="d-flex justify-content-center">
                     <div class="auth-header">
                         <div class="logo-sec">
-                            <img src="../public/assets/images/authentication/logo2.png" alt="image" class="img-fluid brand-logo" />
+                            <img src="{{ asset('assets/images/authentication/logo2.png') }}" alt="image" class="img-fluid brand-logo">
                         </div>
                         <h2 class="text-secondary"><b>{{ __('Hi, Welcome Back') }} </b></h2>
                         <p class="f-16 mt-2">{{ __('Enter your credentials to continue') }}</p>
