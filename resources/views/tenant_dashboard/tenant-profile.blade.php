@@ -24,22 +24,22 @@
                     
                     <!-- hidden by default -->
                     <span id="profile-edit-btn" 
-                        class="position-absolute top-0 end-0 bg-white p-1 rounded-circle d-none" 
+                        class="position-absolute bg-white p-1 rounded-circle d-none" 
                         style="cursor:pointer;">
                         <i class="bi bi-pencil"></i>
                     </span>
                 </div>
                 <div class="col">
                     <h2 class="h3 mb-1 editable" data-field="name">
-                    <span class="inline-text">{{ $auth_tenant->user->name }}</span>
-                    <input type="text" class="form-control form-control inline-input" value="{{ $auth_tenant->user->name }}">
+                        <span class="inline-text">{{ $auth_tenant->user->name }}</span>
+                        <input type="text" name="full_name" class="form-control form-control inline-input" value="{{ $auth_tenant->user->name }}">
                     </h2>
 
                     <span class="status-badge status-active">{{ $auth_tenant->user->is_active == 1 ? "Active" : "Not Active" }} Lease</span>
                 </div>
                 <div class="col-auto">
                     <button id="edit-btn" class="btn btn-secondary text-white">Edit</button>
-                    <button id="save-btn" class="btn btn-primary d-none">Save</button>
+                    <button id="save-btn" class="btn btn-primary d-none" data-base-route="{{ route('tenant-profile.update', $auth_tenant->id) }}" data-tenant-id="{{ $auth_tenant->user_id }}">Save</button>
                     <button id="cancel-btn" class="btn btn-light d-none">Cancel</button>
                 </div>
                 </div>
@@ -53,14 +53,14 @@
                         <div class="info-card p-3">
                             <span class="info-label"><i class="bi bi-telephone me-2 text-muted"></i> Phone</span>
                             <span class="inline-text">{{ $auth_tenant->user->phone_number ?? 'N/A' }}</span>
-                            <input type="text" class="form-control form-control inline-input" value="{{ $auth_tenant->user->phone_number}}">
+                            <input type="text" name="phone_number" class="form-control form-control inline-input" value="{{ $auth_tenant->user->phone_number}}">
                         </div>
                         </div>
                         <div class="col-md-6 editable" data-field="email">
                         <div class="info-card p-3">
                             <span class="info-label"><i class="bi bi-envelope me-2 text-muted"></i> Email</span>
                             <span class="inline-text">{{ $auth_tenant->user->email ?? 'N/A' }}</span>
-                            <input type="email" class="form-control form-control inline-input" value="{{ $auth_tenant->user->email ?? 'N/A' }}">
+                            <input type="email" name="email" class="form-control form-control inline-input" value="{{ $auth_tenant->user->email ?? 'N/A' }}">
                         </div>
                         </div>
                     </div>
@@ -76,21 +76,21 @@
                     <div class="info-card p-3">
                         <span class="info-label"><i class="bi bi-person me-2 text-muted"></i> Name</span>
                         <span class="inline-text">{{ $auth_tenant->user->emergency_contact_name ?? 'N/A' }}</span>
-                        <input type="text" class="form-control form-control inline-input" value="{{ $auth_tenant->user->emergency_contact_name }}">
+                        <input type="text" name="emergency_contact_name" class="form-control form-control inline-input" value="{{ $auth_tenant->user->emergency_contact_name }}">
                     </div>
                     </div>
                     <div class="col-md-4 editable" data-field="emergency-phone">
                     <div class="info-card p-3">
                         <span class="info-label"><i class="bi bi-telephone me-2 text-muted"></i> Phone</span>
                         <span class="inline-text">{{ $auth_tenant->user->emergency_phone_number ?? 'N/A' }}</span>
-                        <input type="text" class="form-control form-control inline-input" value="{{ $auth_tenant->user->emergency_phone_number}}">
+                        <input type="text" name="emergency_phone_number" class="form-control form-control inline-input" value="{{ $auth_tenant->user->emergency_phone_number}}">
                     </div>
                     </div>
                     <div class="col-md-4 editable" data-field="emergency-relationship">
                     <div class="info-card p-3">
                         <span class="info-label"><i class="bi bi-heart me-2 text-muted"></i> Relationship</span>
                         <span class="inline-text">{{ $auth_tenant->user->emergency_contact_relationship ?? 'N/A' }}</span>
-                        <input type="text" class="form-control form-control inline-input" value="{{ $auth_tenant->user->emergency_contact_relationship }}">
+                        <input type="text" name="emergency_contact_relationship" class="form-control form-control inline-input" value="{{ $auth_tenant->user->emergency_contact_relationship }}">
                     </div>
                     </div>
                 </div>
@@ -102,7 +102,7 @@
                 <div class="mb-4">
                 <h3><i class="bi bi-file-text"></i> Documents</h3>
                 <div class="row g-3 eme-info">
-                    <!-- @php
+                    @php
                         $documents = [
                             'Personal Document' => $auth_tenant->user->personal_document,
                             'IC Document' => $auth_tenant->user->ic_document,
@@ -115,14 +115,18 @@
                                 <span class="info-label">
                                     <i class="bi bi-file-earmark-text me-2 text-muted"></i> {{ $label }}
                                 </span>
-                                @if($file)
-                                    <a href="{{ asset('storage/upload/tenantdocument/' . $file) }}" target="_blank">{{ $file }}</a>
-                                @else
-                                    <span class="inline-text text-muted">N/A</span>
-                                @endif
+                                <span class="inline-text d-block">
+                                    @if($file)
+                                        <a href="{{ asset('storage/upload/tenantdocument/' . $file) }}" target="_blank">{{ $file }}</a>
+                                    @else
+                                        <span class="inline-text text-muted">{{ 'N/A' }}</span>
+                                    @endif
+                                </span>
+                                
+                                <input type="file" name="{{ Str::slug($label, '_') }}" class="form-control inline-input" style="display:none">
                             </div>
                         </div>
-                    @endforeach -->
+                    @endforeach
                 </div>
                 </div>
 
@@ -143,8 +147,8 @@
 
     editBtn.addEventListener("click", () => {
         document.querySelectorAll(".editable").forEach(el => {
-        el.querySelector(".inline-text").style.display = "none";
-        el.querySelector(".inline-input").style.display = "block";
+            el.querySelector(".inline-text").style.display = "none";
+            el.querySelector(".inline-input").style.display = "block";
         });
         editBtn.classList.add("d-none");
         saveBtn.classList.remove("d-none");
@@ -152,12 +156,11 @@
         profileEditBtn.classList.remove("d-none");
     });
 
-
     profileEditBtn.addEventListener("click", () => {
         profileInput.click(); // open file selector
-        });
+    });
 
-        profileInput.addEventListener("change", () => {
+    profileInput.addEventListener("change", () => {
         const file = profileInput.files[0];
         if (file) {
             const reader = new FileReader();
@@ -170,12 +173,22 @@
 
     cancelBtn.addEventListener("click", () => {
         document.querySelectorAll(".editable").forEach(el => {
-        const input = el.querySelector(".inline-input");
-        const span = el.querySelector(".inline-text");
-        input.value = span.textContent;
-        input.style.display = "none";
-        span.style.display = "inline";
+            const input = el.querySelector(".inline-input");
+            const span = el.querySelector(".inline-text");
+
+            if (!input) return;
+
+            if (input.type === "file") {
+                // Reset file input, don’t set textContent
+                input.value = ""; 
+            } else {
+                input.value = span ? span.textContent.trim() : "";
+            }
+
+            input.style.display = "none";
+            if (span) span.style.display = "inline";
         });
+
         saveBtn.classList.add("d-none");
         cancelBtn.classList.add("d-none");
         editBtn.classList.remove("d-none");
@@ -185,6 +198,7 @@
     saveBtn.addEventListener("click", () => {
         const tenantId = saveBtn.dataset.tenantId;
         const url = `${saveBtn.dataset.baseRoute}`;
+        let errors = [];
         fetch(url, {
             method: "POST", 
             headers: {
@@ -196,34 +210,78 @@
                 document.querySelectorAll(".editable").forEach(el => {
                     const input = el.querySelector(".inline-input");
                     if (input && input.name) {
-                        formData.append(input.name, input.value);
+                        if (input.type === "file" && input.files && input.files.length > 0) {
+                            const file = input.files[0];
+                            if (file.size > 4 * 1024 * 1024) {
+                                errors.push(`${input.name} must be less than 4MB`);
+                            }
+                            // Validate file type
+                            const allowedTypes = ["image/jpeg","image/png","image/jpg","application/pdf","application/msword",
+                                                "application/vnd.openxmlformats-officedocument.wordprocessingml.document"];
+                            if (!allowedTypes.includes(file.type)) {
+                                errors.push(`${input.name} has an invalid file type`);
+                            }
+                            formData.append(input.name, file);
+                        } else  if (input.type !== "file") {
+                            // normal text/number/etc inputs
+                            const value = input.value.trim();
+                            if (input.name === "email" && value) {
+                                const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                                if (!emailPattern.test(value)) {
+                                    errors.push("Invalid email format");
+                                }
+                            }
+                            if (input.name === "full_name" && value.length > 100) {
+                                errors.push("Full name cannot exceed 100 characters");
+                            }
+                            // Add more text validations as needed
+                            formData.append(input.name, value);
+                        }
                     }
                 });
 
                 // Add profile image if selected
                 const profileFile = profileInput.files[0];
                 if (profileFile) {
-                    formData.append("profile_image", profileFile);
+                    const file = profileInput.files[0];
+                    if (file.size > 2 * 1024 * 1024) errors.push("Profile image must be less than 2MB");
+                    const allowedProfileTypes = ["image/jpeg","image/png","image/jpg","image/gif"];
+                    if (!allowedProfileTypes.includes(file.type)) errors.push("Profile image has invalid type");
+                    formData.append("profile_image", file);
                 }
-
+                if (errors.length > 0) {
+                    alert(errors.join("\n"));
+                    return; // stop submission if errors exist
+                }
                 return formData;
             })()
         })
-        .then(res => res.json())
+        .then(async res => {
+            const data = await res.json().catch(async () => {
+                const text = await res.text();
+                throw new Error("Server returned invalid JSON:\n" + text);
+            });
+            return data;
+        })
         .then(res => {
             if (res.success) {
                 alert("Profile updated successfully!");
-                // Update UI...
+                saveBtn.classList.add("d-none");
+                cancelBtn.classList.add("d-none");
+                editBtn.classList.remove("d-none");
+            } else if (res.errors) {
+                // Show server-side validation errors
+                const messages = Object.values(res.errors).flat();
+                alert(messages.join("\n"));
             } else {
                 alert("Something went wrong!");
             }
         })
-        .catch(err => console.error(err));
-
-        saveBtn.classList.add("d-none");
-        cancelBtn.classList.add("d-none");
-        editBtn.classList.remove("d-none");
+        .catch(err => {
+            console.error(err);
+            alert("An unexpected error occurred. Check console.");
+        });
     });
 
-    </script>
+</script>
 @endsection

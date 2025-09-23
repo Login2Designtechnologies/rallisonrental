@@ -24,6 +24,7 @@ use Auth;
 
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 class HomeController extends Controller
 {
@@ -226,6 +227,26 @@ class HomeController extends Controller
 
     public function update(Request $request, Tenant $tenant)
     {
+        $validator = Validator::make($request->all(), [
+            'full_name' => 'required|string|max:100',
+            'email' => 'required|email|max:100|unique:users,email,' . $tenant->user->id,
+            'phone_number' => 'required|string|max:20',
+            'emergency_phone_number' => 'required|string|max:20',
+            'emergency_contact_name' => 'required|string|max:100',
+            'emergency_contact_relationship' => 'required|string|max:50',
+            'profile_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'personal_document' => 'nullable|file|mimes:jpeg,png,jpg,pdf,doc,docx|max:4096',
+            'ic_document' => 'nullable|file|mimes:jpeg,png,jpg,pdf,doc,docx|max:4096',
+            'miscellaneous' => 'nullable|file|mimes:jpeg,png,jpg,pdf,doc,docx|max:4096',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors()
+            ], 422);
+        }
+        
         $data = $request->all();
         if (!empty($data['full_name'])) {
             $parts = preg_split('/\s+/', trim($data['full_name']), -1, PREG_SPLIT_NO_EMPTY);
@@ -247,11 +268,34 @@ class HomeController extends Controller
 
             $tenant->user->profile = $filename;
         }
+
+        // Documents (3 types)
+        $docFields = [
+            'personal_document',
+            'ic_document',
+            'miscellaneous',
+        ];
+
+        foreach ($docFields as $field) {
+            if ($request->hasFile($field)) {
+                $request->validate([
+                    $field => 'file|mimes:jpeg,png,jpg,pdf,doc,docx|max:4096',
+                ]);
+
+                $file = $request->file($field);
+                $filename = time().'_'.$file->getClientOriginalName();
+                $file->storeAs('upload/tenantdocument', $filename);
+
+                // Assign to user model
+                $tenant->user->{$field} = $filename;
+            }
+        }
         
         // Example mapping (match your DB fields)
         $tenant->user->update([
             'first_name' => $firstName,
             'last_name'  => $lastName,
+            'email' => $data['email'] ?? $tenant->user->email,
             'phone_number' => $data['phone_number'] ?? $tenant->user->phone_number,
             'emergency_phone_number' => $data['emergency_phone_number'] ?? $tenant->user->emergency_phone_number,
             'emergency_contact_name' => $data['emergency_contact_name'] ?? $tenant->user->emergency_contact_name,

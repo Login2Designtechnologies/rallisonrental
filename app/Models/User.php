@@ -36,6 +36,10 @@ class User extends Authenticatable implements MustVerifyEmail
         'subscription_expire_date',
         'parent_id',
         'is_active',
+        'contract_document',
+        'personal_document',
+        'ic_document',
+        'miscellaneous',
     ];
 
 
@@ -131,11 +135,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'note',
         'logged history',
         'pricing transation',
-        'settings',
-        'contract_document',
-        'personal_document',
-        'ic_document',
-        'miscellaneous',
+        'settings',        
     ];
 
     public static function parentData()
