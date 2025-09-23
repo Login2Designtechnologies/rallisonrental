@@ -25,7 +25,7 @@
         </div>
 
 
-        <div class="table-responsive">
+        <div class="table-responsive">            
             <table class="table table-bordered mb-0" id="custom-bg-table">
               <thead class="table-theme text-center">
                 <tr>
@@ -35,38 +35,21 @@
                 </tr>
               </thead>
               <tbody class="text-center">
+                @foreach ($tenantDocuments as $key => $tenantDocument)
                 <tr>
-                  <td>1</td>
-                  <td>Lease Agreement 2025</td>
+                  <td>{{ $key }}</td>
+                  <td>{{ $tenantDocument->document }}</td>
                   <td>
-                      <a href="#"><i class="ti ti-eye mx-1" data-bs-toggle="tooltip" data-bs-title="View"></i></a>
-                      <a href="#"><i class="ti ti-download mx-1" data-bs-toggle="tooltip" data-bs-title="Download"></i></a>
+                      <a href="{{ asset('storage/upload/tenantdocument/' . $tenantDocument->document) }}" 
+                        target="_blank">
+                        <i class="ti ti-eye mx-1" data-bs-toggle="tooltip" data-bs-title="View"></i>
+                      </a>
+                      <a href="{{ route('tenant.document.download', $tenantDocument->id) }}">
+                        <i class="ti ti-download mx-1" data-bs-toggle="tooltip" data-bs-title="Download"></i>
+                      </a>
                   </td>
                 </tr> 
-                <tr>    
-                  <td>2</td>
-                  <td>Rent Receipt - August</td>
-                  <td>
-                      <a href="#"><i class="ti ti-eye mx-1" data-bs-toggle="tooltip" data-bs-title="View"></i></a>
-                      <a href="#"><i class="ti ti-download mx-1" data-bs-toggle="tooltip" data-bs-title="Download"></i></a>
-                  </td>
-                </tr>
-                <tr>    
-                  <td>3</td>
-                  <td>Maintenance Notice</td>
-                  <td>
-                      <a href="#"><i class="ti ti-eye mx-1" data-bs-toggle="tooltip" data-bs-title="View"></i></a>
-                      <a href="#"><i class="ti ti-download mx-1" data-bs-toggle="tooltip" data-bs-title="Download"></i></a>
-                  </td>
-                </tr>
-                <tr>    
-                  <td>4</td>
-                  <td>Insurance Policy</td>
-                  <td>
-                      <a href="#"><i class="ti ti-eye mx-1" data-bs-toggle="tooltip" data-bs-title="View"></i></a>
-                      <a href="#"><i class="ti ti-download mx-1" data-bs-toggle="tooltip" data-bs-title="Download"></i></a>
-                  </td>
-                </tr>
+                @endforeach
               </tbody>
             </table>
         </div>

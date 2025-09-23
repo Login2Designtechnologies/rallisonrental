@@ -52,4 +52,14 @@ class Property extends Model
         }
         return $totalUnit;
     }
+
+    public function city()
+    {
+        return $this->belongsTo(City::class, 'city_id');
+    }
+
+    public function state()
+    {
+        return $this->belongsTo(State::class, 'state_id');
+    }
 }
