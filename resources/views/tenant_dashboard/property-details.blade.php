@@ -124,9 +124,15 @@
                           </p>
                       </div>
                       <div class="col-md-4 text-md-end mt-3 mt-md-0">
-                      <span class="badge bg-dark">
-                          <i class="bi bi-check-circle"></i> Active Lease
-                      </span>
+                        @if($property->user->is_active == 1)
+                          <span class="badge bg-dark">
+                            <i class="bi bi-check-circle"></i> Active Lease
+                          </span>
+                        @else
+                          <span class="badge bg-dark">
+                            <i class="bi bi-x-circle"></i> Inactive Lease
+                          </span>
+                        @endif
                       </div>
                   </div>
               </div>
@@ -260,7 +266,21 @@
                   </div>
                   <div class="col-6">
                     <h6 class="text-muted">Days Until Expiry</h6>
-                    <p class="fw-bold mb-0">45 days</p>
+                    <p class="fw-bold mb-0">
+                      @if ($property->lease_end_date)
+                        @php
+                            $daysLeft = \Carbon\Carbon::now()->diffInDays(\Carbon\Carbon::parse($property->lease_end_date), false);
+                        @endphp
+
+                        @if ($daysLeft > 0)
+                            {{ $daysLeft }} days
+                        @elseif ($daysLeft === 0)
+                            Expires today
+                        @else
+                            Expired {{ abs($daysLeft) }} days ago
+                        @endif
+                    @endif
+                    </p>
                   </div>
                 </div>
                 <div class="row mt-3">
