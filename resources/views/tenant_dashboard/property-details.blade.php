@@ -88,7 +88,7 @@
                     <i class="bi bi-building"></i>
                 </div>
                 <h6 class="text-muted">Property Name</h6>
-                <p class="mb-0 fw-bold">{{ $property->properties->name }}</p>
+                <p class="mb-0 fw-bold">{{ $property->properties->name ?? 'N/A' }}</p>
               </div>
             </div>
           </div>
@@ -99,7 +99,7 @@
                     <i class="bi bi-door-open"></i>
                 </div>
                 <h6 class="text-muted">Unit Number</h6>
-                <p class="mb-0 fw-bold">{{ $property->units->name }}</p>
+                <p class="mb-0 fw-bold">{{ $property->units->name ?? 'N/A' }}</p>
               </div>
             </div>
           </div>
@@ -108,10 +108,19 @@
                   <div class="row align-items-center">
                       <div class="col-md-8">
                           <h5 class="text-white">Full Address</h5>
-                          <h2 class="h4 mb-2 text-white">{{ $property->properties->name }} - {{ $property->units->name }}</h2>
+                          <h2 class="h4 mb-2 text-white">{{ $property->properties->name ?? '' }} - {{ $property->units->name ?? '' }}</h2>
                           <p class="mb-0">
                             <i class="bi bi-geo-alt me-2"></i>
-                            {{ $property->properties->address }}, {{ $property->properties->city->name }}, {{ $property->properties->country }} {{ $property->properties->zip_code }}
+                            @php
+                              $prop = $property->properties;
+                            @endphp
+
+                            @if($prop && $prop->address)
+                              {{ $prop->address }},
+                              {{ optional($prop->city)->name }},
+                              {{ $prop->country }}
+                              {{ $prop->zip_code }}
+                            @endif
                           </p>
                       </div>
                       <div class="col-md-4 text-md-end mt-3 mt-md-0">
@@ -168,7 +177,7 @@
             <div class="card bg-success text-white shadow-sm w-100">
               <div class="card-body d-flex justify-content-between align-items-center">
                 <div>
-                  <h5 class="ttl">{{ ucfirst($property->units->rent_type) ?? 'N/A' }} Rent</h5>
+                  <h5 class="ttl">{{ optional($property->units)->rent_type ? ucfirst(optional($property->units)->rent_type) : 'N/A' }} Rent</h5>
                   <p class="h4 mb-0">${{ $property->units->rent ?? '0' }}</p>
                 </div>
                 <i class="bi bi-house-fill fs-1"></i>
@@ -218,7 +227,11 @@
                     <i class="bi bi-calendar-check"></i>
                 </div>
                 <h6 class="text-muted">Next Payment Due</h6>
-                <p class="mb-0 fw-bold">{{ \Carbon\Carbon::parse($property->units->payment_due_date)->format('F d, Y') }}</p>
+                <p class="mb-0 fw-bold">
+                  {{ $property->units?->payment_due_date 
+                      ? \Carbon\Carbon::parse($property->units->payment_due_date)->format('F d, Y') 
+                      : 'N/A' }}
+              </p>
               </div>
             </div>
           </div>
@@ -264,14 +277,9 @@
             </div>
           </div>
         </div>
-
       </div>
     </div>
   </div>
 </div>
-
 <!-- ./ -->
-
-
-
 @endsection
