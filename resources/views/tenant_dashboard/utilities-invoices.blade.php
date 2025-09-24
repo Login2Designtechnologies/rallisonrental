@@ -34,36 +34,35 @@
                 </tr>
               </thead>
               <tbody class="text-center">
+                @foreach($utilityInvoices as $key => $utilityInvoice)
                   <tr>
-                      <td>April 2025</td>
-                      <td>₹10,000</td>
+                      <td>{{ \Carbon\Carbon::parse($utilityInvoice->invoice_month)->format('Y m') }}</td>
+                      <td>{{ $utilityInvoice->amount }}</td>
                       <td>
-                          <span class="badge bg-success">Delivered</span>
-                          <!-- <span class="badge bg-warning">Pending</span> -->
+                          @php
+                            $status = strtolower($utilityInvoice->status);
+                            $badgeClass = match ($status) {
+                                'paid'     => 'bg-success',
+                                'pending'  => 'bg-warning',
+                                'overdue'  => 'bg-danger',
+                                'cancelled'=> 'bg-secondary',
+                                default    => 'bg-info',
+                            };
+                        @endphp
+
+                        <span class="badge {{ $badgeClass }}">
+                            {{ ucfirst($utilityInvoice->status) }}
+                        </span>
                       </td>
                       <td>
                           <i class="ti ti-eye mx-1" data-bs-toggle="tooltip" data-bs-title="View"></i>
                           <i class="ti ti-download mx-1" data-bs-toggle="tooltip" data-bs-title="Download"></i>
                       </td>
                   </tr>
-                  <tr>    
-                      <td>May 2025</td>
-                      <td>₹8,000</td>
-                      <td>
-                          <span class="badge bg-warning text-dark">Pending</span>
-                      </td>
-                      <td>
-                          <i class="ti ti-eye mx-1" data-bs-toggle="tooltip" data-bs-title="View"></i>
-                          <i class="ti ti-download mx-1" data-bs-toggle="tooltip" data-bs-title="Download"></i>
-                      </td>
-                  </tr>
+                  @endforeach                  
               </tbody>
             </table>
         </div>
-
-
-
-
       </div>
     </div>
   </div>

@@ -199,6 +199,8 @@ Route::get('tenant-documents', [HomeController::class, 'tenant_documents'])->nam
         'XSS',
     ]
 );
+Route::get('tenant/document/{id}/download', [HomeController::class, 'download'])->name('tenant.document.download');
+
 Route::get('utilities-invoices', [HomeController::class, 'utilities_invoices'])->name('utilities_invoices')->middleware(
     [
         'XSS',

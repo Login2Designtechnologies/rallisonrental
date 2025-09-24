@@ -88,7 +88,7 @@
                     <i class="bi bi-building"></i>
                 </div>
                 <h6 class="text-muted">Property Name</h6>
-                <p class="mb-0 fw-bold">Sunset Gardens Apartments</p>
+                <p class="mb-0 fw-bold">{{ $property->properties->name ?? 'N/A' }}</p>
               </div>
             </div>
           </div>
@@ -99,7 +99,7 @@
                     <i class="bi bi-door-open"></i>
                 </div>
                 <h6 class="text-muted">Unit Number</h6>
-                <p class="mb-0 fw-bold">Unit 24B</p>
+                <p class="mb-0 fw-bold">{{ $property->units->name ?? 'N/A' }}</p>
               </div>
             </div>
           </div>
@@ -108,16 +108,31 @@
                   <div class="row align-items-center">
                       <div class="col-md-8">
                           <h5 class="text-white">Full Address</h5>
-                          <h2 class="h4 mb-2 text-white">Sunset Gardens Apartments - Unit 24B</h2>
+                          <h2 class="h4 mb-2 text-white">{{ $property->properties->name ?? '' }} - {{ $property->units->name ?? '' }}</h2>
                           <p class="mb-0">
                             <i class="bi bi-geo-alt me-2"></i>
-                            123 Oak Street, Manhattan, New York 10001
+                            @php
+                              $prop = $property->properties;
+                            @endphp
+
+                            @if($prop && $prop->address)
+                              {{ $prop->address }},
+                              {{ optional($prop->city)->name }},
+                              {{ $prop->country }}
+                              {{ $prop->zip_code }}
+                            @endif
                           </p>
                       </div>
                       <div class="col-md-4 text-md-end mt-3 mt-md-0">
-                      <span class="badge bg-dark">
-                          <i class="bi bi-check-circle"></i> Active Lease
-                      </span>
+                        @if($property->user->is_active == 1)
+                          <span class="badge bg-dark">
+                            <i class="bi bi-check-circle"></i> Active Lease
+                          </span>
+                        @else
+                          <span class="badge bg-dark">
+                            <i class="bi bi-x-circle"></i> Inactive Lease
+                          </span>
+                        @endif
                       </div>
                   </div>
               </div>
@@ -136,7 +151,7 @@
                       <i class="bi bi-calendar-range"></i>
                   </div>
                 <h6 class="text-muted">Lease Period</h6>
-                <p class="mb-0 fw-bold">January 15, 2024 - January 14, 2025</p>
+                <p class="mb-0 fw-bold">{{ \Carbon\Carbon::parse($property->lease_start_date)->format('F d, Y') }} - {{ \Carbon\Carbon::parse($property->lease_end_date)->format('F d, Y') }}</p>
               </div>
             </div>
           </div>
@@ -168,8 +183,8 @@
             <div class="card bg-success text-white shadow-sm w-100">
               <div class="card-body d-flex justify-content-between align-items-center">
                 <div>
-                  <h5 class="ttl">Monthly Rent</h5>
-                  <p class="h4 mb-0">$2,500</p>
+                  <h5 class="ttl">{{ optional($property->units)->rent_type ? ucfirst(optional($property->units)->rent_type) : 'N/A' }} Rent</h5>
+                  <p class="h4 mb-0">${{ $property->units->rent ?? '0' }}</p>
                 </div>
                 <i class="bi bi-house-fill fs-1"></i>
               </div>
@@ -180,7 +195,7 @@
               <div class="card-body d-flex justify-content-between align-items-center">
                 <div>
                   <h5 class="ttl">Security Deposit</h5>
-                  <p class="h4 mb-0">$5,000</p>
+                  <p class="h4 mb-0">${{ $property->units->deposit_amount ?? '0' }}</p>
                 </div>
                 <i class="bi bi-shield-check fs-1"></i>
               </div>
@@ -218,7 +233,11 @@
                     <i class="bi bi-calendar-check"></i>
                 </div>
                 <h6 class="text-muted">Next Payment Due</h6>
-                <p class="mb-0 fw-bold">December 1, 2024</p>
+                <p class="mb-0 fw-bold">
+                  {{ $property->units?->payment_due_date 
+                      ? \Carbon\Carbon::parse($property->units->payment_due_date)->format('F d, Y') 
+                      : 'N/A' }}
+              </p>
               </div>
             </div>
           </div>
@@ -235,37 +254,52 @@
                 <div class="row">
                   <div class="col-6">
                     <h6 class="text-muted">Current Status</h6>
-                    <span class="badge bg-success">
-                      <i class="bi bi-check-circle"></i> Active
-                    </span>
+                    @if($property->status == '0')
+                      <span class="badge bg-success">
+                        <i class="bi bi-check-circle"></i> Active
+                      </span>
+                    @else
+                      <span class="badge bg-danger">
+                        <i class="bi bi-x-circle"></i> Inactive
+                      </span>
+                    @endif
                   </div>
                   <div class="col-6">
                     <h6 class="text-muted">Days Until Expiry</h6>
-                    <p class="fw-bold mb-0">45 days</p>
+                    <p class="fw-bold mb-0">
+                      @if ($property->lease_end_date)
+                        @php
+                            $daysLeft = \Carbon\Carbon::now()->diffInDays(\Carbon\Carbon::parse($property->lease_end_date), false);
+                        @endphp
+
+                        @if ($daysLeft > 0)
+                            {{ $daysLeft }} days
+                        @elseif ($daysLeft === 0)
+                            Expires today
+                        @else
+                            Expired {{ abs($daysLeft) }} days ago
+                        @endif
+                    @endif
+                    </p>
                   </div>
                 </div>
                 <div class="row mt-3">
                   <div class="col-6">
                     <h6 class="text-muted">Lease Start</h6>
-                    <p class="mb-0 fw-bold">January 15, 2024</p>
+                    <p class="mb-0 fw-bold">{{ \Carbon\Carbon::parse($property->lease_start_date)->format('F d, Y') }}</p>
                   </div>
                   <div class="col-6">
                     <h6 class="text-muted">Lease End</h6>
-                    <p class="mb-0 fw-bold">January 14, 2025</p>
+                    <p class="mb-0 fw-bold">{{ \Carbon\Carbon::parse($property->lease_end_date)->format('F d, Y') }}</p>
                   </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-
       </div>
     </div>
   </div>
 </div>
-
 <!-- ./ -->
-
-
-
 @endsection

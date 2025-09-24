@@ -19,8 +19,8 @@ class Tenant extends Model
         'state',
         'city',
         'zip_code',
-        'property',
-        'unit',
+        'property_id',
+        'property_unit_id',
         'lease_start_date',
         'lease_end_date',
         'is_active',
@@ -28,11 +28,11 @@ class Tenant extends Model
 
     public function properties()
     {
-        return $this->hasOne('App\Models\Property', 'id', 'property');
+        return $this->hasOne('App\Models\Property', 'id', 'property_id');
     }
     public function units()
     {
-        return $this->hasOne('App\Models\PropertyUnit', 'id', 'unit');
+        return $this->hasOne('App\Models\PropertyUnit', 'id', 'property_unit_id');
     }
 
     public function user()

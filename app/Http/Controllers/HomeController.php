@@ -20,10 +20,13 @@ use App\Models\User;
 use App\Models\FAQ;
 use App\Models\Page;
 use App\Models\HomePage;
+use App\Models\TenantDocument;
+use App\Models\UtilityInvoice;
 use Auth;
 
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
 class HomeController extends Controller
@@ -306,9 +309,11 @@ class HomeController extends Controller
     }
 
     public function property_details() {
-        return View('tenant_dashboard.property-details');
+        $property = Tenant::where('user_id', Auth::user()->id)->with(['properties', 'units', 'properties.city', 'properties.state'])->first();
+        return View('tenant_dashboard.property-details', compact('property'));
     } 
     public function payment_section() {
+
         return View('tenant_dashboard.payment-section');
     } 
     
@@ -325,10 +330,26 @@ class HomeController extends Controller
         return View('tenant_dashboard.tenant-notices');
     } 
     public function tenant_documents() {
-        return View('tenant_dashboard.tenant-documents');
+        $tenantDocuments = TenantDocument::where('tenant_id', Auth::user()->tenants->id)->get();
+        return View('tenant_dashboard.tenant-documents', compact('tenantDocuments'));
     } 
+
+    public function download($id)
+    {
+        $tenantDocument = TenantDocument::findOrFail($id);
+
+        $filePath = 'upload/tenantdocument/' . $tenantDocument->document;
+
+        if (Storage::exists($filePath)) {
+            return Storage::download($filePath, $tenantDocument->document);
+        }
+
+        return back()->with('error', 'File not found.');
+    }
+
     public function utilities_invoices() {
-        return View('tenant_dashboard.utilities-invoices');
+        $utilityInvoices = UtilityInvoice::where('tenant_id', Auth::user()->tenants->id)->get();
+        return View('tenant_dashboard.utilities-invoices', compact('utilityInvoices'));
     }
     public function tenant_late_fees() {
         return View('tenant_dashboard.tenant-late-fees');
