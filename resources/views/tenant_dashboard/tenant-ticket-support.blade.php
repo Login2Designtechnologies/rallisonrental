@@ -10,7 +10,6 @@
 @section('content')
 <div class="card border bg-custom w-100">
     <div class="card-body">
-       
         <div>
             <form action="" id="" class="search-form">
                 <div class="row g-3">
@@ -34,54 +33,38 @@
             <table class="table table-bordered align-middle" data-sorting="true">
             <thead class="table-light">
                 <tr>
-                <th>Subject</th>
-                <th data-breakpoints="lg" data-type="number">Ticket ID</th>
-                <th data-breakpoints="lg" data-type="number">Sending Date</th>
-                <th data-breakpoints="lg" data-type="number">User</th>
-                <th data-breakpoints="lg" data-type="number">Status</th>
-                <th data-breakpoints="lg" data-type="number">Last reply</th>
-                <th>Options</th>
+                    <th>Subject</th>
+                    <th data-breakpoints="lg" data-type="number">Sending Date</th>
+                    <th data-breakpoints="lg" data-type="number">Category</th>
+                    <th data-breakpoints="lg" data-type="number">Status</th>
+                    <th>Options</th>
                 </tr>
             </thead>
             <tbody>
-                <tr>
-                <td>Password Reset</td>
-                <td>1002</td>
-                <td>08-25-2025</td>
-                <td>Priya Singh</td>
-                <td><span class="badge bg-warning text-dark">Pending</span></td>
-                <td>08-25-2025</td>
-                <td>
-                    <div class="d-flex align-items-center gap-2 action-button">
-                    
-                    <a href="{{url('tenant-view-ticket')}}">
-                                <i class="ti ti-eye me-2 editRow fs-4" data-bs-toggle="tooltip" title="Edit"></i>
-                            </a>
-                    </div>
-                </td>
-                </tr>
-                <tr>
-                <td>Login Issue</td>
-                <td>1003</td>
-                <td>08-24-2025</td>
-                <td>Amit Sharma</td>
-                <td><span class="badge bg-success">Resolved</span></td>
-                <td>08-24-2025</td>
-                <td>
-                    <div class="d-flex align-items-center gap-2 action-button">
-                    <a href="{{url('tenant-view-ticket')}}">
-                                <i class="ti ti-eye me-2 editRow fs-4" data-bs-toggle="tooltip" title="Edit"></i>
-                            </a>
-                    </div>
-                </td>
-                </tr>
+                @foreach ($tickets as $ticket)                
+                    <tr>
+                        <td>{{ $ticket->subject }}</td>
+                        <td>{{ \Carbon\Carbon::parse($ticket->created_at)->format('m-d-Y') }}</td>
+                        <td>{{ $ticket->category }}</td>
+                        <td>{{ $ticket->status }}</td>
+                       <td>
+                            <div class="d-flex align-items-center gap-2 action-button">
+                            
+                            <a href="{{url('tenant-view-ticket')}}">
+                                        <i class="ti ti-pencil me-2 editRow fs-4" data-bs-toggle="tooltip" title="Edit"></i>
+                                    </a>
+                            @if(!empty($ticket->photo))
+                                <a href="{{ asset('storage/upload/tickets/' . $ticket->photo) }}" target="_blank">
+                                    <i class="ti ti-eye me-2 editRow fs-4" data-bs-toggle="tooltip" title="View"></i>
+                                </a>
+                            @endif
+                            </div>
+                        </td>
+                    </tr>
+                @endforeach
             </tbody>
             </table>
         </div>
-        
     </div>
 </div>
-
-
-
 @endsection

@@ -124,11 +124,12 @@
                                 </thead>
 
                                 <tbody>
+                                    @foreach($payments as $payment)
                                     <tr>
-                                        <td class="fw-medium py-3 px-4">April 2025</td>
+                                        <td class="fw-medium py-3 px-4">{{ \Carbon\Carbon::parse($payment->start_date)->format('Y m') }}</td>
                                         <td class="fw-semibold py-3 px-4">$1,500.00</td>
-                                        <td class="py-3 px-4">$300.00</td>
-                                        <td class="py-3 px-4">$1,500.00</td>
+                                        <td class="py-3 px-4">${{ $payment->contract_renewal_amount }}</td>
+                                        <td class="py-3 px-4">{{ $payment->security_deposit }}</td>
                                         <td class="py-3 px-4">$110.00</td>
                                         <td class="py-3 px-4">
                                             <div class="dropdown">
@@ -152,91 +153,7 @@
                                             </div>
                                         </td>
                                     </tr>
-                                    <tr>
-                                        <td class="fw-medium py-3 px-4">April 2025</td>
-                                        <td class="fw-semibold py-3 px-4">$1,500.00</td>
-                                        <td class="py-3 px-4">$300.00</td>
-                                        <td class="py-3 px-4">$1,500.00</td>
-                                        <td class="py-3 px-4">$110.00</td>
-                                        <td class="py-3 px-4">
-                                            <div class="dropdown">
-                                                <button class="btn btn-sm dropdown-toggle btn-warning" type="button" data-bs-toggle="dropdown" style="min-width: 100px;">
-                                                    Pending
-                                                </button>
-                                                <ul class="dropdown-menu">
-                                                    <li><a class="dropdown-item" href="#">Paid</a></li>
-                                                    <li><a class="dropdown-item" href="#">Pending</a></li>
-                                                </ul>
-                                            </div>
-                                        </td>
-                                        <td class="py-3 px-4">
-                                            <div class="d-flex gap-2">
-                                                <button class="btn btn-outline-secondary btn-sm">
-                                                    <i class="bi bi-eye"></i>
-                                                </button>
-                                                <button class="btn btn-outline-secondary btn-sm">
-                                                    <i class="bi bi-download"></i>
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-
-                                    <tr class="table-light">
-                                        <td class="fw-medium py-3 px-4">May 2025</td>
-                                        <td class="fw-semibold py-3 px-4">$1,500.00</td>
-                                        <td class="py-3 px-4">$300.00</td>
-                                        <td class="py-3 px-4">$1,500.00</td>
-                                        <td class="py-3 px-4">$110.00</td>
-                                        <td class="py-3 px-4">
-                                            <div class="dropdown">
-                                                <button class="btn btn-sm dropdown-toggle btn-success" type="button" data-bs-toggle="dropdown" style="min-width: 100px;">
-                                                    Paid
-                                                </button>
-                                                <ul class="dropdown-menu">
-                                                    <li><a class="dropdown-item" href="#">Paid</a></li>
-                                                    <li><a class="dropdown-item" href="#">Pending</a></li>
-                                                </ul>
-                                            </div>
-                                        </td>
-                                        <td class="py-3 px-4">
-                                            <div class="d-flex gap-2">
-                                                <button class="btn btn-outline-secondary btn-sm">
-                                                    <i class="bi bi-eye"></i>
-                                                </button>
-                                                <button class="btn btn-outline-secondary btn-sm">
-                                                    <i class="bi bi-download"></i>
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    <tr class="table-light">
-                                        <td class="fw-medium py-3 px-4">May 2025</td>
-                                        <td class="fw-semibold py-3 px-4">$1,500.00</td>
-                                        <td class="py-3 px-4">$300.00</td>
-                                        <td class="py-3 px-4">-</td>
-                                        <td class="py-3 px-4">$110.00</td>
-                                        <td class="py-3 px-4">
-                                            <div class="dropdown">
-                                                <button class="btn btn-sm dropdown-toggle btn-success" type="button" data-bs-toggle="dropdown" style="min-width: 100px;">
-                                                    Paid
-                                                </button>
-                                                <ul class="dropdown-menu">
-                                                    <li><a class="dropdown-item" href="#">Paid</a></li>
-                                                    <li><a class="dropdown-item" href="#">Pending</a></li>
-                                                </ul>
-                                            </div>
-                                        </td>
-                                        <td class="py-3 px-4">
-                                            <div class="d-flex gap-2">
-                                                <button class="btn btn-outline-secondary btn-sm">
-                                                    <i class="bi bi-eye"></i>
-                                                </button>
-                                                <button class="btn btn-outline-secondary btn-sm">
-                                                    <i class="bi bi-download"></i>
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
+                                    @endforeach                                    
                                 </tbody>
                             </table>
                         </div>

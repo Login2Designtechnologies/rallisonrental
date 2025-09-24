@@ -179,16 +179,21 @@ Route::get('tenant-ticket-support', [HomeController::class, 'tenant_ticket_suppo
         'XSS',
     ]
 );
+
 Route::get('tenant-view-ticket', [HomeController::class, 'tenant_view_ticket'])->name('tenant_view_ticket')->middleware(
     [
         'XSS',
     ]
-);
+)->name('tenant-view-ticket');
+
 Route::get('add-tenant-ticket', [HomeController::class, 'add_tenant_ticket'])->name('add_tenant_ticket')->middleware(
     [
         'XSS',
     ]
 );
+
+Route::post('/tickets', [HomeController::class, 'store'])->name('tickets.store');
+
 Route::get('tenant-notices', [HomeController::class, 'tenant_notices'])->name('tenant_notices')->middleware(
     [
         'XSS',
