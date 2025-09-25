@@ -382,7 +382,7 @@
     var errorImg='{{ asset("assets/images/notification/high_priority-48.png") }}';
 </script>
 
-<script src="https://cdn.jsdelivr.net/npm/vanillajs-datepicker@1.3.4/dist/js/datepicker-full.min.js"></script>/''''
+<script src="https://cdn.jsdelivr.net/npm/vanillajs-datepicker@1.3.4/dist/js/datepicker-full.min.js"></script>
 <script src="{{ asset('js/custom.js?v=sadasd8798') }}"></script>
 <!-- Vanillajs Datepicker -->
 

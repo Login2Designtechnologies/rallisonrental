@@ -199,6 +199,7 @@ Route::get('tenant-documents', [HomeController::class, 'tenant_documents'])->nam
         'XSS',
     ]
 );
+
 Route::get('tenant/document/{id}/download', [HomeController::class, 'download'])->name('tenant.document.download');
 
 Route::get('utilities-invoices', [HomeController::class, 'utilities_invoices'])->name('utilities_invoices')->middleware(
@@ -401,6 +402,9 @@ Route::group(
         Route::post('unit/direct-store', [PropertyController::class, 'unitdirectStore'])->name('unit.direct-store');
         Route::get('property/{pid}/unit/{id}/edit', [PropertyController::class, 'unitEdit'])->name('unit.edit');
         Route::get('units', [PropertyController::class, 'units'])->name('unit.index');
+        Route::get('all_invoices', [PropertyController::class, 'all_invoices'])->name('utility-invoices.all');
+        Route::get('all_invoicescreate', [PropertyController::class, 'all_invoicescreate'])->name('utility-invoices.create');
+        Route::get('utility_invoicesgenerate', [PropertyController::class, 'utility_invoicesgenerate'])->name('utility-invoices.generate');
         Route::get('get_cities/{state_id}', [PropertyController::class, 'get_cities'])->name('get_cities');
         Route::put('property/{pid}/unit/{id}/update', [PropertyController::class, 'unitUpdate'])->name('unit.update');
         Route::delete('property/{pid}/unit/{id}/destroy', [PropertyController::class, 'unitDestroy'])->name('unit.destroy');

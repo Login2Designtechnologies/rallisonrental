@@ -15,6 +15,13 @@
     .dt-buttons.btn-group.flex-wrap {
         display: none;
     }
+    @media (min-width: 991px) {
+  div.dt-container div.dt-search {
+    position: absolute;
+    top: 28px;
+    left: 100px;
+  }
+}
 </style>
 
 <div class="card bg-custom border p-25">

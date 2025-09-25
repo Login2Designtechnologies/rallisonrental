@@ -50,12 +50,14 @@
     <link rel="stylesheet" href="{{ asset('assets/fonts/fontawesome.css') }}" />
     <link rel="stylesheet" href="{{ asset('assets/fonts/material.css') }}" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="{{ asset('assets/css/style.css?v=dasddsdsdsdd%') }}" id="main-style-link" />
+    <link rel="stylesheet" href="{{ asset('assets/css/style.css?v=dasddsdsdsdd%dsda') }}" id="main-style-link" />
     <link rel="stylesheet" href="{{ asset('assets/css/style-preset.css') }}" />
     <link rel="stylesheet" href="{{ asset('assets/css/plugins/dropzone.min.css') }}" />
 
     @stack('css-page')
-    <link href="{{ asset('css/custom.css') }}"  rel="stylesheet">
-    <link href="{{ asset('css/l2dstyle.css?v=sdd80980sdd%') }}"  rel="stylesheet">
+    <link href="{{ asset('css/custom.css') }}?v={{ time() }}" rel="stylesheet">
+    <!-- <link href="{{ asset('css/custom.css') }}"  rel="stylesheet"> -->
+    <link href="{{ asset('css/l2dstyle.css') }}?v={{ time() }}" rel="stylesheet">
+    <!-- <link href="{{ asset('css/l2dstyle.css?v=sdd80980sdd%') }}"  rel="stylesheet"> -->
 
 </head>

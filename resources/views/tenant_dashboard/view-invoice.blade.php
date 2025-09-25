@@ -86,12 +86,12 @@
     </div>
 
     <!-- Footer -->
-    <div class="d-flex justify-content-between">
-      <div>
+    <div class="d-flex justify-content-between row g-2">
+      <div class="col-md-6">
         <p class="mb-1"><strong>Terms:</strong> Other</p>
         <p class="mb-0"><strong>Payment Received Date:</strong> Not Paid</p>
       </div>
-      <div class="text-end">
+      <div class="col-md-6 text-end">
         <button class="btn btn-danger">
           <i class="bi bi-send me-1"></i> Send Late Fee Invoice
         </button>

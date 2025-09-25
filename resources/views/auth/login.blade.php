@@ -14,6 +14,10 @@
     @php
         $registerPage = getSettingsValByName('register_page');
     @endphp
+
+    <style>
+        html,body{overflow:hidden}
+    </style>
     <div class="card">
         <div class="card-body">
             <div class="row">

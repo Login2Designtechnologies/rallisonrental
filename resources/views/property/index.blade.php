@@ -91,7 +91,7 @@
 
 
 @section('content')
-<div class="card bg-custom border p-25">
+<div class="card bg-custom border p-25 properties-dtl">
     <div class="row">
         <div class="col-sm-12">
             <div class="">
