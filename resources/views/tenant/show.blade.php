@@ -361,11 +361,11 @@
                     @if(!empty($tenantcontracts->end_date))
                             <input type="text" style="pointer-events: none;"
                                    class="form-control"
-                                   placeholder="MM-DD-YYYY" autocomplete="off" value="{{$tenantcontracts->end_date}}">
+                                   placeholder="MM-DD-YYYY" autocomplete="off" value="{{$tenantcontracts->end_date ?? ''}}">
                     @else
                             <input type="text" id="end_date" name="end_date"
                                    class="form-control @error('end_date') is-invalid @enderror"
-                                   placeholder="MM-DD-YYYY" autocomplete="off" value="{{$tenantcontracts->end_date}}">
+                                   placeholder="MM-DD-YYYY" autocomplete="off" value="{{$tenantcontracts->end_date ?? ''}}">
                     @endif
                             @error('end_date')
                                 <div class="invalid-feedback d-block">{{ $message }}</div>
@@ -472,7 +472,7 @@
                             <div class="invalid-feedback d-block">{{ $message }}</div>
                         @enderror
 
-                        @if ($isEdit && $tenantcontracts->contract_doc)
+                        @if ($isEdit && optional($tenantcontracts)->contract_doc)
                             <div class="mt-2">
                                 <a href="{{ asset(Storage::url('upload/contracts/' . $tenantcontracts->contract_doc)) }}" target="_blank" class="small">
                                     View current contract
@@ -623,8 +623,10 @@
 <tfoot class="table-secondary text-center">
 <tr>
     <th>Total</th>
-    <th>${{ number_format($tenantcontracts->standard_rent * (is_array($period) ? count($period) : 0), 2) }}</th>
-    <th>${{ number_format($tenantcontracts->security_deposit, 2) }}</th>
+    <th>${{ number_format((optional($tenantcontracts)->standard_rent ?? 0) * (is_array($period) ? count($period) : 0), 2) }}</th>
+    <th>
+        ${{ number_format($tenantcontracts?->security_deposit ?? 0, 2) }}
+    </th>
     <th>$0.00</th>
     <th>${{ number_format($propertyAmenitiesTotal * count($period ?? []), 2) }}</th>
     <th></th>

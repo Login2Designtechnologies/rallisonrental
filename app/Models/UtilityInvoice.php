@@ -21,7 +21,7 @@ class UtilityInvoice extends Model
 
     // Relationships
     public function property() { return $this->belongsTo(Property::class); }
-    public function owner()    { return $this->belongsTo(Owner::class); }
+    public function user()    { return $this->belongsTo(User::class); }
     public function tenant()   { return $this->belongsTo(Tenant::class); }
     public function details() {  return $this->hasMany(UtilityInvoiceDetail::class, 'invoice_id');}
 

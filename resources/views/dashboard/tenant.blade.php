@@ -91,9 +91,9 @@ $settings=settings();
         </div>
     </div> -->
 
-    <div class="row">
-        <div class="col-lg-3 col-md-6">
-            <div class="card bg-custom radius-40 bg-1 bg-img">
+    <div class="row g-3 pt-0">
+        <div class="col-lg-3 col-md-6 d-flex">
+            <div class="card bg-custom radius-40 bg-1 bg-img fw-100">
                 <div class="card-body">
                     <div class="d-flex align-items-center">
                         <div class="flex-shrink-0">
@@ -114,8 +114,8 @@ $settings=settings();
             </div>
         </div>
 
-        <div class="col-lg-3 col-md-6">
-            <div class="card bg-custom radius-40 bg-2 bg-img">
+        <div class="col-lg-3 col-md-6 d-flex">
+            <div class="card bg-custom radius-40 bg-2 bg-img fw-100">
                 <div class="card-body">
                     <div class="d-flex align-items-center">
                         <div class="flex-shrink-0">
@@ -135,8 +135,8 @@ $settings=settings();
         </div>
 
 
-        <div class="col-lg-3 col-md-6">
-            <div class="card bg-custom radius-40 bg-3 bg-img">
+        <div class="col-lg-3 col-md-6 d-flex">
+            <div class="card bg-custom radius-40 bg-3 bg-img fw-100">
                 <div class="card-body">
                     <div class="d-flex align-items-center">
                         <div class="flex-shrink-0">
@@ -156,8 +156,8 @@ $settings=settings();
             </div>
         </div>
 
-        <div class="col-lg-3 col-md-6">
-            <div class="card bg-custom radius-40 bg-4 bg-img">
+        <div class="col-lg-3 col-md-6 d-flex">
+            <div class="card bg-custom radius-40 bg-4 bg-img fw-100">
                 <div class="card-body">
                     <div class="d-flex align-items-center">
                         <div class="flex-shrink-0">

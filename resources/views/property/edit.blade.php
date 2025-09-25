@@ -100,6 +100,14 @@
     </ul>
 @endsection
 @section('content')
+<style>
+    .img-prod {
+  width: 100px;
+  height: 50px !important;
+  object-fit: cover;
+}
+
+</style>
 <div class="card bg-custom border p-25">
     <div class="row">
         <div class="col-md-12">
@@ -245,6 +253,7 @@
                                         <tr>
                                             <th class="text-center">#</th>
                                             <th class="text-center">Amenity Name</th>
+                                            <th class="text-center">Cost</th>
                                             <th class="text-center">Status</th>
                                             <th class="text-center">Action</th>
                                         </tr>
@@ -254,6 +263,7 @@
                                             <tr id="row-{{ $amenity->id }}">
                                                 <td class="text-center">{{ $index + 1 }}</td>
                                                 <td class="text-center">{{ $amenity->name }}</td>
+                                                <td class="text-center">$ {{ $amenity->price }}</td>
                                                 <td class="text-center">
                                                     {{ $amenity->status == 1 ? 'Active' : 'Inactive' }}
                                                 </td>
@@ -261,6 +271,7 @@
                                                    <button type="button" class="btn btn-sm btn-warning editAmenityBtn" 
                                                         data-id="{{ $amenity->id }}" 
                                                         data-name="{{ $amenity->name }}" 
+                                                        data-price="{{ $amenity->price }}" 
                                                         data-status="{{ $amenity->status }}"
                                                         data-propertyid="{{ $property->id }}">
                                                     <i class="ti ti-edit"></i>
@@ -426,107 +437,109 @@
 
 
 <script>
-    $(document).on('click', '#saveUtilities', function (e) {
-        e.preventDefault();
+    // $(document).on('click', '#saveUtilities', function (e) {
+    //     e.preventDefault();
 
-        $.ajax({
-            url: "{{ url('propertyutilities-store2') }}",
-            type: "POST",
-            data: $('#UtilitiesForm').serialize(),
-            success: function (response) {
-                if (response.success) {
-                    $('#addUtilitiesModal').modal('hide');
-                    $('#UtilitiesForm')[0].reset();
+    //     $.ajax({
+    //         url: "{{ url('propertyutilities-store2') }}",
+    //         type: "POST",
+    //         data: $('#UtilitiesForm').serialize(),
+    //         success: function (response) {
+    //             if (response.success) {
+    //                 $('#addUtilitiesModal').modal('hide');
+    //                 $('#UtilitiesForm')[0].reset();
 
-                    alert(response.message);
+    //                 alert(response.message);
 
-                    // ✅ Append multiple rows if multiple sub categories
-                    response.data.forEach(function(item) {
-                        let rowCount = $("#UtilitiesTable tbody tr").length + 1;
+    //                 // ✅ Append multiple rows if multiple sub categories
+    //                 response.data.forEach(function(item) {
+    //                     let rowCount = $("#UtilitiesTable tbody tr").length + 1;
 
-                        let statusText = item.status == 1 ? 'Active' : 'Inactive';
-                        let subCatText = item.sub_category == 1 ? 'Yes' : 'No';
-                        let subCatNames = item.sub_category_name ?? '';
+    //                     let statusText = item.status == 1 ? 'Active' : 'Inactive';
+    //                     let subCatText = item.sub_category == 1 ? 'Yes' : 'No';
+    //                     let subCatNames = item.sub_category_name ?? '';
 
-                        $('#UtilitiesTable tbody').append(`
-                            <tr id="row2-${item.id}">
-                                <td class="text-center">${rowCount}</td>
-                                <td>${item.name}</td>
-                                <td>${subCatText}</td>
-                                <td>${subCatNames}</td>
-                                <td>${statusText}</td>
-                                <td class="text-center">
-                                    <button type="button" class="btn btn-sm btn-warning editUtilitiesModal"
-                                        data-id="${item.id}"
-                                        data-name="${item.name}"
-                                        data-status="${item.status}">
-                                        <i class="ti ti-edit"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                        `);
-                    });
-                } else {
-                    alert(response.message ?? "Something went wrong!");
-                }
-            },
-            error: function (xhr) {
-                alert("Error: " + xhr.responseText);
-            }
-        });
-    });
+    //                     $('#UtilitiesTable tbody').append(`
+    //                         <tr id="row2-${item.id}">
+    //                             <td class="text-center">${rowCount}</td>
+    //                             <td>${item.name}</td>
+    //                             <td>${subCatText}</td>
+    //                             <td>${subCatNames}</td>
+    //                             <td>${statusText}</td>
+    //                             <td class="text-center">
+    //                                 <button type="button" class="btn btn-sm btn-warning editUtilitiesModal"
+    //                                     data-id="${item.id}"
+    //                                     data-name="${item.name}"
+    //                                     data-status="${item.status}">
+    //                                     <i class="ti ti-edit"></i>
+    //                                 </button>
+    //                             </td>
+    //                         </tr>
+    //                     `);
+    //                 });
+    //             } else {
+    //                 alert(response.message ?? "Something went wrong!");
+    //             }
+    //         },
+    //         error: function (xhr) {
+    //             alert("Error: " + xhr.responseText);
+    //         }
+    //     });
+    // });
 </script>
 
 
 <script>
-    $(document).on('click', '#saveAmenity', function (e) {
-        e.preventDefault();
+    // $(document).on('click', '#saveAmenity', function (e) {
+    //     e.preventDefault();
 
-        $.ajax({
-            url: "{{ url('propertyamenities-store2') }}", 
-            type: "POST",
-            data: $('#amenityForm').serialize(),
-            success: function (response) {
-                if (response.success) {
-                    // Modal close + form reset
-                    $('#addAmenityModal').modal('hide');
-                    $('#amenityForm')[0].reset();
+    //     $.ajax({
+    //         url: "{{ url('propertyamenities-store2') }}", 
+    //         type: "POST",
+    //         data: $('#amenityForm').serialize(),
+    //         success: function (response) {
+    //             if (response.success) {
+    //                 // Modal close + form reset
+    //                 $('#addAmenityModal').modal('hide');
+    //                 $('#amenityForm')[0].reset();
 
-                    // ✅ Success message (no reload)
-                    alert(response.message);
+    //                 // ✅ Success message (no reload)
+    //                 alert(response.message);
 
-                    // Row count (next number)
-                    let rowCount = $("#amenitiesTable tbody tr").length + 1;
+    //                 // Row count (next number)
+    //                 let rowCount = $("#amenitiesTable tbody tr").length + 1;
 
-                    // Status setup
-                    let statusText = response.data.status == 1 ? 'Active' : 'Inactive';
-                    let checked = response.data.status == 1 ? 'checked' : '';
+    //                 // Status setup
+    //                 let statusText = response.data.status == 1 ? 'Active' : 'Inactive';
+    //                 let checked = response.data.status == 1 ? 'checked' : '';
 
-                    // ✅ Append new row to table
-                    $('#amenitiesTable tbody').append(`
-                        <tr>
-                            <td class="text-center">${rowCount}</td>
-                            <td class="text-center">${response.data.name}</td>
-                            <td class="text-center">${statusText}</td>
-                            <td class="text-center">
-                                <button type="button" class="btn btn-sm btn-warning editAmenityBtn" 
-                                    data-id="${response.data.id}" 
-                                    data-name="${response.data.name}" 
-                                    data-status="${response.data.status}">
-                                <i class="ti ti-edit"></i>
-                            </button>
-                            </td>
-                        </tr>
-                    `);
-                } else {
-                    alert(response.message ?? "Something went wrong!");
-                }
-            },
-            error: function (xhr) {
-                alert("Error: " + xhr.responseText);
-            }
-        });
-    });
+    //                 // ✅ Append new row to table
+    //                 $('#amenitiesTable tbody').append(`
+    //                     <tr>
+    //                         <td class="text-center">${rowCount}</td>
+    //                         <td class="text-center">${response.data.name}</td>
+    //                         <td class="text-center">${response.data.price}</td>
+    //                         <td class="text-center">${statusText}</td>
+    //                         <td class="text-center">
+    //                             <button type="button" class="btn btn-sm btn-warning editAmenityBtn" 
+    //                                 data-id="${response.data.id}" 
+    //                                 data-name="${response.data.name}" 
+    //                                 data-price="${response.data.price}" 
+    //                                 data-status="${response.data.status}">
+    //                             <i class="ti ti-edit"></i>
+    //                         </button>
+    //                         </td>
+    //                     </tr>
+    //                 `);
+    //             } else {
+    //                 alert(response.message ?? "Something went wrong!");
+    //             }
+    //         },
+    //         error: function (xhr) {
+    //             alert("Error: " + xhr.responseText);
+    //         }
+    //     });
+    // });
 </script>
 
 
@@ -535,6 +548,7 @@
     $(document).on('click', '.editAmenityBtn', function () {
         let id = $(this).data('id');
         let name = $(this).data('name');
+        let price = $(this).data('price');
         let status = $(this).data('status');
         let propertyid = $(this).data('propertyid');
 
@@ -542,6 +556,7 @@
         $('#editAmenityId').val(id);
         $('#propertyID').val(propertyid);
         $('#editAmenityName').val(name);
+        $('#amenityAmount2').val(price);
         $('#editAmenityStatus').val(status);
 
         $('#editAmenityModal').modal('show');
@@ -551,8 +566,8 @@
         e.preventDefault();
 
         $.ajax({
-            url: "{{ url('propertyamenities-update2') }}",
-            type: "POST",
+            // url: "{{ url('propertyamenities-update2') }}",
+            // type: "POST",
             data: $('#editAmenityForm').serialize(),
             success: function (response) {
                 if (response.success) {
@@ -562,13 +577,15 @@
                     // ✅ Update row in table
                     let row = $('#row-' + response.data.id);
                     row.find('td:eq(1)').text(response.data.name); // Amenity Name
-                    row.find('td:eq(2)').text(response.data.status == 1 ? 'Active' : 'Inactive'); // Status
+                    row.find('td:eq(2)').text(response.data.price); // Amenity Name
+                    row.find('td:eq(3)').text(response.data.status == 1 ? 'Active' : 'Inactive'); // Status
 
                     // ✅ Update button attributes
                     row.find('.editAmenityBtn').data('name', response.data.name);
+                    row.find('.editAmenityBtn').data('price', response.data.price);
                     row.find('.editAmenityBtn').data('status', response.data.status);
                 } else {
-                    alert(response.message ?? "Something went wrong!");
+                    // alert(response.message ?? "Something went wrong!");
                 }
             },
             error: function (xhr) {
@@ -597,8 +614,8 @@
         e.preventDefault();
 
         $.ajax({
-            url: "{{ url('propertyUtilities-update2') }}",
-            type: "POST",
+            // url: "{{ url('propertyUtilities-update2') }}",
+            // type: "POST",
             data: $('#editUtilitiesForm').serialize(),
             success: function (response) {
                 if (response.success) {
@@ -617,11 +634,11 @@
                     btn.data('sub_category', response.data.sub_category);
                     btn.data('sub_category_name', response.data.sub_category_name ?? '');
                 } else {
-                    alert(response.message ?? "Something went wrong!");
+                    // alert(response.message ?? "Something went wrong!");
                 }
             },
             error: function (xhr) {
-                alert("Error: " + xhr.responseText);
+                // alert("Error: " + xhr.responseText);
             }
         });
     });
@@ -641,7 +658,7 @@
             </div>
             
             <div class="modal-body">
-                <form id="amenityForm">
+                <form action="{{url('propertyamenities-store2')}}" id="amenityForm" method="post">
                   @csrf
                     <div class="mb-3">
                         <label for="amenityName" class="form-label">Amenity Name <span class="text-danger">*</span></label>
@@ -652,6 +669,10 @@
                         <label for="amenityAmount" class="form-label">Amount ($)</label>
                         <input type="number" class="form-control" id="amenityAmount" placeholder="Enter amount">
                     </div> -->
+                    <div class="mb-3">
+                        <label for="amenityAmount" class="form-label">Cost ($) <span class="text-danger">*</span></label>
+                        <input type="number" class="form-control" id="amenityAmount" placeholder="Enter amount" name="price" required>
+                    </div>
                     <input type="hidden" name="status" value="1">
                     <input type="hidden" name="propertyid" value="{{$property->id}}">
                    <!--  <div class="mb-3">
@@ -661,12 +682,14 @@
                             <option value="0">Inactive</option>
                         </select>
                     </div> -->
+                    <div class="modal-footer">
+                        <!-- <button type="submit" id="saveAmenity" form="amenitiesForm" class="btn btn-primary">Save</button> -->
+                        <button type="submit" class="btn btn-primary">Save</button>
+                    </div>
                 </form>
             </div>
             
-            <div class="modal-footer">
-                <button type="button" id="saveAmenity" form="amenitiesForm" class="btn btn-primary">Save</button>
-            </div>
+            
 
         </div>
     </div>
@@ -683,7 +706,7 @@
       </div>
 
       <div class="modal-body">
-        <form id="editAmenityForm">
+        <form action="{{url('propertyamenities-update2')}}" id="editAmenityForm" method="post">
             @csrf
             <input type="hidden" name="id" id="editAmenityId">
             <input type="hidden" name="propertyid" id="propertyID" value="{{$property->id}}">
@@ -691,6 +714,11 @@
             <div class="mb-3">
                 <label for="editAmenityName" class="form-label">Amenity Name <span class="text-danger">*</span></label>
                 <input type="text" class="form-control" id="editAmenityName" name="name" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="amenityAmount" class="form-label">Cost ($) <span class="text-danger">*</span></label>
+                <input type="number" class="form-control" id="amenityAmount2" placeholder="Enter amount" name="price" required>
             </div>
 
 
@@ -701,13 +729,15 @@
                     <option value="0">Inactive</option>
                 </select>
             </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <!-- <button type="submit" class="btn btn-primary" id="updateAmenity">Update</button> -->
+                <button type="submit" class="btn btn-primary">Update</button>
+            </div>
         </form>
       </div>
 
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-        <button type="button" class="btn btn-primary" id="updateAmenity">Update</button>
-      </div>
+      
     </div>
   </div>
 </div>
@@ -724,7 +754,7 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body">
-        <form id="UtilitiesForm">
+        <form action="{{url('propertyutilities-store2')}}" id="UtilitiesForm" method="post">
             @csrf
             <div class="mb-3">
                 <label>Company Name <span class="text-danger">*</span></label>
@@ -778,7 +808,7 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body">
-        <form id="editUtilitiesForm">
+        <form action="{{url('propertyUtilities-update2')}}" id="editUtilitiesForm" method="post">
             @csrf
             <input type="hidden" name="id" id="editUtilitiesId">
             <input type="hidden" name="propertyid" id="propertyID2" value="{{$property->id}}">
@@ -808,13 +838,15 @@
                     <option value="0">Inactive</option>
                 </select>
             </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <!-- <button type="button" class="btn btn-primary" id="updateUtilities">Update</button> -->
+                <button type="submit" class="btn btn-primary">Update</button>
+            </div>
         </form>
       </div>
 
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-        <button type="button" class="btn btn-primary" id="updateUtilities">Update</button>
-      </div>
+      
     </div>
   </div>
 </div>

@@ -84,7 +84,7 @@
                                     </li>
                                 @endif
                                 @if (Gate::check('manage email settings'))
-                                    <li class="nav-item">
+                                    <!-- <li class="nav-item">
                                         <a class="nav-link" id="profile-tab-5" data-bs-toggle="tab"
                                             href="#email_SMTP_settings" role="tab" aria-selected="true">
                                             <div class="d-flex align-items-center">
@@ -97,10 +97,10 @@
                                                 </div>
                                             </div>
                                         </a>
-                                    </li>
+                                    </li> -->
                                 @endif
                                 @if (Gate::check('manage payment settings'))
-                                    <li class="nav-item">
+                                    <!-- <li class="nav-item">
                                         <a class="nav-link" id="profile-tab-6" data-bs-toggle="tab" href="#payment_settings"
                                             role="tab" aria-selected="true">
                                             <div class="d-flex align-items-center">
@@ -113,7 +113,7 @@
                                                 </div>
                                             </div>
                                         </a>
-                                    </li>
+                                    </li> -->
                                 @endif
                                 @if (Gate::check('manage seo settings'))
                                     <li class="nav-item">
@@ -149,7 +149,7 @@
                                     </li>
                                 @endif
                                 @if (Gate::check('manage 2FA settings'))
-                                    <li class="nav-item">
+                                    <!-- <li class="nav-item">
                                         <a class="nav-link {{ empty($activeTab) || $activeTab == '2FA' ? ' active ' : '' }} "
                                             id="profile-tab-9" data-bs-toggle="tab" href="#2FA" role="tab"
                                             aria-selected="true">
@@ -164,10 +164,10 @@
                                                 </div>
                                             </div>
                                         </a>
-                                    </li>
+                                    </li> -->
                                 @endif
 
-                                    <li class="nav-item">
+                                    <!-- <li class="nav-item">
                                         <a class="nav-link" id="tab-state" data-bs-toggle="tab" href="#pane-state" role="tab" aria-selected="false">
                                             <div class="d-flex align-items-center">
                                                 <div class="flex-shrink-0"><i class="ti ti-map me-2 f-20"></i></div>
@@ -177,8 +177,8 @@
                                                 </div>
                                             </div>
                                         </a>
-                                    </li>
-                                    <li class="nav-item">
+                                    </li> -->
+                                    <!-- <li class="nav-item">
                                         <a class="nav-link" id="tab-city" data-bs-toggle="tab" href="#pane-city" role="tab" aria-selected="false">
                                             <div class="d-flex align-items-center">
                                                 <div class="flex-shrink-0"><i class="ti ti-building-skyscraper me-2 f-20"></i></div>
@@ -188,7 +188,7 @@
                                                 </div>
                                             </div>
                                         </a>
-                                    </li>
+                                    </li> -->
                                     <!-- <li class="nav-item">
                                         <a class="nav-link" id="tab-amenities" data-bs-toggle="tab" href="#pane-amenities" role="tab" aria-selected="false">
                                             <div class="d-flex align-items-center">
@@ -880,11 +880,11 @@
                                     @endif
 
                                     <div class="tab-pane fade" id="pane-state" role="tabpanel" aria-labelledby="tab-state">
-                                        <div class="card theme-card">
-                                            <div class="card-header d-flex justify-content-end">
+                                        <div class="theme-card">
+                                            <div class="d-flex justify-content-end">
                                                 <a data-bs-toggle="modal" data-bs-target="#addStateModal" class="btn btn-secondary">Add New</a>
                                             </div>
-                                            <div class="card-body">
+                                            <div class="mt-3">
                                                 <div class="table-responsive">
                                                     <table class="table table-bordered mb-0">
                                                     <thead class="table-theme">

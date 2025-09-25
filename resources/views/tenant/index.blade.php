@@ -124,13 +124,13 @@
                                                 <p class="mb-0  text-sm">{{ __('Lease Start Date') }} :</p>
                                                 <!-- <h6 class="mb-0">{{ dateFormat($tenant->lease_start_date) }}</h6> -->
                                                 {{--<!-- <h6 class="mb-0">{{ \Carbon\Carbon::parse($tenant->lease_start_date)->format('m-d-y') }}</h6> -->--}}
-                                                <h6 class="mb-0">{{ $tenant->lease_start_date }}</h6>
+                                                <h6 class="mb-0 date-block">{{ $tenant->lease_start_date }}</h6>
                                             </div>
                                             <div class="col-sm-6 mb-3">
                                                 <p class="mb-0  text-sm">{{ __('Lease End Date') }} :</p>
                                                 <!-- <h6 class="mb-0">{{ dateFormat($tenant->lease_end_date) }}</h6> -->
                                                  {{--<!-- <h6 class="mb-0">{{ \Carbon\Carbon::parse($tenant->lease_end_date)->format('m-d-y') }}</h6> -->--}}
-                                                 <h6 class="mb-0">{{ $tenant->lease_end_date }}</h6>
+                                                 <h6 class="mb-0 date-block">{{ $tenant->lease_end_date }}</h6>
                                             </div>
 
                                             <!-- <div class="col-sm-6 mb-3">

@@ -189,22 +189,23 @@
         let firstClick = true;
 
         $(document).on('click', '.add-unit', function() {
+            let originalRow = $('.unit_list:first'); // यह सिर्फ template रहेगा
+
             if(firstClick) {
-                // पहला क्लिक: hidden वाला form दिखाओ
-                $('.unit_list:first').removeClass('d-none');
-                $('hr').removeClass('d-none');
+                // पहला क्लिक: hidden वाला form show करो
+                let firstRow = originalRow.clone().removeClass('d-none');
+                firstRow.find('input, select, textarea').val('');
+                $('.unit_list_results').append(firstRow).append('<hr class="mt-4 mb-4 border-dark">');
                 firstClick = false;
             } else {
-                // बाद में क्लिक: clone करो
-                let originalRow = $('.unit_list:first');
-                let clonedRow = originalRow.clone();
-
+                // बाद में क्लिक: template से नया clone बनाओ
+                let clonedRow = originalRow.clone().removeClass('d-none');
                 clonedRow.find('input, select, textarea').val('');
-                $('.unit_list_results').append(clonedRow).append('<hr class="mt-2 mb-4 border-dark">');
+                $('.unit_list_results').append(clonedRow).append('<hr class="mt-4 mb-4 border-dark">');
             }
         });
 
-        // Remove करने का logic अगर चाहिए तो
+        // Remove logic सिर्फ cloned units पर लागू होगा
         $(document).on('click', '.remove-unit', function() {
             $(this).closest('.unit_list').next('hr').remove();
             $(this).closest('.unit_list').remove();
@@ -402,7 +403,10 @@
                             </div>
                         </div>
                         
-                        <div class="text-end">
+                        <div class="d-flex justify-content-between">
+                             <a href="#" style="opacity:0">
+                               
+                                                            </a>
                             <button type="button" class="btn btn-secondary btn-rounded nextButton"
                                 data-next-tab="#profile-2">
                                 {{ __('Next') }}
@@ -445,7 +449,10 @@
                             </div>
                         </div>
 
-                        <div class="text-end">
+                        <div class="d-flex justify-content-between">
+                             <button type="button" class="btn btn-primary btn-rounded prevButton">
+                                {{ __('Back') }}
+                            </button>
                             <button type="button" class="btn btn-secondary btn-rounded nextButton nextButton22"
                                 data-next-tab="#profile-2" disabled>
                                 {{ __('Next') }}
@@ -482,8 +489,8 @@
                                     </div>
                                 </div>
 
-                                <hr class="mt-2 mb-4 border border-secondary">
-                                <!-- <div class="unit_list_results"></div> -->
+                                <!-- <hr class="mt-2 mb-4 border border-secondary"> -->
+                                <div class="unit_list_results"></div>
 
                                 <div class="col-lg-12 mb-2  text-end">
                                     <button type="button" class="btn btn-secondary btn-md add-unit ">
@@ -496,7 +503,10 @@
 
 
             
-                        <div class="text-end">
+                        <div class="d-flex justify-content-between">
+                             <button type="button" class="btn btn-primary btn-rounded prevButton">
+                                {{ __('Back') }}
+                            </button>
                             <button type="button" class="btn btn-secondary btn-rounded nextButton"
                                 data-next-tab="#profile-4">
                                 {{ __('Next') }}
@@ -525,7 +535,7 @@
                                 </div>
 
                                 <div class="tab-pane" id="isbilleddata" role="tabpanel" aria-labelledby="isbilleddata" style="display: none;">
-                                    <div class="card border bg-custom bg-white w-100">
+                                    <div class="card bg-custom bg-white w-100">
                                         <div class="">
                                             <div class="row align-items-center g-2">
                                                 <div class="col">
@@ -556,7 +566,7 @@
                                                             <tr id="row-{{ $amenity->id }}">
                                                                 <td class="text-center">{{ $index + 1 }}</td>
                                                                 <td class="text-center">{{ $amenity->name }}</td>
-                                                                <td class="text-center">$</td>
+                                                                <td class="text-center">$ {{ $amenity->price }}</td>
                                                                 <td class="text-center">
                                                                     {{ $amenity->status == 1 ? 'Active' : 'Inactive' }}
                                                                 </td>
@@ -586,7 +596,10 @@
 
 
 
-                            <div class="text-end">
+                            <div class="d-flex justify-content-between">
+                             <button type="button" class="btn btn-primary btn-rounded prevButton">
+                                {{ __('Back') }}
+                            </button>
                             <button type="button" class="btn btn-secondary btn-rounded nextButton"
                                 data-next-tab="#profile-5">
                                 {{ __('Next') }}
@@ -680,7 +693,10 @@
 
 
                         <div class="col-lg-12 mb-2">
-                            <div class="group-button text-end">
+                            <div class="d-flex justify-content-between">
+                                <button type="button" class="btn btn-primary btn-rounded prevButton">
+                                    {{ __('Back') }}
+                                </button>
                                 {{ Form::submit(__('Create'), ['class' => 'btn btn-secondary btn-rounded nextButton', 'id' => 'property-submit']) }}
                             </div>
                         </div>
@@ -932,6 +948,53 @@
             }
         });
     });
+
+    // $(document).on('click', '.editAmenityBtn', function () {
+    //     let id = $(this).data('id');
+    //     let name = $(this).data('name');
+    //     let price = $(this).data('price');
+    //     let status = $(this).data('status');
+
+    //     // Modal fill
+    //     $('#editAmenityId').val(id);
+    //     $('#editAmenityName').val(name);
+    //     $('#amenitydataAmount').val(price);
+    //     $('#editAmenityStatus').val(status);
+
+    //     $('#editAmenityModal').modal('show');
+    // });
+
+    // $(document).on('click', '#updateAmenity', function (e) {
+    //     e.preventDefault();
+
+    //     $.ajax({
+    //         url: "{{ url('property-amenities-update') }}",
+    //         type: "POST",
+    //         data: $('#editAmenityForm').serialize(),
+    //         success: function (response) {
+    //             if (response.success) {
+    //                 $('#editAmenityModal').modal('hide');
+    //                 alert(response.message);
+
+    //                 // ✅ Update row in table
+    //                 let row = $('#row-' + response.data.id);
+    //                 row.find('td:eq(1)').text(response.data.name); // Amenity Name
+    //                 row.find('td:eq(2)').text(response.data.price); // Amenity price
+    //                 row.find('td:eq(3)').text(response.data.status == 1 ? 'Active' : 'Inactive'); // Status
+
+    //                 // ✅ Update button attributes
+    //                 row.find('.editAmenityBtn').data('name', response.data.name);
+    //                 row.find('.editAmenityBtn').data('price', response.data.price);
+    //                 row.find('.editAmenityBtn').data('status', response.data.status);
+    //             } else {
+    //                 alert(response.message ?? "Something went wrong!");
+    //             }
+    //         },
+    //         error: function (xhr) {
+    //             alert("Error: " + xhr.responseText);
+    //         }
+    //     });
+    // });
 </script>
 
 

@@ -9,14 +9,14 @@
 @endsection
 
 @section('content')
-<div class="card border bg-custom w-100">
+<div class="card border bg-custom w-100 tenant-profile-sec">
     <div class="card-body">
         <div class="profile-card">
             <div class="">
 
                 <!-- Profile Header -->
                 <div class="row align-items-center mb-4">
-                <div class="col-auto">
+                <div class="col-auto ">
                     <img src="{{ $auth_tenant->user->profile_url }}" alt="{{ $auth_tenant->user->name }}" class="avatar">
 
                     <input type="file" name="profile_image" id="profile-image-input" 
@@ -37,7 +37,7 @@
 
                     <span class="status-badge status-active">{{ $auth_tenant->user->is_active == 1 ? "Active" : "Not Active" }} Lease</span>
                 </div>
-                <div class="col-auto">
+                <div class="col-auto custom-edit-button">
                     <button id="edit-btn" class="btn btn-secondary text-white">Edit</button>
                     <button id="save-btn" class="btn btn-primary d-none" data-base-route="{{ route('tenant-profile.update', $auth_tenant->id) }}" data-tenant-id="{{ $auth_tenant->user_id }}">Save</button>
                     <button id="cancel-btn" class="btn btn-light d-none">Cancel</button>
@@ -110,8 +110,8 @@
                         ];
                     @endphp
                     @foreach($documents as $label => $file)
-                        <div class="col-sm-6 col-lg-3 editable" data-field="{{ Str::slug($label, '-') }}">
-                            <div class="document-item">
+                        <div class="col-sm-6 col-lg-4 editable" data-field="{{ Str::slug($label, '-') }}">
+                            <div class="document-item fw-100">
                                 <span class="info-label">
                                     <i class="bi bi-file-earmark-text me-2 text-muted"></i> {{ $label }}
                                 </span>

@@ -20,14 +20,12 @@ use App\Models\User;
 use App\Models\FAQ;
 use App\Models\Page;
 use App\Models\HomePage;
-use App\Models\TenantDocument;
-use App\Models\UtilityInvoice;
 use Auth;
-
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use App\Models\TenantDocument;
+use App\Models\UtilityInvoice;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Validator;
 
 class HomeController extends Controller
 {
@@ -227,8 +225,8 @@ class HomeController extends Controller
         $auth_tenant = Tenant::whereUserId(Auth::user()->id)->with(['user', 'documents'])->first();
         return View('tenant_dashboard.tenant-profile', compact('auth_tenant'));
     } 
-
-    public function update(Request $request, Tenant $tenant)
+	
+	public function update(Request $request, Tenant $tenant)
     {
         $validator = Validator::make($request->all(), [
             'full_name' => 'required|string|max:100',
@@ -309,11 +307,10 @@ class HomeController extends Controller
     }
 
     public function property_details() {
-        $property = Tenant::where('user_id', Auth::user()->id)->with(['properties', 'units', 'properties.city', 'properties.state'])->first();
+		$property = Tenant::where('user_id', Auth::user()->id)->with(['properties', 'units', 'properties.city', 'properties.state'])->first();
         return View('tenant_dashboard.property-details', compact('property'));
     } 
     public function payment_section() {
-
         return View('tenant_dashboard.payment-section');
     } 
     
@@ -330,11 +327,11 @@ class HomeController extends Controller
         return View('tenant_dashboard.tenant-notices');
     } 
     public function tenant_documents() {
-        $tenantDocuments = TenantDocument::where('tenant_id', Auth::user()->tenants->id)->get();
+		$tenantDocuments = TenantDocument::where('tenant_id', Auth::user()->tenants->id)->get();
         return View('tenant_dashboard.tenant-documents', compact('tenantDocuments'));
     } 
-
-    public function download($id)
+	
+	public function download($id)
     {
         $tenantDocument = TenantDocument::findOrFail($id);
 
@@ -346,7 +343,7 @@ class HomeController extends Controller
 
         return back()->with('error', 'File not found.');
     }
-
+	
     public function utilities_invoices() {
         $utilityInvoices = UtilityInvoice::where('tenant_id', Auth::user()->tenants->id)->get();
         return View('tenant_dashboard.utilities-invoices', compact('utilityInvoices'));

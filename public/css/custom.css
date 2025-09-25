@@ -56,9 +56,12 @@
     max-width: 300px;
 
 }
+.pc-sidebar .m-header .b-brand.text-primary{width: 200px;
+  margin: auto;
+  max-width: 100%;}
 .b-brand .logo{
-    max-width: 212px !important;
-
+    max-width: 185px !important;
+margin: auto;
 }
 .lan-footer .codex-brand{
     margin-block-end: 0px !important;
