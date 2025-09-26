@@ -250,8 +250,8 @@
                     formData.append("profile_image", file);
                 }
                 if (errors.length > 0) {
-                    alert(errors.join("\n"));
-                    return; // stop submission if errors exist
+                    toastrs("error", errors.join("<br>"), "error");
+                    return null; // stop submission if errors exist
                 }
                 return formData;
             })()
@@ -265,23 +265,47 @@
         })
         .then(res => {
             if (res.success) {
-                alert("Profile updated successfully!");
+                toastrs("success", "Profile updated successfully!", "success");
+
+                // Reset all editable fields back to view mode
+                document.querySelectorAll(".editable").forEach(el => {
+                    const input = el.querySelector(".inline-input");
+                    const span = el.querySelector(".inline-text");
+                    if (input.type === "file") {
+                    // if a new file was uploaded, update link with filename
+                        if (input.files.length > 0) {
+                            const fileName = input.files[0].name;
+                            // Here use your backend storage path if response gives you file
+                            span.innerHTML = `<a href="/storage/upload/tenantdocument/${fileName}" target="_blank">${fileName}</a>`;
+                        }
+                    } else {
+                        // for normal text fields
+                        span.textContent = input.value;
+                    }
+
+                    input.style.display = "none";
+                    span.style.display = "inline";
+                });
+
+                // Hide Save/Cancel, show Edit again
                 saveBtn.classList.add("d-none");
                 cancelBtn.classList.add("d-none");
                 editBtn.classList.remove("d-none");
+                profileEditBtn.classList.add("d-none");
+
+                
             } else if (res.errors) {
                 // Show server-side validation errors
                 const messages = Object.values(res.errors).flat();
-                alert(messages.join("\n"));
+                toastrs("error", messages.join("<br>"), "error");
             } else {
-                alert("Something went wrong!");
+                toastrs("error", "Something went wrong!", "error");
             }
         })
         .catch(err => {
             console.error(err);
-            alert("An unexpected error occurred. Check console.");
+            toastrs("error", "An unexpected error occurred. Check console.", "error");
         });
     });
-
 </script>
 @endsection

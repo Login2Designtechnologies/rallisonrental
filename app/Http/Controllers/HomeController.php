@@ -26,6 +26,7 @@ use Illuminate\Http\Request;
 use App\Models\TenantDocument;
 use App\Models\UtilityInvoice;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
 
 class HomeController extends Controller
 {

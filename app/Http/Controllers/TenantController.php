@@ -329,8 +329,8 @@ class TenantController extends Controller
             $tenant->city = $request->city;
             $tenant->zip_code = $request->zip_code;
             $tenant->address = $request->address;
-            $tenant->property = $request->property;
-            $tenant->unit = $request->unit;
+            $tenant->property_id = $request->property;
+            $tenant->property_unit_id = $request->unit ?? 0;
             $tenant->lease_start_date = $request->lease_start_date;
             $tenant->lease_end_date = $request->lease_end_date;
             $tenant->parent_id = parentId();
