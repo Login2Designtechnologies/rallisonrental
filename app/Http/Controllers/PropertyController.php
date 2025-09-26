@@ -164,8 +164,6 @@ class PropertyController extends Controller
 
     public function store(Request $request)
     {
-
-        // dd($request->all());
         if (\Auth::user()->can('create property')) {
             $validator = \Validator::make(
                 $request->all(),
@@ -208,8 +206,8 @@ class PropertyController extends Controller
             $property->description = $request->description;
             $property->type = $request->type;
             $property->country = $request->country;
-            $property->state = $request->state;
-            $property->city = $request->city;
+            $property->state_id = $request->state;
+            $property->city_id = $request->city;
             $property->zip_code = $request->zip_code;
             $property->address = $request->address;
             $property->is_billed = $request->is_billed;

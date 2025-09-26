@@ -326,12 +326,108 @@
                                                     </div>
                                                 </div>
                                             </div>
+                                            
                                             <div class="col-sm-4">
+                                                <!-- Cropper.js -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+
                                                 <div class="mb-3">
-                                                    <div class="form-group">
+                                                    {{--<!-- <div class="form-group">
                                                         {{ Form::label('thumbnail', __('Thumbnail Image'), ['class' => 'form-label']) }} <span class="text-danger">*</span>
                                                         {{ Form::file('thumbnail', ['class' => 'form-control required-field', 'required' => 'required']) }}
+                                                    </div> -->--}}
+                                                    <div class="form-group">
+                                                        {{ Form::label('thumbnail', __('Thumbnail Image'), ['class' => 'form-label']) }} 
+                                                        <span class="text-danger">*</span>
+                                                        {{ Form::file('thumbnail', ['class' => 'form-control required-field', 'required' => 'required', 'id' => 'thumbnailInput', 'accept' => 'image/*']) }}
                                                     </div>
+                                                    
+                                                    <!-- Preview & Crop Area -->
+<div id="preview-container" style="display:none; margin-top:10px; text-align:center;">
+    <img id="imagePreview" src="" alt="Preview" style="max-width:100%; border:1px solid #ddd; border-radius:6px;">
+    
+    <!-- Action Buttons -->
+    <div class="mt-2">
+        <button type="button" class="btn btn-success btn-sm" id="cropButton" style="display:none;">Crop & Save</button>
+        <button type="button" class="btn btn-warning btn-sm" id="editButton" style="display:none;">Edit Again</button>
+        <button type="button" class="btn btn-danger btn-sm" id="cancelButton" style="display:none;">Cancel</button>
+    </div>
+</div>
+
+<!-- Hidden input for cropped image -->
+<input type="hidden" name="cropped_image" id="croppedImage">
+<script>
+    let cropper;
+    const input = document.getElementById('thumbnailInput');
+    const preview = document.getElementById('imagePreview');
+    const previewContainer = document.getElementById('preview-container');
+    const cropBtn = document.getElementById('cropButton');
+    const editBtn = document.getElementById('editButton');
+    const cancelBtn = document.getElementById('cancelButton');
+    const croppedInput = document.getElementById('croppedImage');
+
+    input.addEventListener('change', e => {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = ev => {
+                preview.src = ev.target.result;
+                previewContainer.style.display = 'block';
+
+                if (cropper) cropper.destroy();
+                cropper = new Cropper(preview, {
+                    aspectRatio: 16/9,
+                    viewMode: 1,
+                    autoCropArea: 1
+                });
+
+                cropBtn.style.display = 'inline-block';
+                cancelBtn.style.display = 'inline-block';
+                editBtn.style.display = 'none';
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    // Crop & Save
+    cropBtn.addEventListener('click', () => {
+        if (cropper) {
+            const canvas = cropper.getCroppedCanvas({ width: 800, height: 450 });
+            preview.src = canvas.toDataURL();
+            croppedInput.value = canvas.toDataURL('image/jpeg');
+            cropper.destroy();
+            cropBtn.style.display = 'none';
+            cancelBtn.style.display = 'none';
+            editBtn.style.display = 'inline-block';
+        }
+    });
+
+    // Edit Again
+    editBtn.addEventListener('click', () => {
+        cropper = new Cropper(preview, {
+            aspectRatio: 16/9,
+            viewMode: 1,
+            autoCropArea: 1
+        });
+        cropBtn.style.display = 'inline-block';
+        cancelBtn.style.display = 'inline-block';
+        editBtn.style.display = 'none';
+    });
+
+    // Cancel
+    cancelBtn.addEventListener('click', () => {
+        if (cropper) cropper.destroy();
+        preview.src = '';
+        previewContainer.style.display = 'none';
+        input.value = ''; // reset file input
+        croppedInput.value = '';
+        cropBtn.style.display = 'none';
+        editBtn.style.display = 'none';
+        cancelBtn.style.display = 'none';
+    });
+</script>
+
                                                 </div>
                                             </div>
                                             <div class="col-sm-12">
@@ -492,7 +588,7 @@
                                 <!-- <hr class="mt-2 mb-4 border border-secondary"> -->
                                 <div class="unit_list_results"></div>
 
-                                <div class="col-lg-12 mb-2  text-end">
+                                <div class="col-lg-12 mb-2  text-center">
                                     <button type="button" class="btn btn-secondary btn-md add-unit ">
                                         {{ __('Add Unit') }}
                                     </button>
@@ -697,7 +793,7 @@
                                 <button type="button" class="btn btn-primary btn-rounded prevButton">
                                     {{ __('Back') }}
                                 </button>
-                                {{ Form::submit(__('Create'), ['class' => 'btn btn-secondary btn-rounded nextButton', 'id' => 'property-submit']) }}
+                                {{ Form::submit(__('FInish'), ['class' => 'btn btn-secondary btn-rounded nextButton', 'id' => 'property-submit']) }}
                             </div>
                         </div>
 
@@ -1151,7 +1247,7 @@
       </div>
 
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Close</button>
         <button type="button" class="btn btn-primary" id="updateAmenity">Update</button>
       </div>
     </div>
@@ -1254,7 +1350,7 @@
       </div>
 
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Close</button>
         <button type="button" class="btn btn-primary" id="updateUtilities">Update</button>
       </div>
     </div>
