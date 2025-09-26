@@ -261,7 +261,7 @@ class PropertyController extends Controller
 
                     $unit = new PropertyUnit();
                     $unit->name   = $name ?? null;
-                    $unit->status = $request->status[$key] ?? null;
+                    $unit->status = 0;
                     $unit->notes  = $request->notes[$key] ?? null;
                     $unit->property_id = $property->id;
                     $unit->parent_id   = parentId();

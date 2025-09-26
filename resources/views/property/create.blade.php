@@ -7,6 +7,14 @@
     ul#myTab {
         pointer-events: none;
     }
+    .step-status {
+        margin-left: 6px;
+    }
+    .step-status.done::before {
+        content: "✔";  /* green tick */
+        color: #28a745;
+        font-weight: bold;
+    }
 </style>
 
 @push('script-page')
@@ -38,16 +46,33 @@
         });
         $('#property-submit').on('click', function() {
             "use strict";
-            $('#property-submit').attr('disabled', true);
+            $('#property-submit').attr('disabled', true);            
             var fd = new FormData();
-            var file = document.getElementById('thumbnail').files[0];
-
+            var croppedImage = $('#croppedImage').val();
+            if (croppedImage) {
+                // Convert base64 to Blob
+                var byteString = atob(croppedImage.split(',')[1]);
+                var mimeString = croppedImage.split(',')[0].split(':')[1].split(';')[0];
+                var ab = new ArrayBuffer(byteString.length);
+                var ia = new Uint8Array(ab);
+                for (var i = 0; i < byteString.length; i++) {
+                    ia[i] = byteString.charCodeAt(i);
+                }
+                var blob = new Blob([ab], { type: mimeString });
+                fd.append('thumbnail', blob, 'thumbnail.jpg');
+            } else {
+                // fallback: if no cropping done, use original file
+                var fileInput = document.getElementById('thumbnailInput');
+                if (fileInput && fileInput.files.length > 0) {
+                    fd.append('thumbnail', fileInput.files[0]);
+                }
+            }
             var files = $('#demo-upload').get(0).dropzone.getAcceptedFiles();
             $.each(files, function(key, file) {
                 fd.append('property_images[' + key + ']', $('#demo-upload')[0].dropzone
                     .getAcceptedFiles()[key]); // attach dropzone image element
             });
-            fd.append('thumbnail', file);
+
             var other_data = $('#property_form').serializeArray();
             $.each(other_data, function(key, input) {
                 fd.append(input.name, input.value);
@@ -106,8 +131,6 @@
     </script>
 
     <script>
-      
-
         $(document).ready(function() {
 
         function checkTabFields($tab) {
@@ -145,7 +168,27 @@
                 return false;
             }
 
+            // ✅ Mark current tab as complete
+            let currentTabId = $activeTab.attr('id');
+            $('a[href="#' + currentTabId + '"]').find('.step-status').addClass('done');
+
             let $nextTab = $activeTab.next('.tab-pane');
+
+            if ($nextTab.length > 0) {
+                let nextTabId = $nextTab.attr('id');
+                $('a[href="#' + nextTabId + '"]').tab('show');
+
+                // If next tab is last, change button text to Submit
+                if ($nextTab.is(':last-child')) {
+                    $(this).text('Submit').addClass('submit-button');
+                }
+                updateNextButton();
+            } else if ($(this).hasClass('submit-button')) {
+                if (!checkTabFields($activeTab)) {
+                    return false;
+                }
+                $('form').submit();
+            }
 
             if ($nextTab.length > 0) {
                 let nextTabId = $nextTab.attr('id');
@@ -165,6 +208,29 @@
                     return false;
                 }
                 $('form').submit();
+            }
+        });
+
+        // Update button text on manual tab switch
+        $('a[data-bs-toggle="tab"]').on('shown.bs.tab', function() {
+            let $activeTab = $('.tab-content .tab-pane.active');
+            let isLastTab = $activeTab.is(':last-child');
+            if (!isLastTab) {
+                $('.nextButton').text('Next').removeClass('submit-button');
+            }
+            updateNextButton();
+        });
+
+        $(document).on('click', '.prevButton', function() {
+            let $activeTab = $('.tab-content .tab-pane.active');
+            let $prevTab = $activeTab.prev('.tab-pane');
+
+            if ($prevTab.length > 0) {
+                let prevTabId = $prevTab.attr('id');
+                $('a[href="#' + prevTabId + '"]').tab('show');
+
+                // Reset Next button text if not on last tab anymore
+                $('.nextButton').text('Next').removeClass('submit-button');
             }
         });
 
@@ -262,6 +328,7 @@
                             role="tab" aria-selected="true">
                             <i class="material-icons-two-tone me-2">info</i>
                             {{ __('Property Details') }}
+                            <span class="step-status"></span>
                         </a>
                     </li>
                     <li class="nav-item">
@@ -269,6 +336,7 @@
                             aria-selected="true">
                             <i class="material-icons-two-tone me-2">image</i>
                             {{ __('Property Images') }}
+                            <span class="step-status"></span>
                         </a>
                     </li>
                     <li class="nav-item">
@@ -276,6 +344,7 @@
                             aria-selected="true">
                             <i class="material-icons-two-tone me-2">layers</i>
                             {{ __('Unit') }}
+                            <span class="step-status"></span>
                         </a>
                     </li>
                     <li class="nav-item">
@@ -283,6 +352,7 @@
                             aria-selected="true">
                             <i class="material-icons-two-tone ti ti-tools me-2"></i>
                             {{ __('Amenities') }}
+                            <span class="step-status"></span>
                         </a>
                     </li>
                     <li class="nav-item">
@@ -290,6 +360,7 @@
                             aria-selected="true">
                             <i class="material-icons-two-tone ti ti-bulb me-2"></i>
                             {{ __('Utilities') }}
+                            <span class="step-status"></span>
                         </a>
                     </li>
 
@@ -329,8 +400,8 @@
                                             
                                             <div class="col-sm-4">
                                                 <!-- Cropper.js -->
-<link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet"/>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+                                                <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet"/>
+                                                <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
 
                                                 <div class="mb-3">
                                                     {{--<!-- <div class="form-group">
@@ -344,90 +415,89 @@
                                                     </div>
                                                     
                                                     <!-- Preview & Crop Area -->
-<div id="preview-container" style="display:none; margin-top:10px; text-align:center;">
-    <img id="imagePreview" src="" alt="Preview" style="max-width:100%; border:1px solid #ddd; border-radius:6px;">
-    
-    <!-- Action Buttons -->
-    <div class="mt-2">
-        <button type="button" class="btn btn-success btn-sm" id="cropButton" style="display:none;">Crop & Save</button>
-        <button type="button" class="btn btn-warning btn-sm" id="editButton" style="display:none;">Edit Again</button>
-        <button type="button" class="btn btn-danger btn-sm" id="cancelButton" style="display:none;">Cancel</button>
-    </div>
-</div>
+                                                    <div id="preview-container" style="display:none; margin-top:10px; text-align:center;">
+                                                        <img id="imagePreview" src="" alt="Preview" style="max-width:100%; border:1px solid #ddd; border-radius:6px;">
+                                                        
+                                                        <!-- Action Buttons -->
+                                                        <div class="mt-2">
+                                                            <button type="button" class="btn btn-success btn-sm" id="cropButton" style="display:none;">Crop & Save</button>
+                                                            <button type="button" class="btn btn-warning btn-sm" id="editButton" style="display:none;">Edit Again</button>
+                                                            <button type="button" class="btn btn-danger btn-sm" id="cancelButton" style="display:none;">Cancel</button>
+                                                        </div>
+                                                    </div>
 
-<!-- Hidden input for cropped image -->
-<input type="hidden" name="cropped_image" id="croppedImage">
-<script>
-    let cropper;
-    const input = document.getElementById('thumbnailInput');
-    const preview = document.getElementById('imagePreview');
-    const previewContainer = document.getElementById('preview-container');
-    const cropBtn = document.getElementById('cropButton');
-    const editBtn = document.getElementById('editButton');
-    const cancelBtn = document.getElementById('cancelButton');
-    const croppedInput = document.getElementById('croppedImage');
+                                                    <!-- Hidden input for cropped image -->
+                                                    <input type="hidden" name="cropped_image" id="croppedImage">
+                                                    <script>
+                                                        let cropper;
+                                                        const input = document.getElementById('thumbnailInput');
+                                                        const preview = document.getElementById('imagePreview');
+                                                        const previewContainer = document.getElementById('preview-container');
+                                                        const cropBtn = document.getElementById('cropButton');
+                                                        const editBtn = document.getElementById('editButton');
+                                                        const cancelBtn = document.getElementById('cancelButton');
+                                                        const croppedInput = document.getElementById('croppedImage');
 
-    input.addEventListener('change', e => {
-        const file = e.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = ev => {
-                preview.src = ev.target.result;
-                previewContainer.style.display = 'block';
+                                                        input.addEventListener('change', e => {
+                                                            const file = e.target.files[0];
+                                                            if (file) {
+                                                                const reader = new FileReader();
+                                                                reader.onload = ev => {
+                                                                    preview.src = ev.target.result;
+                                                                    previewContainer.style.display = 'block';
 
-                if (cropper) cropper.destroy();
-                cropper = new Cropper(preview, {
-                    aspectRatio: 16/9,
-                    viewMode: 1,
-                    autoCropArea: 1
-                });
+                                                                    if (cropper) cropper.destroy();
+                                                                    cropper = new Cropper(preview, {
+                                                                        aspectRatio: 16/9,
+                                                                        viewMode: 1,
+                                                                        autoCropArea: 1
+                                                                    });
 
-                cropBtn.style.display = 'inline-block';
-                cancelBtn.style.display = 'inline-block';
-                editBtn.style.display = 'none';
-            };
-            reader.readAsDataURL(file);
-        }
-    });
+                                                                    cropBtn.style.display = 'inline-block';
+                                                                    cancelBtn.style.display = 'inline-block';
+                                                                    editBtn.style.display = 'none';
+                                                                };
+                                                                reader.readAsDataURL(file);
+                                                            }
+                                                        });
 
-    // Crop & Save
-    cropBtn.addEventListener('click', () => {
-        if (cropper) {
-            const canvas = cropper.getCroppedCanvas({ width: 800, height: 450 });
-            preview.src = canvas.toDataURL();
-            croppedInput.value = canvas.toDataURL('image/jpeg');
-            cropper.destroy();
-            cropBtn.style.display = 'none';
-            cancelBtn.style.display = 'none';
-            editBtn.style.display = 'inline-block';
-        }
-    });
+                                                        // Crop & Save
+                                                        cropBtn.addEventListener('click', () => {
+                                                            if (cropper) {
+                                                                const canvas = cropper.getCroppedCanvas({ width: 800, height: 450 });
+                                                                preview.src = canvas.toDataURL();
+                                                                croppedInput.value = canvas.toDataURL('image/jpeg');
+                                                                cropper.destroy();
+                                                                cropBtn.style.display = 'none';
+                                                                cancelBtn.style.display = 'none';
+                                                                editBtn.style.display = 'inline-block';
+                                                            }
+                                                        });
 
-    // Edit Again
-    editBtn.addEventListener('click', () => {
-        cropper = new Cropper(preview, {
-            aspectRatio: 16/9,
-            viewMode: 1,
-            autoCropArea: 1
-        });
-        cropBtn.style.display = 'inline-block';
-        cancelBtn.style.display = 'inline-block';
-        editBtn.style.display = 'none';
-    });
+                                                        // Edit Again
+                                                        editBtn.addEventListener('click', () => {
+                                                            cropper = new Cropper(preview, {
+                                                                aspectRatio: 16/9,
+                                                                viewMode: 1,
+                                                                autoCropArea: 1
+                                                            });
+                                                            cropBtn.style.display = 'inline-block';
+                                                            cancelBtn.style.display = 'inline-block';
+                                                            editBtn.style.display = 'none';
+                                                        });
 
-    // Cancel
-    cancelBtn.addEventListener('click', () => {
-        if (cropper) cropper.destroy();
-        preview.src = '';
-        previewContainer.style.display = 'none';
-        input.value = ''; // reset file input
-        croppedInput.value = '';
-        cropBtn.style.display = 'none';
-        editBtn.style.display = 'none';
-        cancelBtn.style.display = 'none';
-    });
-</script>
-
+                                                        // Cancel
+                                                        cancelBtn.addEventListener('click', () => {
+                                                            if (cropper) cropper.destroy();
+                                                            preview.src = '';
+                                                            previewContainer.style.display = 'none';
+                                                            input.value = ''; // reset file input
+                                                            croppedInput.value = '';
+                                                            cropBtn.style.display = 'none';
+                                                            editBtn.style.display = 'none';
+                                                            cancelBtn.style.display = 'none';
+                                                        });
+                                                    </script>
                                                 </div>
                                             </div>
                                             <div class="col-sm-12">
@@ -564,16 +634,7 @@
                                         <div class="form-group col-md-6">
                                             {{ Form::label('unitname', __('Name'), ['class' => 'form-label']) }}
                                             {{ Form::text('unitname[]', null, ['class' => 'form-control', 'placeholder' => __('Enter unit name')]) }}
-                                        </div>
-
-                                        <div class="form-group col-md-6">
-                                            {{ Form::label('status', __('Status'), ['class' => 'form-label']) }}
-                                            {{ Form::select('status[]', [
-                                                '1' => 'Active',
-                                                '0' => 'Inactive'
-                                            ], null, ['class' => 'form-control', 'placeholder' => __('Select Status')]) }}
-                                        </div>
-
+                                        </div>                            
                                         
                                         <div class="form-group col-md-12">
                                             {{ Form::label('notes', __('Description'), ['class' => 'form-label']) }}
@@ -590,7 +651,7 @@
 
                                 <div class="col-lg-12 mb-2  text-center">
                                     <button type="button" class="btn btn-secondary btn-md add-unit ">
-                                        {{ __('Add Unit') }}
+                                        {{ __('Add More') }}
                                     </button>
                                 </div>
 
@@ -645,7 +706,7 @@
 
                                             </div>
                                         </div>
-                                        <div class="new-table mt-3">
+                                        <div class="new-table mt-3" id="amenitiesWrapper" style="{{ $amenities->count() == 0 ? 'display:none;' : '' }}">
                                             <div class="table-responsive">
                                                 <table class="table table-bordered mb-0" id="amenitiesTable">
                                                     <thead class="table-theme">
@@ -667,14 +728,13 @@
                                                                     {{ $amenity->status == 1 ? 'Active' : 'Inactive' }}
                                                                 </td>
                                                                 <td class="text-center">
-                                            <button class="btn btn-sm btn-warning editAmenityBtn" 
-                                                data-id="{{ $amenity->id }}" 
-                                                data-name="{{ $amenity->name }}"
-                                                data-price="{{ $amenity->price }}" 
-                                                data-status="{{ $amenity->status }}">
-                                            <i class="ti ti-edit"></i>
-                                        </button>
-
+                                                                    <button class="btn btn-sm btn-warning editAmenityBtn" 
+                                                                        data-id="{{ $amenity->id }}" 
+                                                                        data-name="{{ $amenity->name }}"
+                                                                        data-price="{{ $amenity->price }}" 
+                                                                        data-status="{{ $amenity->status }}">
+                                                                        <i class="ti ti-edit"></i>
+                                                                    </button>
                                                                 </td>
                                                             </tr>
                                                         @endforeach
@@ -793,7 +853,7 @@
                                 <button type="button" class="btn btn-primary btn-rounded prevButton">
                                     {{ __('Back') }}
                                 </button>
-                                {{ Form::submit(__('FInish'), ['class' => 'btn btn-secondary btn-rounded nextButton', 'id' => 'property-submit']) }}
+                                {{ Form::submit(__('Finish'), ['class' => 'btn btn-secondary btn-rounded nextButton', 'id' => 'property-submit']) }}
                             </div>
                         </div>
 
@@ -959,7 +1019,7 @@
 
                     // ✅ Success message (no reload)
                     alert(response.message);
-
+                    $('#amenitiesWrapper').show();
                     // Row count (next number)
                     let rowCount = $("#amenitiesTable tbody tr").length + 1;
 
