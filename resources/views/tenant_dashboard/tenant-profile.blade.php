@@ -9,6 +9,9 @@
 @endsection
 
 @section('content')
+<style>
+    .info-card.p-3{padding: 10px 10px !important;}
+</style>
 <div class="card border bg-custom w-100 tenant-profile-sec">
     <div class="card-body">
         <div class="profile-card">
@@ -34,6 +37,10 @@
                         <span class="inline-text">{{ $auth_tenant->user->name }}</span>
                         <input type="text" name="full_name" class="form-control form-control inline-input" value="{{ $auth_tenant->user->name }}">
                     </h2>
+                    <h6 class="h5 mb-1 editable" data-field="name">
+                        <span class="inline-text"><i class="bi bi-map me-2 text-muted"></i>{{ $auth_tenant->address }}</span>
+                        <input type="text" name="address" class="form-control form-control inline-input" value="{{ $auth_tenant->address }}">
+                    </h6>
 
                     <span class="status-badge status-active">{{ $auth_tenant->user->is_active == 1 ? "Active" : "Not Active" }} Lease</span>
                 </div>

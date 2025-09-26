@@ -232,6 +232,7 @@ class HomeController extends Controller
         $validator = Validator::make($request->all(), [
             'full_name' => 'required|string|max:100',
             'email' => 'required|email|max:100|unique:users,email,' . $tenant->user->id,
+            'address' => 'nullable|string|max:255',
             'phone_number' => 'required|string|max:20',
             'emergency_phone_number' => 'required|string|max:20',
             'emergency_contact_name' => 'required|string|max:100',
@@ -304,6 +305,9 @@ class HomeController extends Controller
             'emergency_contact_relationship' => $data['emergency_contact_relationship'] ?? $tenant->user->emergency_contact_relationship,
         ]);
 
+        $tenant->update([
+            'address' => $data['address'] ?? $tenant->address,
+        ]);
         return response()->json(['success' => true]);
     }
 
