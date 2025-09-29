@@ -6,58 +6,58 @@
    <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">{{ __('Dashboard') }}</a></li>
     <li class="breadcrumb-item"><a href="{{ url('ticket-support') }}">{{ __('Other List') }}</a></li>
     <li class="breadcrumb-item" aria-current="page"> {{ __('Add') }}</li>
-    
 @endsection
 
 @section('content')
 <div class="card border bg-custom w-100">
     <div class="card-body">
-        <form id="invoiceForm">
+        <form method="POST" action="{{ route('other_invoice.store') }}" id="invoiceForm">
+        @csrf
         <div class="row g-3 mb-4">
           <!-- Invoice No -->
           <div class="col-md-3">
             <label class="form-label">Invoice #</label>
-            <input type="text" class="form-control" id="invoiceNo" value="INV-1001" readonly>
+            <input type="text" class="form-control" name="invoice_no" value="{{ $invoice_no }}" readonly>
           </div>
           <!-- Invoice Date -->
           <div class="col-md-3">
             <label class="form-label">Invoice Date</label>
-            <input type="date" class="form-control" id="invoiceDate">
+            <input type="date" class="form-control" name="invoice_date" value="{{ date('Y-m-d') }}" id="invoiceDate">
           </div>
           <!-- Terms -->
           <div class="col-md-3">
             <label class="form-label">Terms</label>
-            <select class="form-select" id="terms">
+            <select class="form-select" id="terms" name="terms">
               <option value="other">Other</option>
             </select>
           </div>
           <!-- Due Date -->
           <div class="col-md-3">
             <label class="form-label">Due Date</label>
-            <input type="date" class="form-control" id="dueDate">
+            <input type="date" class="form-control" id="dueDate" name="due_date" value="{{ date('Y-m-d', strtotime('+7 days')) }}">
           </div>
           <!-- Property Select -->
             <div class="col-6">
                 <label class="form-label">Select Property</label>
-                <select id="propertySelect" class="form-control">
-                    <option value="">-- Select --</option>
-                    <option value="nyc101">NYC - Times Square Apartment</option>
-                    <option value="la202">Los Angeles - Sunset Villa</option>
-                    <option value="chicago303">Chicago - Lakeview Condo</option>
-                </select>
+                <select name="property_id" id="propertySelect" class="form-control">
+                  <option value="">-- Select --</option>
+                  @foreach($properties as $property)
+                    <option value="{{ $property->id }}">{{ $property->id }} {{ $property->name }}</option>
+                  @endforeach
+              </select>
             </div>
 
             <!-- Tenant Select -->
             <div class="col-6">
                 <label class="form-label">Select Tenant</label>
-                <select id="tenantSelect" class="form-control" disabled>
-                    <option value="">-- Select property first --</option>
+                <select name="tenant_id" id="tenantSelect" class="form-control" disabled>
+                  <option value="">-- Select Tenant first --</option>
                 </select>
             </div>
           <!-- Subject -->
           <div class="col-12">
             <label class="form-label">Subject</label>
-            <input type="text" class="form-control" placeholder="Invoice for rental payment...">
+            <input type="text" class="form-control" name="subject" placeholder="Invoice for rental payment...">
           </div>
         </div>
 
@@ -73,8 +73,8 @@
             </thead>
             <tbody>
               <tr>
-                <td><input type="text" class="form-control" placeholder="Enter detail"></td>
-                <td><input type="number" class="form-control amount" value="0"></td>
+                <td><input type="text" class="form-control" name="items[0][detail]" placeholder="Enter detail"></td>
+                <td><input type="number" class="form-control amount" name="items[0][amount]" value="0" step="0.01"></td>
                 <td class="text-center">
                   <button type="button" class="btn btn-sm btn-danger removeRow"><i class="bi bi-x-lg"></i></button>
                 </td>
@@ -110,27 +110,30 @@
 </div>
 
 <script>
-  // Property → Tenant mapping
-  const tenantsData = {
-    "nyc101": ["Michael Johnson", "Emily Davis"],
-    "la202": ["Robert Brown", "Sophia Wilson"],
-    "chicago303": ["David Miller", "Olivia Taylor"]
-  };
+  const tenantsData = @json(
+    $tenants->groupBy('property_id')->map(function($group) {
+        return $group->map(function($tenant) {
+            return ['id' => $tenant->id, 'name' => $tenant->user->name];
+        });
+    })
+  );
+
+  console.log('tenantsData', tenantsData);
 
   const propertySelect = document.getElementById("propertySelect");
   const tenantSelect = document.getElementById("tenantSelect");
 
   propertySelect.addEventListener("change", function() {
-    const selectedProperty = this.value;
-    tenantSelect.innerHTML = ""; // clear old options
+    const propertyId = this.value;
+    tenantSelect.innerHTML = "";
 
-    if (selectedProperty && tenantsData[selectedProperty]) {
+    if (propertyId && tenantsData[propertyId]) {
       tenantSelect.disabled = false;
       tenantSelect.innerHTML = `<option value="">-- Select Tenant --</option>`;
-      tenantsData[selectedProperty].forEach(tenant => {
+      tenantsData[propertyId].forEach(tenant => {
         const opt = document.createElement("option");
-        opt.value = tenant;
-        opt.textContent = tenant;
+        opt.value = tenant.id; // ✅ tenant ID
+        opt.textContent = tenant.name; // ✅ tenant Name
         tenantSelect.appendChild(opt);
       });
     } else {
@@ -139,6 +142,7 @@
     }
   });
 </script>
+
 <script>
   // Auto set invoice & due date
   function formatDate(date) {
@@ -193,9 +197,7 @@
 
   // Form submit
   document.getElementById("invoiceForm").addEventListener("submit", (e) => {
-    e.preventDefault();
     calculateSubtotal();
-    alert("Invoice saved! Subtotal: $" + document.getElementById("subtotal").value);
   });
 </script>
 @endsection

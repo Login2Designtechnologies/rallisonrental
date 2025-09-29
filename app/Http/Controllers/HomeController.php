@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\OtherInvoiceMail;
 use App\Models\Contact;
 use App\Models\Custom;
 use App\Models\Expense;
@@ -20,11 +21,13 @@ use App\Models\User;
 use App\Models\FAQ;
 use App\Models\Page;
 use App\Models\HomePage;
+use App\Models\OtherInvoice;
 use Auth;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use App\Models\TenantDocument;
 use App\Models\UtilityInvoice;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
@@ -210,12 +213,112 @@ class HomeController extends Controller
     public function edit_late_fee() {
         return View('dashbaordpage.edit-late-fee');
     } 
-    public function other() {
-        return View('dashbaordpage.other');
+    public function other(Request $request) {        
+        $query = OtherInvoice::with(['property', 'tenant.user'])
+            ->where('owner_id', Auth::user()->id);
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+
+            $query->where(function ($q) use ($search) {
+                $q->where('invoice_no', 'like', "%$search%")
+                ->orWhere('subject', 'like', "%$search%")
+                ->orWhereHas('tenant.user', function($q2) use ($search) {
+                    $q2->where('name', 'like', "%$search%");
+                })
+                ->orWhereHas('property', function($q3) use ($search) {
+                    $q3->where('name', 'like', "%$search%");
+                });
+            });
+        }
+
+        if ($request->ajax()) {
+            return view('dashbaordpage.partials.other_table', compact('otherInvoices'));
+        }
+        $otherInvoices = $query->latest()->get();
+        return view('dashbaordpage.other', compact('otherInvoices'));
     } 
     public function add_other() {
-        return View('dashbaordpage.add-other');
+        // Generate unique invoice number server-side
+        $invoice_no = OtherInvoice::generateInvoiceNo();
+
+        // Fetch properties and tenants dynamically
+        $properties = Property::all();
+        $tenants = Tenant::with('user')->get();  
+
+        return view('dashbaordpage.add-other', compact('invoice_no', 'properties', 'tenants'));
     } 
+
+    public function store_other_invoice(Request $request)
+    {
+        $request->validate([
+            'invoice_no'  => 'required|unique:other_invoices,invoice_no',
+            'property_id' => 'required|exists:properties,id',
+            'tenant_id'   => 'required|exists:tenants,id',
+            'invoice_date'=> 'required|date',
+            'due_date'    => 'required|date',
+            'subject'     => 'required|string',
+            'items'       => 'required|array|min:1',
+            'items.*.detail' => 'required|string',
+            'items.*.amount' => 'required|numeric|min:0',
+        ]);
+
+         $invoice = OtherInvoice::create([
+            'invoice_no' => $request->invoice_no,
+            'property_id' => $request->property_id,
+            'owner_id' => Auth::user()->id,
+            'tenant_id' => $request->tenant_id,
+            'subject' => $request->subject,
+            'invoice_date' => $request->invoice_date,
+            'due_date' => $request->due_date,
+            'terms' => $request->terms,
+            'status' => 'draft',
+            'amount' => collect($request->items)->sum('amount')
+        ]);
+
+        foreach ($request->items as $item) {
+            $invoice->items()->create([
+                'item'       => $item['detail'],
+                'qty'        => 1, // Assuming quantity is always 1
+                'price'      => $item['amount'],
+                'line_total' => $item['amount'], // Since qty is 1, line_total is just the amount
+            ]);
+        }
+        return redirect()->route('other')->with('preview_invoice_id', $invoice->id);
+    }
+
+    public function emailPreview(OtherInvoice $otherInvoice)
+    {
+        $otherInvoice->load(['tenant', 'owner', 'property', 'items']);
+
+        return view('email.other_invoice', [
+            'otherInvoice' => $otherInvoice,
+            'isPreview' => true // flag to show buttons in preview only
+        ]);
+    }
+
+    public function sendEmail(OtherInvoice $otherInvoice)
+    {
+        // Mail::to($invoice->tenant->email)->send(new \App\Mail\OtherInvoiceMail($invoice));
+        try {
+            $otherInvoice->load(['tenant', 'owner', 'property', 'items']);
+
+            Mail::to('komalshani1997@gmail.com')
+                ->send(new OtherInvoiceMail($otherInvoice));
+
+            return redirect()->route('other')
+                ->with('success', 'Invoice sent successfully.');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Error sending invoice: ' . $e->getMessage());
+        }
+
+    }
+
+    public function payNow(OtherInvoice $invoice)
+    {
+        return response()->json('Payment gateway integration pending');
+    }
+    
     public function edit_other_invoice() {
         return View('dashbaordpage.edit-other-invoice');
     } 
@@ -307,6 +410,7 @@ class HomeController extends Controller
 
         $tenant->update([
             'address' => $data['address'] ?? $tenant->address,
+            'payment_method' => $data['payment_method'] ?? $tenant->payment_method,
         ]);
         return response()->json(['success' => true]);
     }

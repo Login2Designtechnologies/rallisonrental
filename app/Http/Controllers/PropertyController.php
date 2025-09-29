@@ -1048,8 +1048,8 @@ public function addUtilities_update(Request $request,$id,$propertyid)
     {
         if (\Auth::user()->can('show property')) {
             $units = PropertyUnit::where('property_id', $property->id)->orderBy('id', 'desc')->get();
-            $statesdataview = DB::table('states')->where('id', $property->state)->first();
-            $citiesview = DB::table('cities')->where('id', $property->city)->first();
+            $statesdataview = DB::table('states')->where('id', $property->state_id)->first();
+            $citiesview = DB::table('cities')->where('id', $property->city_id)->first();
             $amenities = DB::table('amenity_catg')->where('property_id',$property->id)->get();
             $utilities = DB::table('utilities_catg')->where('property_id',$property->id)->get();
             return view('property.show', compact('property', 'units','statesdataview','citiesview','amenities','utilities'));

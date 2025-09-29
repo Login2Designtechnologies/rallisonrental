@@ -137,6 +137,34 @@
                 </div>
                 </div>
 
+                <hr class="divider">
+
+                <!-- Payment Types -->
+                <div class="mb-4">
+                    <h3><i class="bi bi-wallet2 me-2"></i> Payment Details</h3>
+                    <div class="row g-3">
+                        <div class="col-md-6 editable" data-field="payment_method">                        
+                            <div class="info-card p-3">
+                                <span class="info-label"><i class="bi bi-wallet2 me-2 text-muted"></i> Payment Method</span>
+
+                                <!-- Display text when not editing -->
+                                <span class="inline-text">
+                                    {{ ucfirst(str_replace('_', ' ', $auth_tenant->payment_method?->value ?? 'N/A')) }}
+                                </span>
+
+                                <!-- Hidden select for editing -->
+                                <select name="payment_method" class="form-control inline-input" style="display: none;">
+                                    <option value="">-- Select --</option>
+                                    @foreach(\App\Enums\TenantPaymentMethod::values() as $value)
+                                        <option value="{{ $value }}" {{ ($auth_tenant->payment_method ?? '') === $value ? 'selected' : '' }}>
+                                            {{ ucfirst(str_replace('_', ' ', $value)) }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>                        
+                    </div>
+                </div>
             </div>
         </div>
     </div>

@@ -146,6 +146,18 @@ Route::get('add-other', [HomeController::class, 'add_other'])->name('add_other')
         'XSS',
     ]
 );
+
+Route::post('/other-invoice', [HomeController::class, 'store_other_invoice'])->name('other_invoice.store');
+
+Route::get('other-invoice/email-preview/{otherInvoice}', [HomeController::class, 'emailPreview'])
+    ->name('other_invoices.email_preview');
+
+Route::post('other-invoice/send-email/{otherInvoice}', [HomeController::class, 'sendEmail'])
+    ->name('other_invoices.send_email');
+
+Route::get('payment/pay-now/{otherInvoice}', [HomeController::class, 'payNow'])
+    ->name('payment.pay_now');    
+
 Route::get('edit-other-invoice', [HomeController::class, 'edit_other_invoice'])->name('edit_other_invoice')->middleware(
     [
         'XSS',
@@ -153,75 +165,50 @@ Route::get('edit-other-invoice', [HomeController::class, 'edit_other_invoice'])-
 );
 
 // Tenant Dashbaord
-Route::get('tenant-profile', [HomeController::class, 'tenant_profile'])->name('tenant_profile')->middleware(
-    [
-        'XSS',
-    ]
-);
+Route::middleware(['auth', 'XSS'])->group(function () {
+    
+    Route::get('tenant-profile', [HomeController::class, 'tenant_profile'])
+        ->name('tenant_profile');
 
-Route::post('/tenant-profile/{tenant}', [HomeController::class, 'update'])->name('tenant-profile.update');
+    Route::post('tenant-profile/{tenant}', [HomeController::class, 'update'])
+        ->name('tenant-profile.update');
 
-Route::get('property-details', [HomeController::class, 'property_details'])->name('property_details')->middleware(
-    [
-        'XSS',
-    ]
-);
+    Route::get('property-details', [HomeController::class, 'property_details'])
+        ->name('property_details');
 
-Route::get('payment-section', [HomeController::class, 'payment_section'])->name('payment_section')->middleware(
-    [
-        'XSS',
-    ]
-);
+    Route::get('payment-section', [HomeController::class, 'payment_section'])
+        ->name('payment_section');
 
+    Route::get('tenant-ticket-support', [HomeController::class, 'tenant_ticket_support'])
+        ->name('tenant_ticket_support');
 
-Route::get('tenant-ticket-support', [HomeController::class, 'tenant_ticket_support'])->name('tenant_ticket_support')->middleware(
-    [
-        'XSS',
-    ]
-);
-Route::get('tenant-view-ticket', [HomeController::class, 'tenant_view_ticket'])->name('tenant_view_ticket')->middleware(
-    [
-        'XSS',
-    ]
-);
-Route::get('add-tenant-ticket', [HomeController::class, 'add_tenant_ticket'])->name('add_tenant_ticket')->middleware(
-    [
-        'XSS',
-    ]
-);
-Route::get('tenant-notices', [HomeController::class, 'tenant_notices'])->name('tenant_notices')->middleware(
-    [
-        'XSS',
-    ]
-);
-Route::get('tenant-documents', [HomeController::class, 'tenant_documents'])->name('tenant_documents')->middleware(
-    [
-        'XSS',
-    ]
-);
+    Route::get('tenant-view-ticket', [HomeController::class, 'tenant_view_ticket'])
+        ->name('tenant_view_ticket');
 
-Route::get('tenant/document/{id}/download', [HomeController::class, 'download'])->name('tenant.document.download');
+    Route::get('add-tenant-ticket', [HomeController::class, 'add_tenant_ticket'])
+        ->name('add_tenant_ticket');
 
-Route::get('utilities-invoices', [HomeController::class, 'utilities_invoices'])->name('utilities_invoices')->middleware(
-    [
-        'XSS',
-    ]
-);
-Route::get('tenant-late-fees', [HomeController::class, 'tenant_late_fees'])->name('tenant_late_fees')->middleware(
-    [
-        'XSS',
-    ]
-);
-Route::get('tenant-other-invoice', [HomeController::class, 'tenant_other_invoice'])->name('tenant_other_invoice')->middleware(
-    [
-        'XSS',
-    ]
-);
-Route::get('view-invoice', [HomeController::class, 'view_invoice'])->name('view_invoice')->middleware(
-    [
-        'XSS',
-    ]
-);
+    Route::get('tenant-notices', [HomeController::class, 'tenant_notices'])
+        ->name('tenant_notices');
+
+    Route::get('tenant-documents', [HomeController::class, 'tenant_documents'])
+        ->name('tenant_documents');
+
+    Route::get('tenant/document/{id}/download', [HomeController::class, 'download'])
+        ->name('tenant.document.download');
+
+    Route::get('utilities-invoices', [HomeController::class, 'utilities_invoices'])
+        ->name('utilities_invoices');
+
+    Route::get('tenant-late-fees', [HomeController::class, 'tenant_late_fees'])
+        ->name('tenant_late_fees');
+
+    Route::get('tenant-other-invoice', [HomeController::class, 'tenant_other_invoice'])
+        ->name('tenant_other_invoice');
+
+    Route::get('view-invoice', [HomeController::class, 'view_invoice'])
+        ->name('view_invoice');
+});
 
 //-------------------------------User-------------------------------------------
 
