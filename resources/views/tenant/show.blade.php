@@ -64,8 +64,16 @@
                                     role="tab" aria-selected="true">
                                     <div class="d-flex align-items-center">
                                         <div class="flex-shrink-0">
-                                            <img class="img-radius img-fluid wid-80" src="{{ !empty($tenant->user) && !empty($tenant->user->profile) ? asset(Storage::url('upload/profile/' . $tenant->user->profile)) : asset(Storage::url('upload/profile/avatar.png')) }}"
-                                                alt="User image" />
+                                            @if(empty($tenant->user) && !empty($tenant->user->profile) && Storage::exists('upload/profile/' . $tenant->user->profile))
+                                                <img class="img-fluid wid-70 me-2 tenant-img"
+                                                    src="{{ asset(Storage::url('upload/profile/' . $tenant->user->profile)) }}"
+                                                    alt="{{ $tenant->user->name }}">
+                                            @else
+                                                <div class="tenant-avatar d-flex align-items-center justify-content-center wid-70 me-2"
+                                                    style="width:70px; height:70px; border-radius:50%; background:#ddd; font-size:28px; font-weight:bold;">
+                                                    {{ strtoupper(substr($tenant->user->name ?? 'U', 0, 1)) }}
+                                                </div>
+                                            @endif
                                         </div>
                                         <div class="flex-grow-1 mx-3 position-relative">
                                             <h5 class="mb-1">

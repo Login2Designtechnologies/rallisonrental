@@ -33,10 +33,16 @@
                                     <div class="card-body p-3">
                                         <div class="d-flex align-items-start mb-3">
                                             <div class="flex-grow-1">
-                                                <div class="d-flex">
-                                                    <img class="img-fluid wid-70 me-2 tenant-img"
-                                                    src="{{ !empty($tenant->user) && !empty($tenant->user->profile) ? asset(Storage::url('upload/profile/' . $tenant->user->profile)) : asset(Storage::url('upload/profile/avatar.png')) }}"
-                                                    alt="">
+                                                <div class="d-flex">                                                    
+                                                    @if(!empty($tenant->user) && !empty($tenant->user->profile))
+                                                        <img class="img-fluid wid-70 me-2 tenant-img"
+                                                            src="{{ asset(Storage::url('upload/profile/' . $tenant->user->profile)) }}"
+                                                            alt="{{ $tenant->user->name }}">
+                                                    @else
+                                                        <div class="tenant-avatar">
+                                                            {{ strtoupper(substr($tenant->user->name ?? 'U', 0, 1)) }}
+                                                        </div>
+                                                    @endif
 
                                                    <div>
                                                     <a href="{{ route('tenant.show', $tenant->id) }}">

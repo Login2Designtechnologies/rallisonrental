@@ -32,6 +32,7 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 use App\Models\Ticket;
 use App\Models\TenantContract;
+use DB;
 
 class HomeController extends Controller
 {
@@ -84,6 +85,46 @@ class HomeController extends Controller
                 $result['recentTenant'] = Tenant::where('parent_id', parentId())->orderby('id', 'desc')->limit(5)->get();
                 $result['incomeExpenseByMonth'] = $this->incomeByMonth();
                 $result['settings'] = settings();
+
+                $ownerId = auth()->id();
+                $today = Carbon::today();
+
+                // Fetch all invoices for this owner (excluding draft/cancelled)
+                $invoices = Invoice::with(['types', 'payments'])
+                    ->where('parent_id', $ownerId)
+                    ->whereNotIn('status', ['draft','cancelled'])
+                    ->get();
+
+                $currentDue = 0;
+                $pastDue    = 0;
+
+                foreach ($invoices as $invoice) {
+                    $itemsTotal   = $invoice->types->sum('amount');        // from invoice_items
+                    $paymentsMade = $invoice->payments->sum('amount');     // from invoice_payments
+                    $outstanding  = max(0, $itemsTotal - $paymentsMade);
+
+                    if ($outstanding > 0) {
+                        if ($invoice->due_date && Carbon::parse($invoice->due_date)->lt($today)) {
+                            $pastDue += $outstanding;     // overdue
+                        } else {
+                            $currentDue += $outstanding;  // still due
+                        }
+                    }
+                }
+                $result['currentDue'] = $currentDue;
+                $result['pastDue'] = $pastDue;
+                
+                // Utilities Due (delivered but not paid, due date in future or today)
+                $result['utilitiesDue'] = UtilityInvoice::where('owner_id', $ownerId)
+                    ->whereIn('status', ['delivered']) // still unpaid
+                    ->whereDate('due_date', '>=', $today)
+                    ->sum('amount');
+
+                // Utilities Past Due (overdue)
+                $result['utilitiesPastDue'] = UtilityInvoice::where('owner_id', $ownerId)
+                    ->whereIn('status', ['delivered', 'overdue']) // unpaid or marked overdue
+                    ->whereDate('due_date', '<', $today)
+                    ->sum('amount');
 
 
 

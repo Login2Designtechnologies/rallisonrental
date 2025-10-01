@@ -117,6 +117,97 @@ chart.render();
                             </div>
                         </div>
                         <div class="flex-grow-1 ms-3">
+                            <p class="mb-1">{{ __('Current Amount Due') }}</p>
+                            <div class="d-flex align-items-center justify-content-between">
+                                <h4 class="mb-0">{{ $result['currentDue'] }}</h4>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6 d-flex">
+            <div class="card bg-custom radius-40 bg-2 bg-img fw-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <div class="avtar bg-light-warning">
+                                <i class="ti ti-3d-cube-sphere f-24"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <p class="mb-1">{{ __('Past Due Amount') }}</p>
+                            <div class="d-flex align-items-center justify-content-between">
+                                <h4 class="mb-0">{{ $result['pastDue'] }}</h4>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="col-lg-3 col-md-6 d-flex">
+            <div class="card bg-custom radius-40 bg-3 bg-img bg-img fw-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <div class="avtar bg-light-primary">
+                                <i class="ti ti-file-invoice f-24"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <p class="mb-1">{{ __('Utilities Due') }}</p>
+                            <div class="d-flex align-items-center justify-content-between">
+                                <h4 class="mb-0">{{ $settings['CURRENCY_SYMBOL'] }}<span
+                                        class="count">{{ $result['utilitiesPastDue'] }}</h4>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6 d-flex">
+            <div class="card bg-custom radius-40 bg-4 bg-img bg-img fw-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <div class="avtar bg-light-danger">
+                                <i class="ti ti-exposure f-24"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <p class="mb-1">{{ __('Utilities Past Due') }}</p>
+                            <div class="d-flex align-items-center justify-content-between">
+                                <h4 class="mb-0">{{ $settings['CURRENCY_SYMBOL'] }}<span
+                                        class="count">{{ $result['totalExpense'] }}</h4>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <hr/>
+
+    <div class="row g-3">
+        <div class="col-lg-3 col-md-6 d-flex">
+            <div class="card bg-custom radius-40 bg-1 bg-img fw-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <div class="avtar bg-light-secondary">
+                                <i class="ti ti-building f-24"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
                             <p class="mb-1">{{ __('Total Property') }}</p>
                             <div class="d-flex align-items-center justify-content-between">
                                 <h4 class="mb-0">{{ $result['totalProperty'] }}</h4>
@@ -160,7 +251,7 @@ chart.render();
                             </div>
                         </div>
                         <div class="flex-grow-1 ms-3">
-                            <p class="mb-1">{{ __('Total Invoice') }}</p>
+                            <p class="mb-1">{{ __('Amount Collected') }}</p>
                             <div class="d-flex align-items-center justify-content-between">
                                 <h4 class="mb-0">{{ $settings['CURRENCY_SYMBOL'] }}<span
                                         class="count">{{ $result['totalIncome'] }}</h4>
@@ -182,7 +273,7 @@ chart.render();
                             </div>
                         </div>
                         <div class="flex-grow-1 ms-3">
-                            <p class="mb-1">{{ __('Total Expense') }}</p>
+                            <p class="mb-1">{{ __('Total Expenses YTD') }}</p>
                             <div class="d-flex align-items-center justify-content-between">
                                 <h4 class="mb-0">{{ $settings['CURRENCY_SYMBOL'] }}<span
                                         class="count">{{ $result['totalExpense'] }}</h4>
