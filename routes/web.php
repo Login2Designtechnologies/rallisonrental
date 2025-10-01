@@ -208,6 +208,12 @@ Route::middleware(['auth', 'XSS'])->group(function () {
 
     Route::get('view-invoice', [HomeController::class, 'view_invoice'])
         ->name('view_invoice');
+
+    Route::get('view-payment', [HomeController::class, 'view_payment'])
+        ->name('view_payment');
+
+    Route::get('make-payment', [HomeController::class, 'make_payment'])
+        ->name('make_payment');
 });
 
 //-------------------------------User-------------------------------------------

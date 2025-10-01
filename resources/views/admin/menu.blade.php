@@ -15,7 +15,9 @@
                     <img src="../../public/assets/images/authentication/logo.png"
                     alt="" class="logo logo-lg" />
             </a>
+           
         </div>
+         <h5 class="name text-center text-white mt-2"> {{\Auth::user()->name}}</h5>
         <div class="navbar-content">
             <ul class="pc-navbar">
                 <li class="pc-item pc-caption">
@@ -91,15 +93,7 @@
                         <i class="ti ti-chart-arcs"></i>
                     </li> -->
 
-                    @if (Gate::check('manage tenant'))
-                        <li
-                            class="pc-item {{ in_array($routeName, ['tenant.index', 'tenant.create', 'tenant.edit', 'tenant.show']) ? 'active' : '' }}">
-                            <a href="{{ route('tenant.index') }}" class="pc-link">
-                                <span class="pc-micon"><i class="ti ti-user"></i></span>
-                                <span class="pc-mtext">{{ __('Tenants Management') }}</span>
-                            </a>
-                        </li>
-                    @endif
+                   
                     @if (Gate::check('manage maintainer'))
                         {{--<!-- <li class="pc-item {{ in_array($routeName, ['maintainer.index']) ? 'active' : '' }}">
                             <a href="{{ route('maintainer.index') }}" class="pc-link">
@@ -135,6 +129,16 @@
                             </ul>
                         </li>
 
+                    @endif
+
+                     @if (Gate::check('manage tenant'))
+                        <li
+                            class="pc-item {{ in_array($routeName, ['tenant.index', 'tenant.create', 'tenant.edit', 'tenant.show']) ? 'active' : '' }}">
+                            <a href="{{ route('tenant.index') }}" class="pc-link">
+                                <span class="pc-micon"><i class="ti ti-user"></i></span>
+                                <span class="pc-mtext">{{ __('Tenants Management') }}</span>
+                            </a>
+                        </li>
                     @endif
 
                     @if (Gate::check('manage maintainer') || Gate::check('manage maintenance request'))
@@ -521,6 +525,12 @@
                             <a href="{{url('manage-template')}}" class="pc-link">
                                 <span class="pc-micon"><i class="ti ti-layout"></i></span>
                                 <span class="pc-mtext">{{ __('Manage Template') }}</span>
+                            </a>
+                        </li>
+                        <li class="pc-item ">
+                            <a href="{{url('subscription ')}}" class="pc-link">
+                                <span class="pc-micon"><i class="ti ti-layout"></i></span>
+                                <span class="pc-mtext">{{ __('Subscription ') }}</span>
                             </a>
                         </li>
                         

@@ -7,14 +7,16 @@
     ul#myTab {
         pointer-events: none;
     }
-    .step-status {
+	.step-status {
         margin-left: 6px;
     }
     .step-status.done::before {
         content: "✔";  /* green tick */
         color: #28a745;
-        font-weight: bold;
+        font-weight: bold;font-size: 20px;
     }
+    .step-status.done{position: absolute;
+  right: 10px;}
 </style>
 
 @push('script-page')
@@ -46,7 +48,7 @@
         });
         $('#property-submit').on('click', function() {
             "use strict";
-            $('#property-submit').attr('disabled', true);            
+            $('#property-submit').attr('disabled', true);
             var fd = new FormData();
             var croppedImage = $('#croppedImage').val();
             if (croppedImage) {
@@ -67,12 +69,13 @@
                     fd.append('thumbnail', fileInput.files[0]);
                 }
             }
+
             var files = $('#demo-upload').get(0).dropzone.getAcceptedFiles();
             $.each(files, function(key, file) {
                 fd.append('property_images[' + key + ']', $('#demo-upload')[0].dropzone
                     .getAcceptedFiles()[key]); // attach dropzone image element
             });
-
+            
             var other_data = $('#property_form').serializeArray();
             $.each(other_data, function(key, input) {
                 fd.append(input.name, input.value);
@@ -328,7 +331,7 @@
                             role="tab" aria-selected="true">
                             <i class="material-icons-two-tone me-2">info</i>
                             {{ __('Property Details') }}
-                            <span class="step-status"></span>
+							<span class="step-status"></span>
                         </a>
                     </li>
                     <li class="nav-item">
@@ -336,7 +339,7 @@
                             aria-selected="true">
                             <i class="material-icons-two-tone me-2">image</i>
                             {{ __('Property Images') }}
-                            <span class="step-status"></span>
+							<span class="step-status"></span>
                         </a>
                     </li>
                     <li class="nav-item">
@@ -344,7 +347,7 @@
                             aria-selected="true">
                             <i class="material-icons-two-tone me-2">layers</i>
                             {{ __('Unit') }}
-                            <span class="step-status"></span>
+							<span class="step-status"></span>
                         </a>
                     </li>
                     <li class="nav-item">
@@ -352,7 +355,7 @@
                             aria-selected="true">
                             <i class="material-icons-two-tone ti ti-tools me-2"></i>
                             {{ __('Amenities') }}
-                            <span class="step-status"></span>
+							<span class="step-status"></span>
                         </a>
                     </li>
                     <li class="nav-item">
@@ -360,7 +363,7 @@
                             aria-selected="true">
                             <i class="material-icons-two-tone ti ti-bulb me-2"></i>
                             {{ __('Utilities') }}
-                            <span class="step-status"></span>
+							<span class="step-status"></span>
                         </a>
                     </li>
 
@@ -400,8 +403,8 @@
                                             
                                             <div class="col-sm-4">
                                                 <!-- Cropper.js -->
-                                                <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet"/>
-                                                <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
 
                                                 <div class="mb-3">
                                                     {{--<!-- <div class="form-group">
@@ -415,89 +418,90 @@
                                                     </div>
                                                     
                                                     <!-- Preview & Crop Area -->
-                                                    <div id="preview-container" style="display:none; margin-top:10px; text-align:center;">
-                                                        <img id="imagePreview" src="" alt="Preview" style="max-width:100%; border:1px solid #ddd; border-radius:6px;">
-                                                        
-                                                        <!-- Action Buttons -->
-                                                        <div class="mt-2">
-                                                            <button type="button" class="btn btn-success btn-sm" id="cropButton" style="display:none;">Crop & Save</button>
-                                                            <button type="button" class="btn btn-warning btn-sm" id="editButton" style="display:none;">Edit Again</button>
-                                                            <button type="button" class="btn btn-danger btn-sm" id="cancelButton" style="display:none;">Cancel</button>
-                                                        </div>
-                                                    </div>
+<div id="preview-container" style="display:none; margin-top:10px; text-align:center;">
+    <img id="imagePreview" src="" alt="Preview" style="max-width:100%; border:1px solid #ddd; border-radius:6px;">
+    
+    <!-- Action Buttons -->
+    <div class="mt-2">
+        <button type="button" class="btn btn-success btn-sm" id="cropButton" style="display:none;">Crop & Save</button>
+        <button type="button" class="btn btn-warning btn-sm" id="editButton" style="display:none;">Edit Again</button>
+        <button type="button" class="btn btn-danger btn-sm" id="cancelButton" style="display:none;">Cancel</button>
+    </div>
+</div>
 
-                                                    <!-- Hidden input for cropped image -->
-                                                    <input type="hidden" name="cropped_image" id="croppedImage">
-                                                    <script>
-                                                        let cropper;
-                                                        const input = document.getElementById('thumbnailInput');
-                                                        const preview = document.getElementById('imagePreview');
-                                                        const previewContainer = document.getElementById('preview-container');
-                                                        const cropBtn = document.getElementById('cropButton');
-                                                        const editBtn = document.getElementById('editButton');
-                                                        const cancelBtn = document.getElementById('cancelButton');
-                                                        const croppedInput = document.getElementById('croppedImage');
+<!-- Hidden input for cropped image -->
+<input type="hidden" name="cropped_image" id="croppedImage">
+<script>
+    let cropper;
+    const input = document.getElementById('thumbnailInput');
+    const preview = document.getElementById('imagePreview');
+    const previewContainer = document.getElementById('preview-container');
+    const cropBtn = document.getElementById('cropButton');
+    const editBtn = document.getElementById('editButton');
+    const cancelBtn = document.getElementById('cancelButton');
+    const croppedInput = document.getElementById('croppedImage');
 
-                                                        input.addEventListener('change', e => {
-                                                            const file = e.target.files[0];
-                                                            if (file) {
-                                                                const reader = new FileReader();
-                                                                reader.onload = ev => {
-                                                                    preview.src = ev.target.result;
-                                                                    previewContainer.style.display = 'block';
+    input.addEventListener('change', e => {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = ev => {
+                preview.src = ev.target.result;
+                previewContainer.style.display = 'block';
 
-                                                                    if (cropper) cropper.destroy();
-                                                                    cropper = new Cropper(preview, {
-                                                                        aspectRatio: 16/9,
-                                                                        viewMode: 1,
-                                                                        autoCropArea: 1
-                                                                    });
+                if (cropper) cropper.destroy();
+                cropper = new Cropper(preview, {
+                    aspectRatio: 16/9,
+                    viewMode: 1,
+                    autoCropArea: 1
+                });
 
-                                                                    cropBtn.style.display = 'inline-block';
-                                                                    cancelBtn.style.display = 'inline-block';
-                                                                    editBtn.style.display = 'none';
-                                                                };
-                                                                reader.readAsDataURL(file);
-                                                            }
-                                                        });
+                cropBtn.style.display = 'inline-block';
+                cancelBtn.style.display = 'inline-block';
+                editBtn.style.display = 'none';
+            };
+            reader.readAsDataURL(file);
+        }
+    });
 
-                                                        // Crop & Save
-                                                        cropBtn.addEventListener('click', () => {
-                                                            if (cropper) {
-                                                                const canvas = cropper.getCroppedCanvas({ width: 800, height: 450 });
-                                                                preview.src = canvas.toDataURL();
-                                                                croppedInput.value = canvas.toDataURL('image/jpeg');
-                                                                cropper.destroy();
-                                                                cropBtn.style.display = 'none';
-                                                                cancelBtn.style.display = 'none';
-                                                                editBtn.style.display = 'inline-block';
-                                                            }
-                                                        });
+    // Crop & Save
+    cropBtn.addEventListener('click', () => {
+        if (cropper) {
+            const canvas = cropper.getCroppedCanvas({ width: 800, height: 450 });
+            preview.src = canvas.toDataURL();
+            croppedInput.value = canvas.toDataURL('image/jpeg');
+            cropper.destroy();
+            cropBtn.style.display = 'none';
+            cancelBtn.style.display = 'none';
+            editBtn.style.display = 'inline-block';
+        }
+    });
 
-                                                        // Edit Again
-                                                        editBtn.addEventListener('click', () => {
-                                                            cropper = new Cropper(preview, {
-                                                                aspectRatio: 16/9,
-                                                                viewMode: 1,
-                                                                autoCropArea: 1
-                                                            });
-                                                            cropBtn.style.display = 'inline-block';
-                                                            cancelBtn.style.display = 'inline-block';
-                                                            editBtn.style.display = 'none';
-                                                        });
+    // Edit Again
+    editBtn.addEventListener('click', () => {
+        cropper = new Cropper(preview, {
+            aspectRatio: 16/9,
+            viewMode: 1,
+            autoCropArea: 1
+        });
+        cropBtn.style.display = 'inline-block';
+        cancelBtn.style.display = 'inline-block';
+        editBtn.style.display = 'none';
+    });
 
-                                                        // Cancel
-                                                        cancelBtn.addEventListener('click', () => {
-                                                            if (cropper) cropper.destroy();
-                                                            preview.src = '';
-                                                            previewContainer.style.display = 'none';
-                                                            input.value = ''; // reset file input
-                                                            croppedInput.value = '';
-                                                            cropBtn.style.display = 'none';
-                                                            editBtn.style.display = 'none';
-                                                            cancelBtn.style.display = 'none';
-                                                        });
-                                                    </script>
+    // Cancel
+    cancelBtn.addEventListener('click', () => {
+        if (cropper) cropper.destroy();
+        preview.src = '';
+        previewContainer.style.display = 'none';
+        input.value = ''; // reset file input
+        croppedInput.value = '';
+        cropBtn.style.display = 'none';
+        editBtn.style.display = 'none';
+        cancelBtn.style.display = 'none';
+    });
+</script>
+
                                                 </div>
                                             </div>
                                             <div class="col-sm-12">
@@ -634,7 +638,16 @@
                                         <div class="form-group col-md-6">
                                             {{ Form::label('unitname', __('Name'), ['class' => 'form-label']) }}
                                             {{ Form::text('unitname[]', null, ['class' => 'form-control', 'placeholder' => __('Enter unit name')]) }}
-                                        </div>                            
+                                        </div>
+
+                                        <div class="form-group col-md-6">
+                                            {{ Form::label('status', __('Status'), ['class' => 'form-label']) }}
+                                            {{ Form::select('status[]', [
+                                                '1' => 'Active',
+                                                '0' => 'Inactive'
+                                            ], null, ['class' => 'form-control', 'placeholder' => __('Select Status')]) }}
+                                        </div>
+
                                         
                                         <div class="form-group col-md-12">
                                             {{ Form::label('notes', __('Description'), ['class' => 'form-label']) }}
@@ -695,12 +708,12 @@
                                     <div class="card bg-custom bg-white w-100">
                                         <div class="">
                                             <div class="row align-items-center g-2">
-                                                <div class="col">
+                                                <!-- <div class="col">
                                                     <h5>Amenities List</h5>
-                                                </div>
-                                                <div class="col-auto">
+                                                </div> -->
+                                                <div class="col-auto mx-auto">
                                                     <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#addAmenityModal">
-                                                        <i class="ti ti-circle-plus align-text-bottom"></i> Add New
+                                                        <i class="ti ti-circle-plus align-text-bottom"></i> Add Amenities 
                                                     </button>
                                                 </div>
 
@@ -728,13 +741,14 @@
                                                                     {{ $amenity->status == 1 ? 'Active' : 'Inactive' }}
                                                                 </td>
                                                                 <td class="text-center">
-                                                                    <button class="btn btn-sm btn-warning editAmenityBtn" 
-                                                                        data-id="{{ $amenity->id }}" 
-                                                                        data-name="{{ $amenity->name }}"
-                                                                        data-price="{{ $amenity->price }}" 
-                                                                        data-status="{{ $amenity->status }}">
-                                                                        <i class="ti ti-edit"></i>
-                                                                    </button>
+                                            <button class="btn btn-sm btn-warning editAmenityBtn" 
+                                                data-id="{{ $amenity->id }}" 
+                                                data-name="{{ $amenity->name }}"
+                                                data-price="{{ $amenity->price }}" 
+                                                data-status="{{ $amenity->status }}">
+                                            <i class="ti ti-edit"></i>
+                                        </button>
+
                                                                 </td>
                                                             </tr>
                                                         @endforeach
@@ -1019,7 +1033,7 @@
 
                     // ✅ Success message (no reload)
                     alert(response.message);
-                    $('#amenitiesWrapper').show();
+					$('#amenitiesWrapper').show();
                     // Row count (next number)
                     let rowCount = $("#amenitiesTable tbody tr").length + 1;
 

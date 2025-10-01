@@ -41,8 +41,11 @@
                                                    <div>
                                                     <a href="{{ route('tenant.show', $tenant->id) }}">
                                                         <h4>
-                                                            <span class="d-block">{{ ucfirst(!empty($tenant->user) ? $tenant->user->first_name : '') }}</span>
-                                                            <span class="d-block">{{ ucfirst(!empty($tenant->user) ? $tenant->user->last_name : '') }}</span>
+                                                            <!-- <span class="d-block">{{ ucfirst(!empty($tenant->user) ? $tenant->user->first_name : '') }}</span>
+                                                            <span class="d-block">{{ ucfirst(!empty($tenant->user) ? $tenant->user->last_name : '') }}</span> -->
+                                                            <span class="d-block">{{ strtoupper(substr(!empty($tenant->user) ? $tenant->user->first_name : '', 0, 1)) }}</span>
+                                                            <span class="d-block">{{ strtoupper(substr(!empty($tenant->user) ? $tenant->user->last_name : '', 0, 1)) }}</span>
+
                                                         </h4>
                                                     </a>
                                                         <!-- <a href="{{ route('tenant.show', $tenant->id) }}">
@@ -120,28 +123,16 @@
                                                 </h6>
                                             </div>
 
-                                            <div class="col-sm-6 mb-3">
+                                            <!-- <div class="col-sm-6 mb-3">
                                                 <p class="mb-0  text-sm">{{ __('Lease Start Date') }} :</p>
-                                                <!-- <h6 class="mb-0">{{ dateFormat($tenant->lease_start_date) }}</h6> -->
-                                                {{--<!-- <h6 class="mb-0">{{ \Carbon\Carbon::parse($tenant->lease_start_date)->format('m-d-y') }}</h6> -->--}}
                                                 <h6 class="mb-0 date-block">{{ $tenant->lease_start_date }}</h6>
                                             </div>
                                             <div class="col-sm-6 mb-3">
                                                 <p class="mb-0  text-sm">{{ __('Lease End Date') }} :</p>
-                                                <!-- <h6 class="mb-0">{{ dateFormat($tenant->lease_end_date) }}</h6> -->
-                                                 {{--<!-- <h6 class="mb-0">{{ \Carbon\Carbon::parse($tenant->lease_end_date)->format('m-d-y') }}</h6> -->--}}
                                                  <h6 class="mb-0 date-block">{{ $tenant->lease_end_date }}</h6>
-                                            </div>
-
-                                            <!-- <div class="col-sm-6 mb-3">
-                                                <p class="mb-0  text-sm">{{ __('Phone') }} :</p>
-                                                <h6 class="mb-0">
-                                                    {{ !empty($tenant->user) ? $tenant->user->phone_number : '-' }}</h6>
-                                            </div>
-                                            <div class="col-sm-6 mb-3">
-                                                <p class="mb-0  text-sm">{{ __('Emergency Contact No.') }} :</p>
-                                                <h6 class="mb-0">{{ !empty($tenant->user->emergency_phone_number) ? $tenant->user->emergency_phone_number : '-' }}</h6>
                                             </div> -->
+
+                                           
 
                                             <div class="col-sm-6 mb-3">
                                                 <p class="mb-0  text-sm">{{ __('Amount Due') }} :</p>
@@ -152,18 +143,21 @@
                                                 <p class="mb-0  text-sm">{{ __('Amount Past Due') }} :</p>
                                                 <h6 class="mb-0"> $</h6>
                                             </div>
-                                            <!-- <div class="col-sm-6 mb-3">
-                                                <p class="mb-0  text-sm">{{ __('Property') }} :</p>
+
+                                            <div class="col-sm-6 mb-3">
+                                                <p class="mb-0  text-sm">{{ __('Dtilities Due') }} :</p>
                                                 <h6 class="mb-0">
-                                                    {{ !empty($tenant->properties) ? $tenant->properties->name : '-' }}
-                                                </h6>
-                                            </div> -->
-                                            <!-- <div class="col-sm-6 mb-3">
-                                                <p class="mb-0  text-sm">{{ __('Unit') }} :</p>
-                                                <h6 class="mb-0">
-                                                    {{ !empty($tenant->units) ? $tenant->units->name : '-' }}
-                                                </h6>
-                                            </div> -->
+                                                    $</h6>
+                                            </div>
+                                            <div class="col-sm-6 mb-3">
+                                                <p class="mb-0  text-sm">{{ __('Dtilities Past Due') }} :</p>
+                                                <h6 class="mb-0"> $</h6>
+                                            </div>
+                                            <div class="col-sm-12 mb-3">
+                                                <p class="mb-0  text-sm">{{ __('Months Left on Lease') }} : $</p>
+                                                
+                                            </div>
+                                            
                                             <div class="btn-block">
                                                 <a href="{{ route('tenant.show', $tenant->id) }}" class="btn btn-md btn-outline-secondary">Manage Tenant</a>
                                             </div>

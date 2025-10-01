@@ -70,7 +70,7 @@
                                         <div class="flex-grow-1 mx-3 position-relative">
                                             <h5 class="mb-1">
                                                 {{ $fullName }} <br>
-                                                <span>{{ $u->email }}</span>
+                                                <!-- <span>{{ $u->email }}</span> -->
                                             </h5>
                                             {{-- <a href="" class="text-white position-absolute top-0.5 right-0.5" >Edit</a> --}}
 
@@ -101,7 +101,7 @@
                                     role="tab" aria-selected="false">
                                     <div class="d-flex align-items-center">
                                         <div class="flex-shrink-0">
-                                            <i class="ti ti-key me-2 f-20"></i>
+                                            <i class="ti ti-calendar me-2 f-20"></i>
                                         </div>
                                         <div class="flex-grow-1 ms-2">
                                             <h5 class="mb-0">Payment Schedule</h5>
@@ -133,7 +133,7 @@
                                     role="tab" aria-selected="false">
                                     <div class="d-flex align-items-center">
                                         <div class="flex-shrink-0">
-                                            <i class="ti ti-bulb me-2 f-20"></i>
+                                            <i class="ti ti-file-invoice me-2 f-20"></i>
                                         </div>
                                         <div class="flex-grow-1 ms-2">
                                             <h5 class="mb-0">Other Invoice</h5>
@@ -149,7 +149,7 @@
                                     role="tab" aria-selected="false">
                                     <div class="d-flex align-items-center">
                                         <div class="flex-shrink-0">
-                                            <i class="ti ti-settings me-2 f-20"></i>
+                                            <i class="ti ti-notes me-2 f-20"></i>
                                         </div>
                                         <div class="flex-grow-1 ms-2">
                                             <h5 class="mb-0">Generate Notice</h5>
@@ -165,7 +165,7 @@
                                     role="tab" aria-selected="false">
                                     <div class="d-flex align-items-center">
                                         <div class="flex-shrink-0">
-                                            <i class="ti ti-settings me-2 f-20"></i>
+                                            <i class="ti ti-file-upload me-2 f-20"></i>
                                         </div>
                                         <div class="flex-grow-1 ms-2">
                                             <h5 class="mb-0">Send Document</h5>
@@ -181,10 +181,54 @@
                                     role="tab" aria-selected="false">
                                     <div class="d-flex align-items-center">
                                         <div class="flex-shrink-0">
-                                            <i class="ti ti-mail me-2 f-20"></i>
+                                            <i class="ti ti-report me-2 f-20"></i>
                                         </div>
                                         <div class="flex-grow-1 ms-2">
                                             <h5 class="mb-0">Report</h5>
+                                            <!-- <small class="text-muted">Report</small> -->
+                                        </div>
+                                    </div>
+                                </a>
+                            </li>
+                            
+                            <!-- Emergency Contact Tab -->
+                            <li class="nav-item" role="presentation">
+                                <a class="nav-link" id="emergency-tab" data-bs-toggle="tab" href="#emergency_content"
+                                    role="tab" aria-selected="false">
+                                    <div class="d-flex align-items-center">
+                                        <div class="flex-shrink-0">
+                                            <i class="ti ti-phone me-2 f-20"></i>
+                                        </div>
+                                        <div class="flex-grow-1 ms-2">
+                                            <h5 class="mb-0">Emergency Contact</h5>
+                                            <!-- <small class="text-muted">Report</small> -->
+                                        </div>
+                                    </div>
+                                </a>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <a class="nav-link" id="tenant-tab" data-bs-toggle="tab" href="#tenant_content"
+                                    role="tab" aria-selected="false">
+                                    <div class="d-flex align-items-center">
+                                        <div class="flex-shrink-0">
+                                            <i class="ti ti-user me-2 f-20"></i>
+                                        </div>
+                                        <div class="flex-grow-1 ms-2">
+                                            <h5 class="mb-0">Tenant Information</h5>
+                                            <!-- <small class="text-muted">Report</small> -->
+                                        </div>
+                                    </div>
+                                </a>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <a class="nav-link" id="username-tab" data-bs-toggle="tab" href="#username_content"
+                                    role="tab" aria-selected="false">
+                                    <div class="d-flex align-items-center">
+                                        <div class="flex-shrink-0">
+                                            <i class="ti ti-lock me-2 f-20"></i>
+                                        </div>
+                                        <div class="flex-grow-1 ms-2">
+                                            <h5 class="mb-0">User Name & Password</h5>
                                             <!-- <small class="text-muted">Report</small> -->
                                         </div>
                                     </div>
@@ -296,171 +340,171 @@
                         </div>
                     </div>
 
-  <div class="tab-pane fade" id="contract_content" role="tabpanel" aria-labelledby="contract-tab">
-    <div class="card box-card w-100">
-        <div class="card-header">
-            <h5>Contract Setup</h5>
-        </div>
-        <div class="allwhite pt-0">
-            <div class="card-body theme-card">
-                @php
-                    $isEdit = isset($contract) && $contract?->exists;
-                    $action = route('tenant-contractsupdate', $contract ?? null);
+                        <div class="tab-pane fade" id="contract_content" role="tabpanel" aria-labelledby="contract-tab">
+                            <div class="card box-card w-100">
+                                <div class="card-header">
+                                    <h5>Contract Setup</h5>
+                                </div>
+                                <div class="allwhite pt-0">
+                                    <div class="card-body theme-card">
+                                        @php
+                                            $isEdit = isset($contract) && $contract?->exists;
+                                            $action = route('tenant-contractsupdate', $contract ?? null);
 
-                    $stdRent = old('standard_rent', $tenantcontracts->standard_rent ?? '');
-                    $lateFee = old('late_fee', $tenantcontracts->late_fee ?? '');
-                    $secDep = old('security_deposit', $tenantcontracts->security_deposit ?? '');
-                    $notice = old('notice_period_months', $tenantcontracts->notice_period_months ?? '3');
-                    $renewMon = old('contract_renewal_month', $tenantcontracts->contract_renewal_month ?? '12');
-                    $renewAmt = old('contract_renewal_amount', $tenantcontracts->contract_renewal_amount ?? '');
-                    $tenantId = $tenant->id;
-                    $propertyId = old('property_id', $tenantcontracts->property_id ?? $tenant->property_id);
-                    $ownerId = old('owner_id', $tenantcontracts->owner_id ?? ($tenant->owner_id ?? (auth()->user()->id ?? '')));
-                @endphp
+                                            $stdRent = old('standard_rent', $tenantcontracts->standard_rent ?? '');
+                                            $lateFee = old('late_fee', $tenantcontracts->late_fee ?? '');
+                                            $secDep = old('security_deposit', $tenantcontracts->security_deposit ?? '');
+                                            $notice = old('notice_period_months', $tenantcontracts->notice_period_months ?? '3');
+                                            $renewMon = old('contract_renewal_month', $tenantcontracts->contract_renewal_month ?? '12');
+                                            $renewAmt = old('contract_renewal_amount', $tenantcontracts->contract_renewal_amount ?? '');
+                                            $tenantId = $tenant->id;
+                                            $propertyId = old('property_id', $tenantcontracts->property_id ?? $tenant->property_id);
+                                            $ownerId = old('owner_id', $tenantcontracts->owner_id ?? ($tenant->owner_id ?? (auth()->user()->id ?? '')));
+                                        @endphp
 
-                <form id="setupContractForm" method="POST" action="{{ $action }}" enctype="multipart/form-data">
-                    @csrf
+                                        <form id="setupContractForm" method="POST" action="{{ $action }}" enctype="multipart/form-data">
+                                            @csrf
 
-                    {{-- Hidden inputs --}}
-                    <input type="hidden" name="tenant_id" value="{{ $tenantId }}">
-                    <input type="hidden" name="property_id" value="{{$contract->property ?? '' }}">
-                    <input type="hidden" name="owner_id" value="{{ $contract->user_id ?? '' }}">
+                                            {{-- Hidden inputs --}}
+                                            <input type="hidden" name="tenant_id" value="{{ $tenantId }}">
+                                            <input type="hidden" name="property_id" value="{{$contract->property ?? '' }}">
+                                            <input type="hidden" name="owner_id" value="{{ $contract->user_id ?? '' }}">
 
-                    {{-- Top error summary --}}
-                    @if ($errors->any())
-                        <div class="alert alert-danger">
-                            <strong>Please fix the errors below:</strong>
-                            <ul class="mb-0">
-                                @foreach ($errors->all() as $msg)
-                                    <li>{{ $msg }}</li>
-                                @endforeach
-                            </ul>
-                        </div>
-                    @endif
+                                            {{-- Top error summary --}}
+                                            @if ($errors->any())
+                                                <div class="alert alert-danger">
+                                                    <strong>Please fix the errors below:</strong>
+                                                    <ul class="mb-0">
+                                                        @foreach ($errors->all() as $msg)
+                                                            <li>{{ $msg }}</li>
+                                                        @endforeach
+                                                    </ul>
+                                                </div>
+                                            @endif
 
-                    {{-- Dates --}}
-                    <div class="row g-3 mb-3">
-                        <div class="col-md-6">
-                            <label class="form-label">Start Date</label>
-                    @if(!empty($tenantcontracts->start_date))
-                            <input type="text" style="pointer-events: none;" 
-                                   class="form-control"
-                                   placeholder="MM-DD-YYYY" autocomplete="off" value="{{ old('start_date', $tenantcontracts->start_date ?? '') }}">
-                    @else
-                            <input type="text" id="start_date" name="start_date"
-                                   class="form-control @error('start_date') is-invalid @enderror"
-                                   placeholder="MM-DD-YYYY" autocomplete="off" value="{{ old('start_date', $tenantcontracts->start_date ?? '') }}">
-                    @endif
-                            @error('start_date')
-                                <div class="invalid-feedback d-block">{{ $message }}</div>
-                            @enderror
-                        </div>
+                                            {{-- Dates --}}
+                                            <div class="row g-3 mb-3">
+                                                <div class="col-md-6">
+                                                    <label class="form-label">Start Date</label>
+                                            @if(!empty($tenantcontracts->start_date))
+                                                    <input type="text" style="pointer-events: none;" 
+                                                        class="form-control"
+                                                        placeholder="MM-DD-YYYY" autocomplete="off" value="{{ old('start_date', $tenantcontracts->start_date ?? '') }}">
+                                            @else
+                                                    <input type="text" id="start_date" name="start_date"
+                                                        class="form-control @error('start_date') is-invalid @enderror"
+                                                        placeholder="MM-DD-YYYY" autocomplete="off" value="{{ old('start_date', $tenantcontracts->start_date ?? '') }}">
+                                            @endif
+                                                    @error('start_date')
+                                                        <div class="invalid-feedback d-block">{{ $message }}</div>
+                                                    @enderror
+                                                </div>
 
-                        <div class="col-md-6">
-                            <label class="form-label">End Date</label>
-                    @if(!empty($tenantcontracts->end_date))
-                            <input type="text" style="pointer-events: none;"
-                                   class="form-control"
-                                   placeholder="MM-DD-YYYY" autocomplete="off" value="{{$tenantcontracts->end_date ?? ''}}">
-                    @else
-                            <input type="text" id="end_date" name="end_date"
-                                   class="form-control @error('end_date') is-invalid @enderror"
-                                   placeholder="MM-DD-YYYY" autocomplete="off" value="{{$tenantcontracts->end_date ?? ''}}">
-                    @endif
-                            @error('end_date')
-                                <div class="invalid-feedback d-block">{{ $message }}</div>
-                            @enderror
-                        </div>
-                    </div>
+                                                <div class="col-md-6">
+                                                    <label class="form-label">End Date</label>
+                                            @if(!empty($tenantcontracts->end_date))
+                                                    <input type="text" style="pointer-events: none;"
+                                                        class="form-control"
+                                                        placeholder="MM-DD-YYYY" autocomplete="off" value="{{$tenantcontracts->end_date ?? ''}}">
+                                            @else
+                                                    <input type="text" id="end_date" name="end_date"
+                                                        class="form-control @error('end_date') is-invalid @enderror"
+                                                        placeholder="MM-DD-YYYY" autocomplete="off" value="{{$tenantcontracts->end_date ?? ''}}">
+                                            @endif
+                                                    @error('end_date')
+                                                        <div class="invalid-feedback d-block">{{ $message }}</div>
+                                                    @enderror
+                                                </div>
+                                            </div>
 
-                    {{-- Standard Rent / Fees / Security Deposit --}}
-                    <div class="row g-3 mb-3">
-                        <div class="col-md-6">
-                            <label class="form-label">Standard Rent (USD)</label>
+                                            {{-- Standard Rent / Fees / Security Deposit --}}
+                                            <div class="row g-3 mb-3">
+                                                <div class="col-md-6">
+                                                    <label class="form-label">Standard Rent (USD)</label>
+                                                    <div class="input-group">
+                                                        <span class="input-group-text">$</span>
+                                                        <input type="number" step="0.01" placeholder="e.g. 1200"
+                                                            class="form-control @error('standard_rent') is-invalid @enderror"
+                                                            name="standard_rent" value="{{ $stdRent }}">
+                                                    </div>
+                                                    @error('standard_rent')
+                                                        <div class="invalid-feedback d-block">{{ $message }}</div>
+                                                    @enderror
+                                                </div>
+
+                                                <div class="col-md-6">
+                                                    <label class="form-label">Standard Late Fee (USD)</label>
+                                                    <div class="input-group">
+                                                        <span class="input-group-text">$</span>
+                                                        <input type="number" step="0.01" placeholder="e.g. 50"
+                                                            class="form-control @error('late_fee') is-invalid @enderror"
+                                                            name="late_fee" value="{{ $lateFee }}">
+                                                    </div>
+                                                    @error('late_fee')
+                                                        <div class="invalid-feedback d-block">{{ $message }}</div>
+                                                    @enderror
+                                                </div>
+
+                                                <div class="col-md-6">
+                                                    <label class="form-label">Security Deposit (USD)</label>
+                                                    <div class="input-group">
+                                                        <span class="input-group-text">$</span>
+                                                        <input type="number" step="0.01" placeholder="e.g. 500"
+                                                            class="form-control @error('security_deposit') is-invalid @enderror"
+                                                            name="security_deposit" value="{{ $secDep }}">
+                                                    </div>
+                                                    @error('security_deposit')
+                                                        <div class="invalid-feedback d-block">{{ $message }}</div>
+                                                    @enderror
+                                                </div>
+                                            </div>
+
+                                            {{-- Notice Period --}}
+                                            <div class="col-md-12 mb-3">
+                                                <label class="form-label">Notice Period</label>
+                                                <select name="notice_period_months"
+                                                        class="form-control form-select @error('notice_period_months') is-invalid @enderror">
+                                                    <option value="1" {{ $notice == '1' ? 'selected' : '' }}>1 month</option>
+                                                    <option value="2" {{ $notice == '2' ? 'selected' : '' }}>2 months</option>
+                                                    <option value="3" {{ $notice == '3' ? 'selected' : '' }}>3 months</option>
+                                                </select>
+                                                @error('notice_period_months')
+                                                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                                                @enderror
+                                            </div>
+
+                                            {{-- Contract Renewal --}}
+                                            <div class="col-lg-12 mb-3">
+                                                <h3 class="mb-0 mt-3">Contract Renewal Setup</h3>
+                                            </div>
+
+                                            <div class="col-md-6">
+                                                <label class="form-label">Contract Renewal Month</label>
+                                                <select name="contract_renewal_month" id="contract_renewal_month"
+                                                        class="form-control form-select @error('contract_renewal_month') is-invalid @enderror">
+                                                    <option value="3" {{ $renewMon == '3' ? 'selected' : '' }}>3 months</option>
+                                                    <option value="6" {{ $renewMon == '6' ? 'selected' : '' }}>6 months</option>
+                                                    <option value="9" {{ $renewMon == '9' ? 'selected' : '' }}>9 months</option>
+                                                    <option value="12" {{ $renewMon == '12' ? 'selected' : '' }}>12 months</option>
+                                                </select>
+                                                @error('contract_renewal_month')
+                                                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                                                @enderror
+                                                <div class="form-text">Tip: End Date will auto-suggest based on Start Date + Renewal Months.</div>
+                                            </div>
+
+                                        <div class="col-md-6">
+                            <label class="form-label">Contract Renewal Amount Increase (USD)</label>
                             <div class="input-group">
                                 <span class="input-group-text">$</span>
-                                <input type="number" step="0.01" placeholder="e.g. 1200"
-                                       class="form-control @error('standard_rent') is-invalid @enderror"
-                                       name="standard_rent" value="{{ $stdRent }}">
+                                <input type="number" step="0.01" placeholder="e.g. 100"
+                                    class="form-control @error('contract_renewal_amount') is-invalid @enderror"
+                                    name="contract_renewal_amount" value="{{ $renewAmt }}">
                             </div>
-                            @error('standard_rent')
+                            @error('contract_renewal_amount')
                                 <div class="invalid-feedback d-block">{{ $message }}</div>
                             @enderror
                         </div>
-
-                        <div class="col-md-6">
-                            <label class="form-label">Standard Late Fee (USD)</label>
-                            <div class="input-group">
-                                <span class="input-group-text">$</span>
-                                <input type="number" step="0.01" placeholder="e.g. 50"
-                                       class="form-control @error('late_fee') is-invalid @enderror"
-                                       name="late_fee" value="{{ $lateFee }}">
-                            </div>
-                            @error('late_fee')
-                                <div class="invalid-feedback d-block">{{ $message }}</div>
-                            @enderror
-                        </div>
-
-                        <div class="col-md-6">
-                            <label class="form-label">Security Deposit (USD)</label>
-                            <div class="input-group">
-                                <span class="input-group-text">$</span>
-                                <input type="number" step="0.01" placeholder="e.g. 500"
-                                       class="form-control @error('security_deposit') is-invalid @enderror"
-                                       name="security_deposit" value="{{ $secDep }}">
-                            </div>
-                            @error('security_deposit')
-                                <div class="invalid-feedback d-block">{{ $message }}</div>
-                            @enderror
-                        </div>
-                    </div>
-
-                    {{-- Notice Period --}}
-                    <div class="col-md-12 mb-3">
-                        <label class="form-label">Notice Period</label>
-                        <select name="notice_period_months"
-                                class="form-control form-select @error('notice_period_months') is-invalid @enderror">
-                            <option value="1" {{ $notice == '1' ? 'selected' : '' }}>1 month</option>
-                            <option value="2" {{ $notice == '2' ? 'selected' : '' }}>2 months</option>
-                            <option value="3" {{ $notice == '3' ? 'selected' : '' }}>3 months</option>
-                        </select>
-                        @error('notice_period_months')
-                            <div class="invalid-feedback d-block">{{ $message }}</div>
-                        @enderror
-                    </div>
-
-                    {{-- Contract Renewal --}}
-                    <div class="col-lg-12 mb-3">
-                        <h3 class="mb-0 mt-3">Contract Renewal Setup</h3>
-                    </div>
-
-                    <div class="col-md-6">
-                        <label class="form-label">Contract Renewal Month</label>
-                        <select name="contract_renewal_month" id="contract_renewal_month"
-                                class="form-control form-select @error('contract_renewal_month') is-invalid @enderror">
-                            <option value="3" {{ $renewMon == '3' ? 'selected' : '' }}>3 months</option>
-                            <option value="6" {{ $renewMon == '6' ? 'selected' : '' }}>6 months</option>
-                            <option value="9" {{ $renewMon == '9' ? 'selected' : '' }}>9 months</option>
-                            <option value="12" {{ $renewMon == '12' ? 'selected' : '' }}>12 months</option>
-                        </select>
-                        @error('contract_renewal_month')
-                            <div class="invalid-feedback d-block">{{ $message }}</div>
-                        @enderror
-                        <div class="form-text">Tip: End Date will auto-suggest based on Start Date + Renewal Months.</div>
-                    </div>
-
-                  <div class="col-md-6">
-    <label class="form-label">Contract Renewal Amount Increase (USD)</label>
-    <div class="input-group">
-        <span class="input-group-text">$</span>
-        <input type="number" step="0.01" placeholder="e.g. 100"
-               class="form-control @error('contract_renewal_amount') is-invalid @enderror"
-               name="contract_renewal_amount" value="{{ $renewAmt }}">
-    </div>
-    @error('contract_renewal_amount')
-        <div class="invalid-feedback d-block">{{ $message }}</div>
-    @enderror
-</div>
 
 
                     {{-- File Upload --}}
@@ -535,218 +579,224 @@
                     });
                 </script>
 
-            </div>
-        </div>
-    </div>
-</div>
-<div class="tab-pane fade" id="invoice_content" role="tabpanel" aria-labelledby="invoice-tab">
-    <div class="card box-card w-100">
-        <div class="card-header">
-            <h5>Payment Schedule</h5>
-        </div>
-        <div class="card-body">
-            <div class="card theme-card">
-                <div class="table-responsive">
-                    <table class="table table-bordered mb-0 text-center" id="payment-schedule-table">
-                        <thead class="table-theme">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="tab-pane fade" id="invoice_content" role="tabpanel" aria-labelledby="invoice-tab">
+                            <div class="card box-card w-100">
+                                <div class="card-header">
+                                    <h5>Payment Schedule</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="card theme-card">
+                                        <div class="table-responsive">
+                                            <table class="table table-bordered mb-0 text-center" id="payment-schedule-table">
+                                                <thead class="table-theme">
+                                                    <tr>
+                                                        <th>Month</th>
+                                                        <th>Rent</th>
+                                                        <th>Security</th>
+                                                        <!-- <th>Last Month Rent</th> -->
+                                                        <th>Amenities</th>
+                                                        <th>Utilities</th>
+                                                        <th>Late Payments</th>
+                                                        <th>Status</th>
+                                                        <th>Actions</th>
+                                                    </tr>
+                                                </thead>
+                                    <tbody>
+                        @if($tenantcontracts && $period)
+                            @foreach ($period as $index => $month)
+                                @php
+                                    $label = $month->format('F Y');
+                                    $ym = $month->format('Y-m');
+                                    $isPending = $contract->status == 'pending';
+                                @endphp
+
+                                <tr data-ym="{{ $ym }}">
+                                    <td>{{ $label }}</td>
+
+                                    {{-- Rent --}}
+                                    <td>${{ number_format($tenantcontracts->standard_rent, 2) }}</td>
+
+                                    {{-- Security Deposit --}}
+                                    <td>
+                                        @if($index == 0)
+                                            ${{ number_format($tenantcontracts->security_deposit, 2) }}
+                                        @endif
+                                    </td>
+
+                                    {{-- Last Month Rent --}}
+                                    <!-- <td></td> -->
+
+                                    {{-- Amenities --}}
+                                    <td>${{ number_format($propertyAmenitiesTotal, 2) }}</td>
+                                    <td></td>
+                                    <td></td>
+
+                                    {{-- Status --}}
+                                    <td>
+                                        <select class="form-select form-select-sm status-select">
+                                            <option value="pending" {{ $isPending ? 'selected' : '' }}>Pending</option>
+                                            <option value="paid" {{ !$isPending ? 'selected' : '' }}>Paid</option>
+                                        </select>
+                                    </td>
+
+                                    {{-- Actions --}}
+                                    <td>
+                                        <button class="btn btn-sm btn-primary" title="View Invoice">
+                                            <i class="ti ti-eye"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-secondary" title="Download Invoice">
+                                            <i class="ti ti-download"></i>
+                                        </button>
+                                        <form action="{{ route('tenants.resend', $tenant->id) }}" method="POST" style="display:inline;">
+                                            @csrf
+                                            <button type="submit" class="btn btn-sm btn-warning" title="Resend Invoice">
+                                                <i class="ti ti-send"></i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        @else
                             <tr>
-                                <th>Month</th>
-                                <th>Rent</th>
-                                <th>Security</th>
-                                <th>Last Month Rent</th>
-                                <th>Amenities</th>
-                                <th>Status</th>
-                                <th>Actions</th>
+                                <td colspan="7">No payment schedule available.</td>
                             </tr>
-                        </thead>
-              <tbody>
-@if($tenantcontracts && $period)
-    @foreach ($period as $index => $month)
-        @php
-            $label = $month->format('F Y');
-            $ym = $month->format('Y-m');
-            $isPending = $contract->status == 'pending';
-        @endphp
+                        @endif
+                        </tbody>
 
-        <tr data-ym="{{ $ym }}">
-            <td>{{ $label }}</td>
-
-            {{-- Rent --}}
-            <td>${{ number_format($tenantcontracts->standard_rent, 2) }}</td>
-
-            {{-- Security Deposit --}}
-            <td>
-                @if($index == 0)
-                    ${{ number_format($tenantcontracts->security_deposit, 2) }}
-                @endif
-            </td>
-
-            {{-- Last Month Rent --}}
-            <td></td>
-
-            {{-- Amenities --}}
-            <td>${{ number_format($propertyAmenitiesTotal, 2) }}</td>
-
-            {{-- Status --}}
-            <td>
-                <select class="form-select form-select-sm status-select">
-                    <option value="pending" {{ $isPending ? 'selected' : '' }}>Pending</option>
-                    <option value="paid" {{ !$isPending ? 'selected' : '' }}>Paid</option>
-                </select>
-            </td>
-
-            {{-- Actions --}}
-            <td>
-                <button class="btn btn-sm btn-primary" title="View Invoice">
-                    <i class="ti ti-eye"></i>
-                </button>
-                <button class="btn btn-sm btn-secondary" title="Download Invoice">
-                    <i class="ti ti-download"></i>
-                </button>
-                <form action="{{ route('tenants.resend', $tenant->id) }}" method="POST" style="display:inline;">
-                    @csrf
-                    <button type="submit" class="btn btn-sm btn-warning" title="Resend Invoice">
-                        <i class="ti ti-send"></i>
-                    </button>
-                </form>
-            </td>
-        </tr>
-    @endforeach
-@else
-    <tr>
-        <td colspan="7">No payment schedule available.</td>
-    </tr>
-@endif
-</tbody>
-
-{{-- Table Footer with grand totals --}}
-<tfoot class="table-secondary text-center">
-<tr>
-    <th>Total</th>
-    <th>${{ number_format((optional($tenantcontracts)->standard_rent ?? 0) * (is_array($period) ? count($period) : 0), 2) }}</th>
-    <th>
-        ${{ number_format($tenantcontracts?->security_deposit ?? 0, 2) }}
-    </th>
-    <th>$0.00</th>
-    <th>${{ number_format($propertyAmenitiesTotal * count($period ?? []), 2) }}</th>
-    <th></th>
-    <th></th>
-</tr>
-</tfoot>
-
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-{{-- JS to toggle contenteditable based on status --}}
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const table = document.getElementById('payment-schedule-table');
-
-    table.querySelectorAll('tr[data-ym]').forEach(row => {
-        const select = row.querySelector('.status-select');
-        const editableCells = row.querySelectorAll('.editable');
-
-        // Set initial editable state
-        editableCells.forEach(cell => {
-            cell.contentEditable = select.value === 'pending';
-        });
-
-        // Toggle editable when status changes
-        select.addEventListener('change', function() {
-            const isPending = this.value === 'pending';
-            editableCells.forEach(cell => {
-                cell.contentEditable = isPending;
-            });
-        });
-    });
-});
-</script>
-
-<div class="tab-pane fade" id="utilities" role="tabpanel" aria-labelledby="utilities-tab">
-    <div class="card box-card w-100">
-        <div class="card-header">
-            <h5>Utilities</h5>
-        </div>
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table table-bordered mb-0 text-center" id="utilities-table">
-                    <thead class="table-theme">
+                        {{-- Table Footer with grand totals --}}
+                        <tfoot class="table-secondary text-center">
                         <tr>
-                            <th>Month</th>
-                            <th>Amount</th>
-                            <th>Status</th>
-                            <th>Actions</th>
+                            <th>Total</th>
+                            <th>${{ number_format((optional($tenantcontracts)->standard_rent ?? 0) * (is_array($period) ? count($period) : 0), 2) }}</th>
+                            <th>
+                                ${{ number_format($tenantcontracts?->security_deposit ?? 0, 2) }}
+                            </th>
+                            <!-- <th>$0.00</th> -->
+                            <th>${{ number_format($propertyAmenitiesTotal * count($period ?? []), 2) }}</th>
+                            <th></th>
+                            <th></th>
+                            <th></th>
+                            <th></th>
                         </tr>
-                    </thead>
-                    <tbody>
-                        @php 
-                            $tenantall = DB::table('utility_invoices')->where('tenant_id',$u->id)->where('property_id',$tenant->property)->get();
-                        @endphp
+                        </tfoot>
 
-                        @forelse ($tenantall as $invoice)
-                            <tr>
-                                <td>{{ date('F Y', strtotime($invoice->invoice_month)) }}</td>
-                                <td>${{ number_format($invoice->amount, 2) }}</td>
-                                <td>
-                                    @if($invoice->status == 'delivered')
-                                        <span class="badge bg-success">Delivered</span>
-                                    @elseif($invoice->status == 'pending')
-                                        <span class="badge bg-warning text-dark">Pending</span>
-                                    @elseif($invoice->status == 'draft')
-                                        <span class="badge bg-secondary text-dark">Draft</span>
-                                    @endif
-                                </td>
-                                <td>
-                                    <a target="_blank" href="{{ route('utility-invoices.show', $invoice->id) }}">
-                                        <i class="ti ti-eye mx-1" data-bs-toggle="tooltip" title="View Invoice"></i>
-                                    </a>
-                                    <a target="_blank" href="{{ route('utility.invoices.pdf', $invoice->id) }}">
-                                        <i class="ti ti-download mx-1" data-bs-toggle="tooltip" title="Download Invoice"></i>
-                                    </a>
-                                    <i class="ti ti-refresh mx-1 resend-invoice" data-id="{{ $invoice->id }}" data-bs-toggle="tooltip" title="Resend Invoice"></i>
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="4">No utility invoices found.</td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-</div>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Resend Invoice AJAX
-    document.querySelectorAll('.resend-invoice').forEach(button => {
-        button.addEventListener('click', function() {
-            const invoiceId = this.dataset.id;
-            fetch(`/utility-invoices/${invoiceId}/resend`, {
-                method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                    'Accept': 'application/json'
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                alert(data.message || 'Invoice resent successfully!');
-            })
-            .catch(err => {
-                console.error(err);
-                alert('Error resending invoice.');
-            });
-        });
-    });
-});
-</script>
+                        {{-- JS to toggle contenteditable based on status --}}
+                        <script>
+                        document.addEventListener('DOMContentLoaded', function() {
+                            const table = document.getElementById('payment-schedule-table');
+
+                            table.querySelectorAll('tr[data-ym]').forEach(row => {
+                                const select = row.querySelector('.status-select');
+                                const editableCells = row.querySelectorAll('.editable');
+
+                                // Set initial editable state
+                                editableCells.forEach(cell => {
+                                    cell.contentEditable = select.value === 'pending';
+                                });
+
+                                // Toggle editable when status changes
+                                select.addEventListener('change', function() {
+                                    const isPending = this.value === 'pending';
+                                    editableCells.forEach(cell => {
+                                        cell.contentEditable = isPending;
+                                    });
+                                });
+                            });
+                        });
+                        </script>
+
+                        <div class="tab-pane fade" id="utilities" role="tabpanel" aria-labelledby="utilities-tab">
+                            <div class="card box-card w-100">
+                                <div class="card-header">
+                                    <h5>Utilities</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered mb-0 text-center" id="utilities-table">
+                                            <thead class="table-theme">
+                                                <tr>
+                                                    <th>Month</th>
+                                                    <th>Amount</th>
+                                                    <th>Status</th>
+                                                    <th>Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @php 
+                                                    $tenantall = DB::table('utility_invoices')->where('tenant_id',$u->id)->where('property_id',$tenant->property)->get();
+                                                @endphp
+
+                                                @forelse ($tenantall as $invoice)
+                                                    <tr>
+                                                        <td>{{ date('F Y', strtotime($invoice->invoice_month)) }}</td>
+                                                        <td>${{ number_format($invoice->amount, 2) }}</td>
+                                                        <td>
+                                                            @if($invoice->status == 'delivered')
+                                                                <span class="badge bg-success">Delivered</span>
+                                                            @elseif($invoice->status == 'pending')
+                                                                <span class="badge bg-warning text-dark">Pending</span>
+                                                            @elseif($invoice->status == 'draft')
+                                                                <span class="badge bg-secondary text-dark">Draft</span>
+                                                            @endif
+                                                        </td>
+                                                        <td>
+                                                            <a target="_blank" href="{{ route('utility-invoices.show', $invoice->id) }}">
+                                                                <i class="ti ti-eye mx-1" data-bs-toggle="tooltip" title="View Invoice"></i>
+                                                            </a>
+                                                            <a target="_blank" href="{{ route('utility.invoices.pdf', $invoice->id) }}">
+                                                                <i class="ti ti-download mx-1" data-bs-toggle="tooltip" title="Download Invoice"></i>
+                                                            </a>
+                                                            <i class="ti ti-refresh mx-1 resend-invoice" data-id="{{ $invoice->id }}" data-bs-toggle="tooltip" title="Resend Invoice"></i>
+                                                        </td>
+                                                    </tr>
+                                                @empty
+                                                    <tr>
+                                                        <td colspan="4">No utility invoices found.</td>
+                                                    </tr>
+                                                @endforelse
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <script>
+                        document.addEventListener('DOMContentLoaded', function() {
+                            // Resend Invoice AJAX
+                            document.querySelectorAll('.resend-invoice').forEach(button => {
+                                button.addEventListener('click', function() {
+                                    const invoiceId = this.dataset.id;
+                                    fetch(`/utility-invoices/${invoiceId}/resend`, {
+                                        method: 'POST',
+                                        headers: {
+                                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                            'Accept': 'application/json'
+                                        }
+                                    })
+                                    .then(response => response.json())
+                                    .then(data => {
+                                        alert(data.message || 'Invoice resent successfully!');
+                                    })
+                                    .catch(err => {
+                                        console.error(err);
+                                        alert('Error resending invoice.');
+                                    });
+                                });
+                            });
+                        });
+                        </script>
 
 
                     <div class="tab-pane fade" id="other_invoice" role="tabpanel" aria-labelledby="other_invoice-tab">
@@ -1016,6 +1066,157 @@ document.addEventListener('DOMContentLoaded', function() {
                                         </div>
 
                                     </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- a -->
+                    <div class="tab-pane fade" id="emergency_content" role="tabpanel" aria-labelledby="emergency-tab">
+                        <div class="card box-card w-100">
+                            <div class="card-header">
+                                <h5>Emergency Information</h5>
+                            </div>
+                            <div class="card-body allwhite px-3">
+
+
+                                <div class="table-responsive">
+                                    <table class="table table-borderless">
+                                        <tbody>
+                                            <tr>
+                                                <td><b class="text-header">Emergency Contact No.</b></td>
+                                                <td>:</td>
+                                                <td>{{ $u?->emergency_phone_number ?: '-' }}</td>
+                                            </tr>
+                                         
+                                        </tbody>
+                                    </table>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- b -->
+                    <div class="tab-pane fade" id="tenant_content" role="tabpanel" aria-labelledby="tenant-tab">
+                        <div class="card box-card w-100">
+                            <div class="card-header">
+                                <h5>Tenant Information</h5>
+                            </div>
+                            <div class="card-body allwhite px-3">
+
+
+                                <div class="table-responsive">
+                                    <table class="table table-borderless">
+                                        <tbody>
+                                            <tr>
+                                                <td><b class="text-header">Emergency Contact No.</b></td>
+                                                <td>:</td>
+                                                <td>{{ $u?->emergency_phone_number ?: '-' }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td><b class="text-header">Country</b></td>
+                                                <td>:</td>
+                                                <td>{{ $country }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td><b class="text-header">State</b></td>
+                                                <td>:</td>
+                                                <td>{{ $tenant->state?->name ?? '-' }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td><b class="text-header">City</b></td>
+                                                <td>:</td>
+                                                <td>{{ $tenant->city?->name ?? '-' }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td><b class="text-header">Zip Code</b></td>
+                                                <td>:</td>
+                                                <td>{{ $tenant->zip_code ?: '-' }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td><b class="text-header">Property</b></td>
+                                                <td>:</td>
+                                                <td>{{ $tenant->property?->title ?? ($tenant->property?->name ?? '-') }}
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td><b class="text-header">Unit</b></td>
+                                                <td>:</td>
+                                                <td>{{ $tenant->unit?->name ?? ($tenant->unit?->number ?? '-') }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td><b class="text-header">Lease Start Date</b></td>
+                                                <td>:</td>
+                                                <td>{{ $leaseStart }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td><b class="text-header">Lease End Date</b></td>
+                                                <td>:</td>
+                                                <td>{{ $leaseEnd }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td><b class="text-header">Documents</b></td>
+                                                <td>:</td>
+                                                <td>
+                                                    @php $hasDocs = false; @endphp
+                                                    @if ($tenant->application_document)
+                                                        @php $hasDocs = true; @endphp
+                                                        <div><a href="{{ Storage::url($tenant->application_document) }}"
+                                                                target="_blank">Application Document</a></div>
+                                                    @endif
+                                                    @if ($tenant->driving_licence)
+                                                        @php $hasDocs = true; @endphp
+                                                        <div><a href="{{ Storage::url($tenant->driving_licence) }}"
+                                                                target="_blank">Driving Licence</a></div>
+                                                    @endif
+                                                    @if ($tenant->bank_statement)
+                                                        @php $hasDocs = true; @endphp
+                                                        <div><a href="{{ Storage::url($tenant->bank_statement) }}"
+                                                                target="_blank">Bank Statement</a></div>
+                                                    @endif
+                                                    @unless ($hasDocs)
+                                                        -
+                                                    @endunless
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td><b class="text-header">Address</b></td>
+                                                <td>:</td>
+                                                <td>{{ $tenant->address ?: '-' }}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- c -->
+                    <div class="tab-pane fade" id="username_content" role="tabpanel" aria-labelledby="username-tab">
+                        <div class="card box-card w-100">
+                            <div class="card-header">
+                                <h5>User Name & Password Information</h5>
+                            </div>
+                            <div class="card-body allwhite px-3">
+
+
+                                <div class="table-responsive">
+                                    <table class="table table-borderless">
+                                        <tbody>
+                                            <tr>
+                                                <td><b class="text-header">User Name </b></td>
+                                                <td>:</td>
+                                                <td></td>
+                                            </tr>
+                                            <tr>
+                                                <td><b class="text-header">Password </b></td>
+                                                <td>:</td>
+                                                <td></td>
+                                            </tr>
+                                         
+                                        </tbody>
+                                    </table>
+
                                 </div>
                             </div>
                         </div>

@@ -8,7 +8,11 @@
     <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">{{ __('Dashboard') }}</a></li>
     <li class="breadcrumb-item" aria-current="page"> {{ __('Property') }}</li>
 @endsection
-
+<style>
+.d-flex.align-items-center.justify-content-between.mt-1.btn-block .btn {
+  font-size: 13px;
+}
+</style>
 @push('script-page')
     <script src="{{ asset('assets/js/vendors/dropzone/dropzone.js') }}"></script>
     <script>
@@ -146,7 +150,7 @@
                                             <h4>{{ $property->name }}</h4>
                                         </a>
                                         @if (Gate::check('edit property') || Gate::check('delete property') || Gate::check('show property'))
-                                            <div class="dropdown">
+                                            <!-- <div class="dropdown">
                                                 <a class="dropdown-toggle text-primary opacity-50 arrow-none" href="#"
                                                     data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                                     <i class="ti ti-dots f-16"></i>
@@ -181,31 +185,39 @@
 
                                                     {!! Form::close() !!}
                                                 </div>
-                                            </div>
+                                            </div> -->
                                         @endif
 
                                     </div>
                                     <div class="col-md-12">
-                                        <button type="button" class="btn  my-2 btn-light-secondary">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <button type="button" class="btn  my-2 btn-light-secondary">
                                             <i class="material-icons-two-tone">ad_units</i> {{ $property->totalUnit() }}
                                             {{ __('Unit') }}
-                                        </button>
-                                        {{--<button type="button" class="btn  my-2 btn-light-secondary">
-                                            <i class="material-icons-two-tone">meeting_room</i>
-                                            {{ $property->totalRoom() }}
-                                            {{ __('Rooms') }}
-                                        </button>--}}
+                                            </button>
+                                            {{--<button type="button" class="btn  my-2 btn-light-secondary">
+                                                <i class="material-icons-two-tone">meeting_room</i>
+                                                {{ $property->totalRoom() }}
+                                                {{ __('Rooms') }}
+                                            </button>--}}
 
+                                            <span class="badge bg-light-secondary h-100" data-bs-toggle="tooltip"
+                                                data-bs-original-title="{{ __('Type') }}">{{ \App\Models\Property::$Type[$property->type] }}</span>
+                                        </div>
                                     </div>
 
                                     <p class="prod-content my-2">
                                         {{ substr($property->description, 0, 200) }}{{ !empty($property->description) ? '...' : '' }}
                                     </p>
 
-                                    <div class="d-flex align-items-center justify-content-between mt-3">
+                                    <div class="d-flex align-items-center justify-content-between mt-1 btn-block">
 
-                                        <span class="badge bg-light-secondary" data-bs-toggle="tooltip"
-                                            data-bs-original-title="{{ __('Type') }}">{{ \App\Models\Property::$Type[$property->type] }}</span>
+                                        <!-- <span class="badge bg-light-secondary" data-bs-toggle="tooltip"
+                                            data-bs-original-title="{{ __('Type') }}">{{ \App\Models\Property::$Type[$property->type] }}</span> -->
+
+                                            <a href="{{ route('property.show', $property->id) }}" class="btn btn-sm btn-outline-primary btn-rounded">View</a>
+                                            <a href="{{ route('property.edit', $property->id) }}" class="btn btn-sm btn-primary btn-rounded">Edit</a>
+
                                     </div>
                                 </div>
                             </div>

@@ -21,15 +21,17 @@ use App\Models\User;
 use App\Models\FAQ;
 use App\Models\Page;
 use App\Models\HomePage;
-use App\Models\OtherInvoice;
 use Auth;
+use App\Models\OtherInvoice;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use App\Models\TenantDocument;
 use App\Models\UtilityInvoice;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
+use App\Models\Ticket;
+use App\Models\TenantContract;
 
 class HomeController extends Controller
 {
@@ -213,6 +215,7 @@ class HomeController extends Controller
     public function edit_late_fee() {
         return View('dashbaordpage.edit-late-fee');
     } 
+
     public function other(Request $request) {        
         $query = OtherInvoice::with(['property', 'tenant.user'])
             ->where('owner_id', Auth::user()->id);
@@ -238,6 +241,7 @@ class HomeController extends Controller
         $otherInvoices = $query->latest()->get();
         return view('dashbaordpage.other', compact('otherInvoices'));
     } 
+	
     public function add_other() {
         // Generate unique invoice number server-side
         $invoice_no = OtherInvoice::generateInvoiceNo();
@@ -248,8 +252,8 @@ class HomeController extends Controller
 
         return view('dashbaordpage.add-other', compact('invoice_no', 'properties', 'tenants'));
     } 
-
-    public function store_other_invoice(Request $request)
+	
+	public function store_other_invoice(Request $request)
     {
         $request->validate([
             'invoice_no'  => 'required|unique:other_invoices,invoice_no',
@@ -286,8 +290,8 @@ class HomeController extends Controller
         }
         return redirect()->route('other')->with('preview_invoice_id', $invoice->id);
     }
-
-    public function emailPreview(OtherInvoice $otherInvoice)
+	
+	public function emailPreview(OtherInvoice $otherInvoice)
     {
         $otherInvoice->load(['tenant', 'owner', 'property', 'items']);
 
@@ -317,10 +321,18 @@ class HomeController extends Controller
     public function payNow(OtherInvoice $invoice)
     {
         return response()->json('Payment gateway integration pending');
-    }
-    
+    }    
+	
     public function edit_other_invoice() {
         return View('dashbaordpage.edit-other-invoice');
+    } 
+
+
+    public function view_payment() {
+        return View('dashbaordpage.view-payment');
+    } 
+    public function make_payment() {
+        return View('dashbaordpage.make-payment');
     } 
 
 
@@ -335,8 +347,8 @@ class HomeController extends Controller
         $validator = Validator::make($request->all(), [
             'full_name' => 'required|string|max:100',
             'email' => 'required|email|max:100|unique:users,email,' . $tenant->user->id,
-            'address' => 'nullable|string|max:255',
             'phone_number' => 'required|string|max:20',
+			'address' => 'nullable|string|max:255',
             'emergency_phone_number' => 'required|string|max:20',
             'emergency_contact_name' => 'required|string|max:100',
             'emergency_contact_relationship' => 'required|string|max:50',
@@ -407,11 +419,12 @@ class HomeController extends Controller
             'emergency_contact_name' => $data['emergency_contact_name'] ?? $tenant->user->emergency_contact_name,
             'emergency_contact_relationship' => $data['emergency_contact_relationship'] ?? $tenant->user->emergency_contact_relationship,
         ]);
-
-        $tenant->update([
+		
+		$tenant->update([
             'address' => $data['address'] ?? $tenant->address,
-            'payment_method' => $data['payment_method'] ?? $tenant->payment_method,
+			'payment_method' => $data['payment_method'] ?? $tenant->payment_method,
         ]);
+
         return response()->json(['success' => true]);
     }
 
@@ -420,7 +433,8 @@ class HomeController extends Controller
         return View('tenant_dashboard.property-details', compact('property'));
     } 
     public function payment_section() {
-        return View('tenant_dashboard.payment-section');
+        $payments = TenantContract::where('tenant_id', Auth::user()->tenants->id)->get();
+        return View('tenant_dashboard.payment-section', compact('payments'));
     } 
     
     public function tenant_ticket_support() {
