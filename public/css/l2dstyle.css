@@ -341,6 +341,20 @@ div.dt-container div.dt-search{margin-bottom: 10px;}
 }
 .tenant-profile-sec .eme-info h3{font-size: 16px;}
 
+.tenant-avatar {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  background: #e0e0e0;
+  color: #333;
+  font-size: 28px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-transform: uppercase;
+}
+
 .eme-info .info-card .info-label, .eme-info .info-card i{color: #316fed !important;display: flex;
   align-items: center;
   margin-right: 5px;}
