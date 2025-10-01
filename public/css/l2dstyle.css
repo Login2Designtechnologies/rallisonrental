@@ -19,7 +19,28 @@
 .notice-card h5.mb-1  {color: #316fed;}
 
 hr{opacity: 0.3;}
-
+.fs-18{font-size:18px}
+.btn.prevButton {
+  background: transparent;
+  color: #2ca58d;
+  border: 1px solid #2ca58d;}
+  .btn.prevButton:hover{  background: #2ca58d;
+  color: #fff;border: 1px solid #2ca58d;}
+.icon-circle-box{background: #eef2f6;
+  padding: 10px;
+  width: 50px;
+  height: 50px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #898484;
+  border-radius: 50px;}
+ .icon-circle-box i.f-24 {font-size: 20px;}
+.link-txt{color: #28a56d;}
+.link-txt:hover{color: #000;}
+.card-body .badge {
+  border-radius: 50px;
+}
 [data-pc-preset="preset-6"] .bg-light-secondary {
   background: #d5ede8;
 }
@@ -39,13 +60,19 @@ table thead th {
 }
 table tbody tr:nth-child(odd){background-color: #f2f2f2 !important;}
 table tbody tr td{font-size: 13px;}
-
+.btn {
+  border-radius: 4px;
+}
 
 .follower-card:hover {border-color: #d0cccc !important;}
 .bg-light-warning{color: #4aa7f0 !important;}
 .bg-light-danger{color: #bf75ff !important}
 [data-pc-preset="preset-6"] .bg-light-primary{color: #36d1bb !important;}
 [data-pc-preset="preset-6"] .btn-light-secondary{color: #2ca58d !important;}
+
+
+.first{min-width: 200px;}
+.first.ul-first{padding-left: 15px;}
 
 #myTab .img-radius.img-fluid.wid-80{height: 50px;min-height: 50px;object-fit: cover;min-width: 50px;max-width: 50px;border: 1px solid #393979;}
 .card .card-header{border-bottom: 1px solid #dfd9d9;}
@@ -117,6 +144,31 @@ div.dt-container div.dt-search{margin-bottom: 10px;}
   float: right;
 }
 
+/* Card payment */
+.card-form { background: #fff;width: 100%; }
+    .card-list { display: flex; justify-content: center; margin-bottom: 20px; }
+    .credit-card { width: 350px; height: 200px; perspective: 1000px; }
+    .card-inner { width: 100%; height: 100%; position: relative; transition: transform 0.6s; transform-style: preserve-3d; border-radius: 15px; }
+    .credit-card.flipped .card-inner { transform: rotateY(180deg); }
+    .card-front, .card-back {
+      position: absolute; width: 100%; height: 100%; border-radius: 15px; color: #fff;
+      backface-visibility: hidden; padding: 20px;
+    }
+    .card-front { background: linear-gradient(135deg, #3b82f6, #1e3a8a); display: flex; flex-direction: column; justify-content: space-between; }
+    .card-back { background: linear-gradient(135deg, #111827, #1f2937); transform: rotateY(180deg); }
+    .card-number { font-size: 20px; letter-spacing: 3px; }
+    .card-holder, .card-expiry { text-transform: uppercase; margin-top: 10px; }
+    .magnetic-strip { background: #000; height: 40px; margin-top: 20px; }
+    .cvv-box { margin-top: 20px; }
+    .cvv-box span { font-size: 18px; letter-spacing: 2px; }
+    .card-input { margin-bottom: 15px; }
+    .card-input input, .card-input select { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ddd; }
+    .card-form__row { display: flex; gap: 10px; }
+    .card-form__col { flex: 1; }
+    .btn-pay { background: #16a34a; color: #fff; border: none; width: 100%; padding: 12px; font-size: 16px; border-radius: 8px; margin-top: 10px; cursor: pointer; }
+    .btn-pay:hover { background: #15803d; }
+/* ./Card payment */
+
 @media (min-width: 1400px) {
  .properties-dtl .col-xxl-3 {width: 20%; }
 
@@ -162,10 +214,10 @@ div.dt-container div.dt-search{margin-bottom: 10px;}
 .property-dtl .card .card-body h6.text-muted{font-size: 14px;
   color: #828fa2 !important;}
 
-  .property-dtl .card.bg-success,
+  /* .property-dtl .card.bg-success,
   .property-dtl .card.bg-info{background: #d3f3df !important;}
   .property-dtl .card.bg-success i,
-  .property-dtl .card.bg-info i{color:#22c55e}
+  .property-dtl .card.bg-info i{color:#22c55e} */
 
 .property-dtl .card .card-body .text-decoration-none{color: #22c55e;font-weight: 600;font-size: 16px;}
 .property-dtl .card .card-body .text-decoration-none:hover{text-decoration: underline !important;}
@@ -285,12 +337,15 @@ div.dt-container div.dt-search{margin-bottom: 10px;}
 }
 .eme-info .editable{display: flex;}
 .eme-info .info-card {
-  background: #f2f7ff;width: 100%;
+  background: #f2f7ff;width: 100%;display: flex;
 }
+.tenant-profile-sec .eme-info h3{font-size: 16px;}
 
-.eme-info .info-card .info-label, .eme-info .info-card i{color: #316fed !important;}
+.eme-info .info-card .info-label, .eme-info .info-card i{color: #316fed !important;display: flex;
+  align-items: center;
+  margin-right: 5px;}
 .eme-info .info-card .inline-text {
-  display: block;
+  display: block;padding-left: 10px;
 }
 .lease-info .info-card {
   background: #fff7f0;
@@ -321,7 +376,12 @@ div.dt-container div.dt-search{margin-bottom: 10px;}
   padding: 10px;
   display: block;
 }
-
+.property-dtl .new-bg-1{background: -webkit-gradient(linear,left top,right top,from(#ffbf96),to(#fe7096));
+  background: linear-gradient(90deg,#ffbf96,#fe7096);
+  border-radius: 5px;}
+ .property-dtl .new-bg-1 *,.new-bg-2 *{color: #fff;}
+ .property-dtl .new-bg-2 {background: -webkit-gradient(linear,left top,right top,from(#90caf9),color-stop(99%,#047edf));
+  background: linear-gradient(90deg,#90caf9,#047edf 99%);}
 
 
 
