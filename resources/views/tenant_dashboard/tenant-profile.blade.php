@@ -14,7 +14,7 @@
 .navtabsulli ul li button{width:100%}
 .navtabsulli ul li button.active,
 .navtabsulli ul li button:hover {
-  background-color: #0b0b1e !important;
+ background: linear-gradient(to bottom, #000, #1a1a47, #0f172a) !important;
   color: #fff !important;
 }
 
@@ -68,7 +68,7 @@
     <div class="row">
     <!-- Sidebar Tabs -->
     <div class="col-md-3 d-flex">
-        <div class="fw-100 bg-white p-3 navtabsulli">
+        <div class="fw-100 bg-white navtabsulli">
             <ul class="nav nav-tabs flex-column mb-4" id="propertyTabs" role="tablist">
                 <li class="nav-item" role="presentation">
                     <button class="nav-link active" id="personal-tab" data-bs-toggle="tab" data-bs-target="#personal" type="button" role="tab" aria-selected="true">
@@ -110,8 +110,8 @@
             <!-- Personal Info -->
             <div class="tab-pane fade show active" id="personal" role="tabpanel" aria-labelledby="personal-tab">
                  <div class="row align-items-center mb-4">
-                    <div class="col-auto ">
-                        <img src="{{ $auth_tenant->user->profile_url }}" alt="{{ $auth_tenant->user->name }}" class="avatar">
+                    <div class="col-2 ">
+                        <img src="{{ $auth_tenant->user->profile_url }}" alt="{{ $auth_tenant->user->name }}" class="avatar img-fluid">
 
                         <input type="file" name="profile_image" id="profile-image-input" 
                             accept="image/*" class="form-control form-control inline-input" style="display:none">
@@ -124,15 +124,15 @@
                         </span> -->
                     </div>
                     <div class="col">
-                        <h2 class="h3 mb-1 editable" data-field="name">
+                        <h2 class="h4 mb-2 editable" data-field="name">
                             <span class="inline-text">{{ $auth_tenant->user->name }}</span>
                             <input type="text" name="full_name" class="form-control form-control inline-input" value="{{ $auth_tenant->user->name }}">
                         </h2>
-                        <h6 class="h5 mb-1 editable" data-field="name">
+                        <h6 class="h5 mb-2 editable" data-field="name">
                             <span class="inline-text"><i class="bi bi-map me-2 text-muted"></i>{{ $auth_tenant->address }}</span>
                             <input type="text" name="address" class="form-control form-control inline-input" value="{{ $auth_tenant->address }}">
                         </h6>
-                        <h6 class="h5 mb-1 editable" data-field="name">
+                        <h6 class="h5 mb-2 editable" data-field="name">
                             <span class="inline-text"><i class="bi bi-lock me-2 text-muted"></i></span>
                             <input type="text" name="address" class="form-control form-control inline-input" value="" placeholder="Enter your password">
                         </h6>
@@ -236,60 +236,68 @@
 
             <!-- Payment Methods -->
             <div class="tab-pane fade" id="payment" role="tabpanel" aria-labelledby="payment-tab">
-                <h3><i class="bi bi-file-text"></i> Payment card</h3>
-                <div class="card-form">
-                    <!-- Card Preview -->
-                    <div class="card-list">
-                        <div class="credit-card" id="credit-card">
-                        <div class="card-inner">
-                            <!-- FRONT -->
-                            <div class="card-front">
-                            <div class="card-number" id="card-number-display">#### #### #### ####</div>
-                            <div class="card-holder" id="card-holder-display">FULL NAME</div>
-                            <div class="card-expiry">Valid Thru <span id="card-expiry-display">MM/YY</span></div>
+                
+                <div class="card-form eme-info">
+                    <h3><i class="bi bi-file-text"></i> Payment card</h3>
+                    <div class="row g-3 align-items-center">
+                        <div class="col-md-5">
+                            <div class="fw-100">
+                                <!-- Card Preview -->
+                                <div class="card-list">
+                                    <div class="credit-card" id="credit-card">
+                                    <div class="card-inner">
+                                        <!-- FRONT -->
+                                        <div class="card-front">
+                                        <div class="card-number" id="card-number-display">#### #### #### ####</div>
+                                        <div class="card-holder" id="card-holder-display">FULL NAME</div>
+                                        <div class="card-expiry">Valid Thru <span id="card-expiry-display">MM/YY</span></div>
+                                        </div>
+                                        <!-- BACK -->
+                                        <div class="card-back">
+                                        <div class="magnetic-strip"></div>
+                                        <div class="cvv-box">CVV: <span id="cvv-display">***</span></div>
+                                        </div>
+                                    </div>
+                                    </div>
+                                </div>
                             </div>
-                            <!-- BACK -->
-                            <div class="card-back">
-                            <div class="magnetic-strip"></div>
-                            <div class="cvv-box">CVV: <span id="cvv-display">***</span></div>
+                        </div>
+                        <div class="col-md-7">
+                            <!-- Payment Form -->
+                            <div class="card-form__inner">
+                                <div class="card-input">
+                                <label>Card Number</label>
+                                <input type="text" id="card-number" maxlength="19" placeholder="1234 5678 9012 3456">
+                                </div>
+                                <div class="card-input">
+                                <label>Card Holder</label>
+                                <input type="text" id="card-holder" placeholder="John Doe">
+                                </div>
+                                <div class="card-form__row">
+                                <div class="card-form__col">
+                                    <label>Expiration Month</label>
+                                    <select id="card-month" class="form-control">
+                                    <option value="">MM</option>
+                                    <option>01</option><option>02</option><option>03</option><option>04</option>
+                                    <option>05</option><option>06</option><option>07</option><option>08</option>
+                                    <option>09</option><option>10</option><option>11</option><option>12</option>
+                                    </select>
+                                </div>
+                                <div class="card-form__col">
+                                    <label>Expiration Year</label>
+                                    <select id="card-year" class="form-control"> 
+                                    <option value="">YY</option>
+                                    </select>
+                                </div>
+                                <div class="card-form__col">
+                                    <label>CVV</label>
+                                    <input class="form-control" type="password" id="card-cvv" maxlength="4" placeholder="123">
+                                </div>
+                                </div>
+                                <div class="mt-2">
+                                    <button class="btn btn-primary w-100"><i class="bi bi-lock-fill me-2"></i> Pay Securely</button>
+                                </div>
                             </div>
-                        </div>
-                        </div>
-                    </div>
-
-                    <!-- Payment Form -->
-                    <div class="card-form__inner">
-                        <div class="card-input">
-                        <label>Card Number</label>
-                        <input type="text" id="card-number" maxlength="19" placeholder="1234 5678 9012 3456">
-                        </div>
-                        <div class="card-input">
-                        <label>Card Holder</label>
-                        <input type="text" id="card-holder" placeholder="John Doe">
-                        </div>
-                        <div class="card-form__row">
-                        <div class="card-form__col">
-                            <label>Expiration Month</label>
-                            <select id="card-month" class="form-control">
-                            <option value="">MM</option>
-                            <option>01</option><option>02</option><option>03</option><option>04</option>
-                            <option>05</option><option>06</option><option>07</option><option>08</option>
-                            <option>09</option><option>10</option><option>11</option><option>12</option>
-                            </select>
-                        </div>
-                        <div class="card-form__col">
-                            <label>Expiration Year</label>
-                            <select id="card-year" class="form-control"> 
-                            <option value="">YY</option>
-                            </select>
-                        </div>
-                        <div class="card-form__col">
-                            <label>CVV</label>
-                            <input class="form-control" type="password" id="card-cvv" maxlength="4" placeholder="123">
-                        </div>
-                        </div>
-                        <div class="mt-2">
-                            <button class="btn btn-primary w-100"><i class="bi bi-lock-fill me-2"></i> Pay Securely</button>
                         </div>
                     </div>
                 </div>

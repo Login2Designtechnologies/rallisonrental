@@ -12,12 +12,13 @@
 .navtabsulli ul li button{width:100%}
 .navtabsulli ul li button.active,
 .navtabsulli ul li button:hover {
-  background-color: #0b0b1e !important;
+ background: linear-gradient(to bottom, #000, #1a1a47, #0f172a) !important;
   color: #fff !important;
 }
 
         .property-dtl .property-header {
-            background: rgb(30, 187, 88);
+            background: -webkit-gradient(linear,left top,right top,from(#ffbf96),to(#fe7096));
+            background: linear-gradient(90deg,#ffbf96,#fe7096);
             position: relative;
             overflow: hidden;
         }
@@ -53,7 +54,11 @@
             color: #22c55e;
             font-size: 1.5rem;
         }
-
+     #propertyDash .btn.btn-dash {
+  border: 1px solid #fff;
+  color: #fff;
+}
+#propertyDash .btn.btn-dash:hover{background:#0b0b1e;border:1px solid #0b0b1e;}
       
 </style>
 @section('content')
@@ -69,11 +74,11 @@
         </div>
       </div> -->
 
-  <div class="row">
+  <div class="row g-3">
     <div class="col-md-3 d-flex">
-      <div class="fw-100 bg-white p-3 navtabsulli">
+      <div class="fw-100 bg-white navtabsulli">
         <!-- Nav Tabs -->
-      <ul class="nav nav-tabs mb-4" id="propertyTabs" role="tablist">
+      <ul class="nav nav-tabs" id="propertyTabs" role="tablist">
         <li class="nav-item" role="presentation">
           <button class="nav-link active" id="propertyDash-tab" data-bs-toggle="tab" data-bs-target="#propertyDash" type="button" role="tab">
             <i class="bi bi-building"></i> Dashboard
@@ -119,7 +124,7 @@
                               <div class="card-body p-3 text-center">
                                   <h4 class="card-title">Lease Terms</h4>
                                   <p class="card-text">View your lease details</p>
-                                  <a href="#" class="btn btn-primary btn-sm"><small>View</small></a>
+                                  <a href="#" class="btn btn-dash btn-sm"><small>View</small></a>
                               </div>
                           </div>
                       </div>
@@ -128,7 +133,7 @@
                               <div class="card-body p-3 text-center">
                                   <h4 class="card-title">Payments Due</h4>
                                   <p class="card-text">Check your pending payments</p>
-                                  <a href="#" class="btn btn-danger btn-sm"><small>Pay Now</small></a>
+                                  <a href="#" class="btn btn-dash btn-sm"><small>Pay Now</small></a>
                               </div>
                           </div>
                       </div>
@@ -137,7 +142,7 @@
                               <div class="card-body p-3 text-center">
                                   <h4 class="card-title">Lease Agreement</h4>
                                   <p class="card-text">Download your agreement</p>
-                                  <a href="#" class="btn btn-success btn-sm"><small>Download</small></a>
+                                  <a href="#" class="btn btn-dash btn-sm"><small>Download</small></a>
                               </div>
                           </div>
                       </div>

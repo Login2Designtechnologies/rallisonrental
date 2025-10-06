@@ -106,7 +106,7 @@ chart.render();
 
 @endphp
 @section('content')
-    <div class="row g-3">
+	<div class="row g-3">
         <div class="col-lg-3 col-md-6 d-flex">
             <div class="card bg-custom radius-40 bg-1 bg-img fw-100">
                 <div class="card-body">
@@ -118,8 +118,8 @@ chart.render();
                         </div>
                         <div class="flex-grow-1 ms-3">
                             <p class="mb-1">{{ __('Current Amount Due') }}</p>
-                            <div class="d-flex align-items-center justify-content-between">
-                                <h4 class="mb-0">{{ $result['currentDue'] }}</h4>
+                            <div class="d-flex align-items-center justify-content-between text-white">
+                                <h4 class="mb-0 text-white">{{ $result['currentDue'] }}</h4>
 
                             </div>
                         </div>
@@ -139,8 +139,8 @@ chart.render();
                         </div>
                         <div class="flex-grow-1 ms-3">
                             <p class="mb-1">{{ __('Past Due Amount') }}</p>
-                            <div class="d-flex align-items-center justify-content-between">
-                                <h4 class="mb-0">{{ $result['pastDue'] }}</h4>
+                            <div class="d-flex align-items-center justify-content-between text-white">
+                                <h4 class="mb-0 text-white">{{ $result['pastDue'] }}</h4>
 
                             </div>
                         </div>
@@ -161,8 +161,8 @@ chart.render();
                         </div>
                         <div class="flex-grow-1 ms-3">
                             <p class="mb-1">{{ __('Utilities Due') }}</p>
-                            <div class="d-flex align-items-center justify-content-between">
-                                <h4 class="mb-0">{{ $settings['CURRENCY_SYMBOL'] }}<span
+                            <div class="d-flex align-items-center justify-content-between text-white">
+                                <h4 class="mb-0 text-white">{{ $settings['CURRENCY_SYMBOL'] }}<span
                                         class="count">{{ $result['utilitiesPastDue'] }}</h4>
 
                             </div>
@@ -183,8 +183,8 @@ chart.render();
                         </div>
                         <div class="flex-grow-1 ms-3">
                             <p class="mb-1">{{ __('Utilities Past Due') }}</p>
-                            <div class="d-flex align-items-center justify-content-between">
-                                <h4 class="mb-0">{{ $settings['CURRENCY_SYMBOL'] }}<span
+                            <div class="d-flex align-items-center justify-content-between text-white">
+                                <h4 class="mb-0 text-white">{{ $settings['CURRENCY_SYMBOL'] }}<span
                                         class="count">{{ $result['totalExpense'] }}</h4>
 
                             </div>
@@ -197,7 +197,7 @@ chart.render();
 
     <hr/>
 
-    <div class="row g-3">
+    <!-- <div class="row g-3">
         <div class="col-lg-3 col-md-6 d-flex">
             <div class="card bg-custom radius-40 bg-1 bg-img fw-100">
                 <div class="card-body">
@@ -209,8 +209,8 @@ chart.render();
                         </div>
                         <div class="flex-grow-1 ms-3">
                             <p class="mb-1">{{ __('Total Property') }}</p>
-                            <div class="d-flex align-items-center justify-content-between">
-                                <h4 class="mb-0">{{ $result['totalProperty'] }}</h4>
+                            <div class="d-flex align-items-center justify-content-between text-white">
+                                <h4 class="mb-0 text-white">{{ $result['totalProperty'] }}</h4>
 
                             </div>
                         </div>
@@ -230,8 +230,8 @@ chart.render();
                         </div>
                         <div class="flex-grow-1 ms-3">
                             <p class="mb-1">{{ __('Total Unit') }}</p>
-                            <div class="d-flex align-items-center justify-content-between">
-                                <h4 class="mb-0">{{ $result['totalUnit'] }}</h4>
+                            <div class="d-flex align-items-center justify-content-between text-white">
+                                <h4 class="mb-0 text-white">{{ $result['totalUnit'] }}</h4>
 
                             </div>
                         </div>
@@ -252,8 +252,8 @@ chart.render();
                         </div>
                         <div class="flex-grow-1 ms-3">
                             <p class="mb-1">{{ __('Amount Collected') }}</p>
-                            <div class="d-flex align-items-center justify-content-between">
-                                <h4 class="mb-0">{{ $settings['CURRENCY_SYMBOL'] }}<span
+                            <div class="d-flex align-items-center justify-content-between text-white">
+                                <h4 class="mb-0 text-white">{{ $settings['CURRENCY_SYMBOL'] }}<span
                                         class="count">{{ $result['totalIncome'] }}</h4>
 
                             </div>
@@ -274,8 +274,8 @@ chart.render();
                         </div>
                         <div class="flex-grow-1 ms-3">
                             <p class="mb-1">{{ __('Total Expenses YTD') }}</p>
-                            <div class="d-flex align-items-center justify-content-between">
-                                <h4 class="mb-0">{{ $settings['CURRENCY_SYMBOL'] }}<span
+                            <div class="d-flex align-items-center justify-content-between text-white">
+                                <h4 class="mb-0 text-white">{{ $settings['CURRENCY_SYMBOL'] }}<span
                                         class="count">{{ $result['totalExpense'] }}</h4>
 
                             </div>
@@ -286,7 +286,7 @@ chart.render();
         </div>
 
 
-    </div>
+    </div> -->
 
 
 

@@ -70,12 +70,12 @@
                                                     alt="{{ $tenant->user->name }}">
                                             @else
                                                 <div class="tenant-avatar d-flex align-items-center justify-content-center wid-70 me-2"
-                                                    style="width:70px; height:70px; border-radius:50%; background:#ddd; font-size:28px; font-weight:bold;">
+                                                    style="width:50px; height:50px; border-radius:50%; background:#ddd; font-size:28px; font-weight:bold;">
                                                     {{ strtoupper(substr($tenant->user->name ?? 'U', 0, 1)) }}
                                                 </div>
                                             @endif
                                         </div>
-                                        <div class="flex-grow-1 mx-3 position-relative">
+                                        <div class="flex-grow-1 mx-2 position-relative">
                                             <h5 class="mb-1">
                                                 {{ $fullName }} <br>
                                                 <!-- <span>{{ $u->email }}</span> -->
@@ -392,7 +392,7 @@
 
                                             {{-- Dates --}}
                                             <div class="row g-3 mb-3">
-                                                <div class="col-md-6">
+                                                <div class="col-md-4">
                                                     <label class="form-label">Start Date</label>
                                             @if(!empty($tenantcontracts->start_date))
                                                     <input type="text" style="pointer-events: none;" 
@@ -408,7 +408,7 @@
                                                     @enderror
                                                 </div>
 
-                                                <div class="col-md-6">
+                                                <div class="col-md-4">
                                                     <label class="form-label">End Date</label>
                                             @if(!empty($tenantcontracts->end_date))
                                                     <input type="text" style="pointer-events: none;"
@@ -422,6 +422,10 @@
                                                     @error('end_date')
                                                         <div class="invalid-feedback d-block">{{ $message }}</div>
                                                     @enderror
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <label class="form-label">Lease Term</label>
+                                                    <input class="form-control  form-control input" placeholder="" type="number">
                                                 </div>
                                             </div>
 
@@ -440,7 +444,7 @@
                                                     @enderror
                                                 </div>
 
-                                                <div class="col-md-6">
+                                                <!-- <div class="col-md-6">
                                                     <label class="form-label">Standard Late Fee (USD)</label>
                                                     <div class="input-group">
                                                         <span class="input-group-text">$</span>
@@ -451,7 +455,7 @@
                                                     @error('late_fee')
                                                         <div class="invalid-feedback d-block">{{ $message }}</div>
                                                     @enderror
-                                                </div>
+                                                </div> -->
 
                                                 <div class="col-md-6">
                                                     <label class="form-label">Security Deposit (USD)</label>
@@ -465,28 +469,48 @@
                                                         <div class="invalid-feedback d-block">{{ $message }}</div>
                                                     @enderror
                                                 </div>
+
+                                                {{-- Notice Period --}}
+                                                <div class="col-md-6 mb-3">
+                                                    <label class="form-label">Notice Period</label>
+                                                    <select name="notice_period_months"
+                                                            class="form-control form-select @error('notice_period_months') is-invalid @enderror">
+                                                        <option value="1" {{ $notice == '1' ? 'selected' : '' }}>1 month</option>
+                                                        <option value="2" {{ $notice == '2' ? 'selected' : '' }}>2 months</option>
+                                                        <option value="3" {{ $notice == '3' ? 'selected' : '' }}>3 months</option>
+                                                    </select>
+                                                    @error('notice_period_months')
+                                                        <div class="invalid-feedback d-block">{{ $message }}</div>
+                                                    @enderror
+                                                </div>
+
+                                                {{-- File Upload --}}
+                                                <div class="col-md-6">
+                                                    <label class="form-label">Upload Contract</label>
+                                                    <input type="file" name="contract_doc" id="contractFile"
+                                                        class="form-control @error('contract_doc') is-invalid @enderror" accept=".pdf,image/*">
+                                                    @error('contract_doc')
+                                                        <div class="invalid-feedback d-block">{{ $message }}</div>
+                                                    @enderror
+
+                                                    @if ($isEdit && optional($tenantcontracts)->contract_doc)
+                                                        <div class="mt-2">
+                                                            <a href="{{ asset(Storage::url('upload/contracts/' . $tenantcontracts->contract_doc)) }}" target="_blank" class="small">
+                                                                View current contract
+                                                            </a>
+                                                        </div>
+                                                    @endif
+                                                </div>
                                             </div>
 
-                                            {{-- Notice Period --}}
-                                            <div class="col-md-12 mb-3">
-                                                <label class="form-label">Notice Period</label>
-                                                <select name="notice_period_months"
-                                                        class="form-control form-select @error('notice_period_months') is-invalid @enderror">
-                                                    <option value="1" {{ $notice == '1' ? 'selected' : '' }}>1 month</option>
-                                                    <option value="2" {{ $notice == '2' ? 'selected' : '' }}>2 months</option>
-                                                    <option value="3" {{ $notice == '3' ? 'selected' : '' }}>3 months</option>
-                                                </select>
-                                                @error('notice_period_months')
-                                                    <div class="invalid-feedback d-block">{{ $message }}</div>
-                                                @enderror
-                                            </div>
+                                            
 
                                             {{-- Contract Renewal --}}
-                                            <div class="col-lg-12 mb-3">
+                                            <div class="col-lg-12 mb-2">
                                                 <h3 class="mb-0 mt-3">Contract Renewal Setup</h3>
                                             </div>
 
-                                            <div class="col-md-6">
+                                            <!-- <div class="col-md-6">
                                                 <label class="form-label">Contract Renewal Month</label>
                                                 <select name="contract_renewal_month" id="contract_renewal_month"
                                                         class="form-control form-select @error('contract_renewal_month') is-invalid @enderror">
@@ -499,93 +523,249 @@
                                                     <div class="invalid-feedback d-block">{{ $message }}</div>
                                                 @enderror
                                                 <div class="form-text">Tip: End Date will auto-suggest based on Start Date + Renewal Months.</div>
+                                            </div> -->
+
+                                        <!-- <div class="row">
+                                            <div class="col-md-4">
+                                                <label class="form-label">Contract Renewal Amount Increase (USD)</label>
+                                                <div class="input-group">
+                                                    <span class="input-group-text">$</span>
+                                                    <input type="number" step="0.01" placeholder="e.g. 100"
+                                                        class="form-control @error('contract_renewal_amount') is-invalid @enderror"
+                                                        name="contract_renewal_amount" value="{{ $renewAmt }}">
+                                                </div>
+                                                @error('contract_renewal_amount')
+                                                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                                                @enderror
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label class="form-label">Start Months</label>
+                                                <input type="text" class="form-control">
                                             </div>
 
-                                        <div class="col-md-6">
-                            <label class="form-label">Contract Renewal Amount Increase (USD)</label>
-                            <div class="input-group">
-                                <span class="input-group-text">$</span>
-                                <input type="number" step="0.01" placeholder="e.g. 100"
-                                    class="form-control @error('contract_renewal_amount') is-invalid @enderror"
-                                    name="contract_renewal_amount" value="{{ $renewAmt }}">
-                            </div>
-                            @error('contract_renewal_amount')
-                                <div class="invalid-feedback d-block">{{ $message }}</div>
-                            @enderror
-                        </div>
+                                            <div class="col-md-4">
+                                                <label class="form-label">End Months</label>  
+                                                   <input type="text" class="form-control">                                         
+                                            </div>
+                                        </div> -->
+
+                                        <div id="renewal-container">
+                                            <!-- Default Row -->
+                                            <div class="row g-3 renewal-row align-items-end">
+                                                <div class="col-md-4">
+                                                    <label class="form-label">Contract Renewal Amount Increase (USD)</label>
+                                                    <div class="input-group">
+                                                    <span class="input-group-text">$</span>
+                                                    <input type="number" step="0.01" placeholder="e.g. 100"
+                                                            class="form-control" name="contract_renewal_amount[]">
+                                                    </div>
+                                                </div>
+
+                                                <div class="col-md-4">
+                                                    <label class="form-label">Start Months</label>
+                                                    <input type="text" class="form-control" name="start_months[]" placeholder="e.g. January">
+                                                </div>
+
+                                                <div class="col-md-4">
+                                                    <label class="form-label">End Months</label>
+                                                    <input type="text" class="form-control" name="end_months[]" placeholder="e.g. June">
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="d-flex justify-content-end mt-3">
+                                            <button type="button" id="add-more" class="btn btn-sm btn-primary">+ Add More</button>
+                                        </div>
 
 
-                    {{-- File Upload --}}
-                    <div class="col-md-12 mt-5">
-                        <label class="form-label">Upload Contract</label>
-                        <input type="file" name="contract_doc" id="contractFile"
-                               class="form-control @error('contract_doc') is-invalid @enderror" accept=".pdf,image/*">
-                        @error('contract_doc')
-                            <div class="invalid-feedback d-block">{{ $message }}</div>
-                        @enderror
+                    
+                                        <script>
+                                            document.getElementById('add-more').addEventListener('click', function() {
+                                            const container = document.getElementById('renewal-container');
+                                            const firstRow = container.querySelector('.renewal-row');
+                                            const newRow = firstRow.cloneNode(true);
 
-                        @if ($isEdit && optional($tenantcontracts)->contract_doc)
-                            <div class="mt-2">
-                                <a href="{{ asset(Storage::url('upload/contracts/' . $tenantcontracts->contract_doc)) }}" target="_blank" class="small">
-                                    View current contract
-                                </a>
-                            </div>
-                        @endif
-                    </div>
+                                            // Reset input values
+                                            newRow.querySelectorAll('input').forEach(input => input.value = '');
 
-                    {{-- Submit Button --}}
-                    <div class="text-end">
-                        <button type="submit" class="btn btn-primary">
-                            {{ $isEdit ? 'Update Contract' : 'Save Contract' }}
-                        </button>
-                    </div>
-                </form>
+                                            // If remove button already exists (from previous clone), remove it first to prevent duplication
+                                            const oldRemove = newRow.querySelector('.remove-row');
+                                            if (oldRemove) oldRemove.remove();
 
-                {{-- Flatpickr CSS/JS --}}
-                <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-                <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-                <script>
-                    document.addEventListener('DOMContentLoaded', function () {
-                        const startEl = document.getElementById('start_date');
-                        const endEl = document.getElementById('end_date');
-                        const renewEl = document.getElementById('contract_renewal_month');
+                                            // Create remove button
+                                            const removeBtn = document.createElement('button');
+                                            removeBtn.type = 'button';
+                                            removeBtn.className = 'remove-row ms-2';
+                                            removeBtn.innerHTML = '×';
+                                            removeBtn.title = 'Remove this row';
+                                            removeBtn.onclick = function() {
+                                            newRow.remove();
+                                            };
 
-                        // Start Date Picker
-                        flatpickr(startEl, {
-                            dateFormat: "Y-m-d",
-                            altInput: true,
-                            altFormat: "m-d-Y",
-                            defaultDate: startEl.value || null,
-                            allowInput: true,
-                            onChange: function(selectedDates) {
-                                if (!selectedDates.length) return;
-                                const months = parseInt(renewEl?.value || 12);
-                                const endDate = new Date(selectedDates[0]);
-                                endDate.setMonth(endDate.getMonth() + months);
+                                            // Add remove button next to End Month input
+                                            const lastCol = newRow.lastElementChild;
+                                            const endInput = lastCol.querySelector('input');
+                                            const wrapper = document.createElement('div');
+                                            wrapper.className = 'd-flex align-items-center gap-2';
+                                            wrapper.appendChild(endInput);
+                                            wrapper.appendChild(removeBtn);
 
-                                endEl._flatpickr.setDate(endDate, true);
-                            }
-                        });
+                                            // Replace content in last column
+                                            lastCol.innerHTML = '';
+                                            lastCol.appendChild(wrapper);
 
-                        // End Date Picker
-                        flatpickr(endEl, {
-                            dateFormat: "Y-m-d",
-                            altInput: true,
-                            altFormat: "m-d-Y",
-                            defaultDate: endEl.value || null,
-                            allowInput: true
-                        });
+                                            // Append new row to container
+                                            container.appendChild(newRow);
+                                        });
+                                        </script>
 
-                        // Renewal Month Change
-                        renewEl?.addEventListener('change', function () {
-                            if (!startEl._flatpickr.selectedDates[0]) return;
-                            const startDate = new Date(startEl._flatpickr.selectedDates[0]);
-                            const months = parseInt(this.value || 12);
-                            startDate.setMonth(startDate.getMonth() + months);
-                            endEl._flatpickr.setDate(startDate, true);
-                        });
-                    });
-                </script>
+
+
+
+
+
+                                        <div class="late-payment">
+                                            <div id="late-rows">
+                                            <!-- Default Row -->
+                                            <div class="row g-3 late-row">
+                                                <div class="col-lg-12 mb-0">
+                                                <h3 class="mb-0 mt-3">Late Payment Setup</h3>
+                                                </div>
+
+                                                <div class="col-md-3">
+                                                <label class="form-label">Select Tier</label>
+                                                <select class="form-select" name="tier[]">
+                                                    <option value="">Select</option>
+                                                    <option value="1">1</option>
+                                                    <option value="2">2</option>
+                                                    <option value="3">3</option>
+                                                    <option value="4">4</option>
+                                                    <option value="5">5</option>
+                                                    <option value="6">6</option>
+                                                    <option value="7">7</option>
+                                                </select>
+                                                </div>
+
+                                                <div class="col-md-3">
+                                                <label class="form-label">How many days grace</label>
+                                                <input type="text" class="form-control" name="grace_days[]" placeholder="e.g. 5">
+                                                </div>
+
+                                                <div class="col-md-3">
+                                                <label class="form-label">Time</label>
+                                                <input type="time" class="form-control" name="time[]">
+                                                </div>
+
+                                                <div class="col-md-3">
+                                                    <div>
+                                                        <label class="form-label">Amount</label>
+                                                        <div class="input-group">
+                                                            <span class="input-group-text">$</span>
+                                                            <input type="number" placeholder="e.g. 1200" class="form-control" name="amount[]">
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            </div>
+
+                                            <div class="d-flex justify-content-end mt-3">
+                                            <button type="button" id="late-add-more" class="btn btn-sm btn-primary">+ Add More</button>
+                                            </div>
+                                        </div>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const addMoreBtn = document.getElementById('late-add-more');
+  const lateRowsContainer = document.getElementById('late-rows');
+
+  addMoreBtn.addEventListener('click', function() {
+    // Clone the first row
+    const firstRow = document.querySelector('.late-row');
+    const newRow = firstRow.cloneNode(true);
+
+    // Remove heading from cloned rows
+    const heading = newRow.querySelector('h3');
+    if (heading) heading.remove();
+
+    // Clear inputs and selects
+    newRow.querySelectorAll('input, select').forEach(el => el.value = '');
+
+    // Remove old remove button (if any)
+    const oldRemove = newRow.querySelector('.remove-row');
+    if (oldRemove) oldRemove.remove();
+
+    // Add remove button
+    const removeBtn = document.createElement('button');
+    removeBtn.type = 'button';
+    removeBtn.className = 'remove-row';
+    removeBtn.innerHTML = '&times;';
+    removeBtn.title = 'Remove this row';
+    removeBtn.addEventListener('click', () => newRow.remove());
+
+    // Add remove button beside last input group
+    const lastCol = newRow.querySelector('.col-md-3:last-child');
+    lastCol.classList.add('d-flex', 'align-items-start', 'gap-2');
+    lastCol.appendChild(removeBtn);
+
+    // Append new row
+    lateRowsContainer.appendChild(newRow);
+  });
+});
+</script>
+                                        
+
+                                        {{-- Submit Button --}}
+                                        <div class="text-end mt-3">
+                                            <button type="submit" class="btn btn-primary">
+                                                {{ $isEdit ? 'Update Contract' : 'Save Contract' }}
+                                            </button>
+                                        </div>
+                                    </form>
+
+                                    {{-- Flatpickr CSS/JS --}}
+                                    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+                                    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+                                    <script>
+                                        document.addEventListener('DOMContentLoaded', function () {
+                                            const startEl = document.getElementById('start_date');
+                                            const endEl = document.getElementById('end_date');
+                                            const renewEl = document.getElementById('contract_renewal_month');
+
+                                            // Start Date Picker
+                                            flatpickr(startEl, {
+                                                dateFormat: "Y-m-d",
+                                                altInput: true,
+                                                altFormat: "m-d-Y",
+                                                defaultDate: startEl.value || null,
+                                                allowInput: true,
+                                                onChange: function(selectedDates) {
+                                                    if (!selectedDates.length) return;
+                                                    const months = parseInt(renewEl?.value || 12);
+                                                    const endDate = new Date(selectedDates[0]);
+                                                    endDate.setMonth(endDate.getMonth() + months);
+
+                                                    endEl._flatpickr.setDate(endDate, true);
+                                                }
+                                            });
+
+                                            // End Date Picker
+                                            flatpickr(endEl, {
+                                                dateFormat: "Y-m-d",
+                                                altInput: true,
+                                                altFormat: "m-d-Y",
+                                                defaultDate: endEl.value || null,
+                                                allowInput: true
+                                            });
+
+                                            // Renewal Month Change
+                                            renewEl?.addEventListener('change', function () {
+                                                if (!startEl._flatpickr.selectedDates[0]) return;
+                                                const startDate = new Date(startEl._flatpickr.selectedDates[0]);
+                                                const months = parseInt(this.value || 12);
+                                                startDate.setMonth(startDate.getMonth() + months);
+                                                endEl._flatpickr.setDate(startDate, true);
+                                            });
+                                        });
+                                    </script>
 
                                     </div>
                                 </div>
@@ -1245,7 +1425,11 @@
 
 
 
+
+
 @push('script')
+
+
     {{-- ===== Dynamic behaviour (vanilla JS) ===== --}}
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -1338,4 +1522,8 @@
             });
         });
     </script>
+
+   
 @endpush
+
+

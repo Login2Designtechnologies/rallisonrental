@@ -10,7 +10,7 @@
 @endsection
 <style>
 .d-flex.align-items-center.justify-content-between.mt-1.btn-block .btn {
-  font-size: 13px;
+  font-size: 13px;line-height: 1.2;
 }
 </style>
 @push('script-page')
@@ -146,8 +146,8 @@
 
                                     <div class="d-flex align-items-center justify-content-between">
                                         <a href="@can('show property') {{ route('property.show', $property->id) }}  @endcan"
-                                            class="fw-semibold mb-0 text-truncate">
-                                            <h4>{{ $property->name }}</h4>
+                                            class="fw-semibold mb-0 text-truncate fw-100">
+                                            <h3 class="mb-1 text-center">{{ $property->name }}</h3>
                                         </a>
                                         @if (Gate::check('edit property') || Gate::check('delete property') || Gate::check('show property'))
                                             <!-- <div class="dropdown">
@@ -191,11 +191,11 @@
                                     </div>
                                     <div class="col-md-12">
                                         <div class="d-flex justify-content-between align-items-center">
-                                            <button type="button" class="btn  my-2 btn-light-secondary">
+                                            <button type="button" class="btn  my-2 btn-light-secondary fs-6 py-1 p-2">
                                             <i class="material-icons-two-tone">ad_units</i> {{ $property->totalUnit() }}
                                             {{ __('Unit') }}
                                             </button>
-                                            {{--<button type="button" class="btn  my-2 btn-light-secondary">
+                                            {{--<button type="button" class="btn  my-2 btn-light-secondary fs-6 py-1 p-2">
                                                 <i class="material-icons-two-tone">meeting_room</i>
                                                 {{ $property->totalRoom() }}
                                                 {{ __('Rooms') }}

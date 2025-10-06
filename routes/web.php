@@ -55,6 +55,7 @@ Route::get('home', [HomeController::class, 'index'])->name('home')->middleware(
 );
 Route::get('dashboard', [HomeController::class, 'index'])->name('dashboard')->middleware(
     [
+
         'XSS',
     ]
 );

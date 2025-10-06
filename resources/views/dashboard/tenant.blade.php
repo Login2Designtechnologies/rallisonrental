@@ -29,13 +29,13 @@ $settings=settings();
                             </div>
                         </div>
                         <div class="flex-grow-1 ms-3">
-                            <p class="mb-1 fs-18">Next Rent Payment</p>
+                            <p class="mb-1">Next Rent Payment</p>
                             <div class="d-flex align-items-center justify-content-between">
-                                <h4 class="mb-0">Date:<span class="count">10-01-2025</span></h4>
+                                <h4 class="mb-0 fs-14">Date:<span class="count">10-01-2025</span></h4>
 
                             </div>
                             <div class="d-flex align-items-center justify-content-between">
-                                <h4 class="mb-0">Amount:<span class="count">$0</span></h4>
+                                <h4 class="mb-0 fs-14">Amount:<span class="count">$0</span></h4>
 
                             </div>
                         </div>
@@ -55,9 +55,9 @@ $settings=settings();
                             </div>
                         </div>
                         <div class="flex-grow-1 ms-3">
-                            <p class="mb-1 fs-18">Utilities Due</p>
+                            <p class="mb-1">Utilities Due</p>
                             <div class="d-flex align-items-center justify-content-between">
-                                <h4 class="mb-0">$<span class="count">0</span></h4>
+                                <h4 class="mb-0 fs-14">$<span class="count">0</span></h4>
 
                             </div>
                         </div>
@@ -77,9 +77,9 @@ $settings=settings();
                             </div>
                         </div>
                         <div class="flex-grow-1 ms-3">
-                            <p class="mb-1 fs-18">Past Due</p>
+                            <p class="mb-1">Past Due</p>
                             <div class="d-flex align-items-center justify-content-between">
-                                <h4 class="mb-0">$<span class="count">0</span></h4>
+                                <h4 class="mb-0 fs-14">$<span class="count">0</span></h4>
 
                             </div>
                         </div>
@@ -98,9 +98,9 @@ $settings=settings();
                             </div>
                         </div>
                         <div class="flex-grow-1 ms-3">
-                            <p class="mb-1 fs-18">Other Expenses</p>
+                            <p class="mb-1">Other Expenses</p>
                             <div class="d-flex align-items-center justify-content-between">
-                                <h4 class="mb-0">$<span class="count">0</span></h4>
+                                <h4 class="mb-0 fs-14">$<span class="count">0</span></h4>
 
                             </div>
                         </div>
@@ -179,17 +179,17 @@ $settings=settings();
             </div>
         </div>
 
-        <div class="col-md-4 d-flex">
+        <div class="col-md-5 d-flex">
             <div class="card w-100 mb-0">
                 <div class="card-body">
-                    <h5 class="card-title mb-5">Property overview</h5>
+                    <h5 class="card-title">Property overview</h5>
                     <div class="row align-items-center">
                         <!-- Chart -->
-                        <div class="col-md-6">
+                        <div class="col-md-7">
                         <canvas id="spendingChart"></canvas>
                         </div>
                         <!-- Dynamic Data -->
-                        <div class="col-md-6">
+                        <div class="col-md-5">
                             <div class="">
                                 <h4 class="mb-3">Show for spending</h4>
                                 <ul id="spendingList" class="list-unstyled mb-0"></ul>
@@ -200,28 +200,28 @@ $settings=settings();
             </div>
         </div>
 
-        <div class="col-md-8 d-flex">
+        <div class="col-md-7 d-flex">
             <div class="card w-100 mb-0">
                 <div class="card-body">
                     <div class="row align-items-center">
                         
                         <!-- Occupancy Chart -->
-                        <div class="col-md-4 text-center">
-                        <h5 class="mb-3">Occupancy rate</h5>
+                        <div class="col-md-5">
+                        <h5 class="card-title">Occupancy rate</h5>
                         <canvas id="occupancyChart" width="150" height="150"></canvas>
                         </div>
 
                         <!-- Contract Details -->
-                        <div class="col-md-8">
-                        <div class="contract-box">
-                            <h4 class="text-left">Contract Details</h4>
-                            <ul class="list-unstyled mb-0">
-                            <li><strong>Dates of agreement:</strong>  Jan 01 2025 –  June 31 2025</li>
-                            <li><strong>Payment Due Date:</strong> 5th of every month</li>
-                            <li><strong>Late if not paid by:</strong> 10th of every month</li>
-                            <li><strong>Months Left:</strong> 15 months</li>
-                            </ul>
-                        </div>
+                        <div class="col-md-7">
+                            <div class="contract-box">
+                                <h4 class="text-left">Contract Details</h4>
+                                <ul class="list-unstyled mb-0">
+                                <li><strong>Dates of agreement:</strong>  Jan 01 2025 –  June 31 2025</li>
+                                <li><strong>Payment Due Date:</strong> 5th of every month</li>
+                                <li><strong>Late if not paid by:</strong> 10th of every month</li>
+                                <li><strong>Months Left:</strong> 15 months</li>
+                                </ul>
+                            </div>
                         </div>
 
                     </div>
@@ -267,66 +267,92 @@ $settings=settings();
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
-  // ---------------- BAR CHART DATA ----------------
-  const months = ['January', 'February', 'March', 'April', 'May', 'June'];
+ // ---------------- BAR CHART DATA ----------------
+const months = ['January', 'February', 'March', 'April', 'May', 'June'];
 
-  const dataSets = {
-    rent: { due: [400,500,300,600,700,600], paid: [400,500,250,550,650,600] },
-    utilities: { due: [300,400,250,500,800,700], paid: [300,400,200,450,700,700] },
-    others: { due: [300,300,250,400,500,400], paid: [200,300,250,400,450,400] }
-  };
+const dataSets = {
+  rent: { due: [400,500,300,600,700,600], paid: [400,500,250,550,650,600] },
+  utilities: { due: [300,400,250,500,800,700], paid: [300,400,200,450,700,700] },
+  others: { due: [300,300,250,400,500,400], paid: [200,300,250,400,450,400] }
+};
 
-  const colors = {
-    rent: 'rgba(255, 99, 132, 0.7)',
-    utilities: 'rgba(54, 162, 235, 0.7)',
-    others: 'rgba(255, 205, 86, 0.7)'
-  };
+const colors = {
+  rent: 'rgba(255, 99, 132, 0.7)',
+  utilities: 'rgba(54, 162, 235, 0.7)',
+  others: 'rgba(255, 205, 86, 0.7)'
+};
 
-  function getChartData(monthIndex) {
-    return {
-      labels: ['Rent', 'Utilities', 'Others'],
-      datasets: [{
-        label: 'Amount ($)',
-        data: [
-          dataSets.rent.due[monthIndex] + dataSets.rent.paid[monthIndex],
-          dataSets.utilities.due[monthIndex] + dataSets.utilities.paid[monthIndex],
-          dataSets.others.due[monthIndex] + dataSets.others.paid[monthIndex]
-        ],
-        backgroundColor: [colors.rent, colors.utilities, colors.others],
+// ✅ Function to get chart data for multiple months (min 5)
+function getMultiMonthChartData(startIndex = 0, count = 5) {
+  const endIndex = Math.min(startIndex + count, months.length);
+  const labels = months.slice(startIndex, endIndex);
+
+  return {
+    labels: labels,
+    datasets: [
+      {
+        label: 'Rent',
+        data: labels.map((_, i) => {
+          const idx = startIndex + i;
+          return dataSets.rent.due[idx] + dataSets.rent.paid[idx];
+        }),
+        backgroundColor: colors.rent,
         borderRadius: 5
-      }]
-    };
-  }
+      },
+      {
+        label: 'Utilities',
+        data: labels.map((_, i) => {
+          const idx = startIndex + i;
+          return dataSets.utilities.due[idx] + dataSets.utilities.paid[idx];
+        }),
+        backgroundColor: colors.utilities,
+        borderRadius: 5
+      },
+      {
+        label: 'Others',
+        data: labels.map((_, i) => {
+          const idx = startIndex + i;
+          return dataSets.others.due[idx] + dataSets.others.paid[idx];
+        }),
+        backgroundColor: colors.others,
+        borderRadius: 5
+      }
+    ]
+  };
+}
 
-  const ctx1 = document.getElementById('propertyChart').getContext('2d');
-  const propertyChart = new Chart(ctx1, {
-    type: 'bar',
-    data: getChartData(0),
-    options: {
-      responsive: true,
-      plugins: {
-        legend: { display: false },
-        title: { display: true, text: 'Rent, Utilities, and Others Amounts' },
-        tooltip: {
-          callbacks: {
-            label: function(context) {
-              return `${context.label}: $${context.parsed.y}`;
-            }
+// ---------------- INIT CHART ----------------
+const ctx1 = document.getElementById('propertyChart').getContext('2d');
+const propertyChart = new Chart(ctx1, {
+  type: 'bar',
+  data: getMultiMonthChartData(0, 5), // ✅ default 5 months show karega
+  options: {
+    responsive: true,
+    plugins: {
+      legend: { display: true },
+      title: { display: true, text: 'Rent, Utilities, and Others Amounts (5 Months View)' },
+      tooltip: {
+        callbacks: {
+          label: function(context) {
+            return `${context.dataset.label}: $${context.parsed.y}`;
           }
         }
-      },
-      scales: {
-        x: { title: { display: true, text: 'Category' } },
-        y: { beginAtZero: true, title: { display: true, text: 'Amount ($)' } }
       }
+    },
+    scales: {
+      x: { title: { display: true, text: 'Months' } },
+      y: { beginAtZero: true, title: { display: true, text: 'Amount ($)' } }
     }
-  });
+  }
+});
 
-  document.getElementById('monthSelect').addEventListener('change', (e) => {
-    const monthIndex = parseInt(e.target.value);
-    propertyChart.data = getChartData(monthIndex);
-    propertyChart.update();
-  });
+// ---------------- MONTH SELECT ----------------
+document.getElementById('monthSelect').addEventListener('change', (e) => {
+  const startIndex = parseInt(e.target.value);
+  propertyChart.data = getMultiMonthChartData(startIndex, 5); // ✅ min 5 months dikhaye
+  propertyChart.update();
+});
+
 
   // ---------------- DOUGHNUT CHART DATA ----------------
   const chartData = {

@@ -18,7 +18,6 @@
     .card.bg-custom.radius-40.bg-box{border: 1px solid #34a891;}
     .balance-box {
       text-align: center;
-      padding: 30px;
     }
     .balance-box h2 {
       font-size: 2.5rem;
@@ -50,57 +49,65 @@
 </style>
 @section('content')
 <div class="card border bg-custom w-100">
-    <!-- Balance Section -->
-    <div class="balance-box">
-        <p class="text-muted">Your Balance Due</p>
-        <h2>$1,563.00</h2>
-        <a href="{{ url('make-payment') }}" class="btn btn-info text-white px-4 mt-2">Make Payment</a>
-        <div class="mt-2"><a href="#" class="text-info text-decoration-none">View Details</a></div>
-    </div>
-
-    <!-- Tabs -->
-    <ul class="nav nav-tabs justify-content-center my-4 tabs">
-        <li class="nav-item"><a class="nav-link active" href="#">Dashboard</a></li>
-        <li class="nav-item"><a class="nav-link" href="#">Events</a></li>
-        <li class="nav-item"><a class="nav-link" href="#">Announcements</a></li>
-        <li class="nav-item"><a class="nav-link" href="#">Amenities</a></li>
-        <li class="nav-item"><a class="nav-link" href="#">Classifieds</a></li>
-        <li class="nav-item"><a class="nav-link" href="#">Clubs</a></li>
-    </ul>
-
-    <!-- Quick Links -->
-    <div class="">
-        <div class="container">
-            <h5 class="mb-4"><b>Quick Links</b></h5>
-            <div class="row text-center quick-links">
-                <div class="col-6 col-md-3 col-lg-2 mb-4">
-                    <div class="circle"><i class="bi bi-tools"></i></div>
-                    <a href="">Request Maintenance</a>
+    <div class="container my-4 p-3">
+        <div class="row">
+            <div class="col-md-10 mx-auto">
+                <div class="border p-4 box-shadow-bg radius-10">
+                    <!-- Balance Section -->
+                    <div class="balance-box">
+                        <p class="text-muted">Your Balance Due</p>
+                        <h2>$1,563.00</h2>
+                        <a href="{{ url('make-payment') }}" class="btn btn-info text-white px-4 mt-2">Make Payment</a>
+                        <div class="mt-2"><a href="#" class="text-info text-decoration-none">View Details</a></div>
                     </div>
-                <div class="col-6 col-md-3 col-lg-2 mb-4">
-                <div class="circle"><i class="bi bi-shield-check"></i></div>
-                 <a href="">Add / Update Insurance</a>
+
+                    <!-- Tabs -->
+                    <ul class="nav nav-tabs justify-content-center my-4 tabs border-0">
+                        <li class="nav-item"><a class="nav-link active" href="#">Dashboard</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#">Events</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#">Announcements</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#">Amenities</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#">Classifieds</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#">Clubs</a></li>
+                    </ul>
+
+                    <!-- Quick Links -->
+                    <div class="card mb-0 bg-light">
+                        <div class="card-body border">
+                            <h5 class="mb-4"><b>Quick Links</b></h5>
+                            <div class="row text-center quick-links g-3">
+                                <div class="col-6 col-md-3 col-lg-2">
+                                    <div class="circle"><i class="bi bi-tools"></i></div>
+                                    <a href="">Request Maintenance</a>
+                                    </div>
+                                <div class="col-6 col-md-3 col-lg-2">
+                                <div class="circle"><i class="bi bi-shield-check"></i></div>
+                                <a href="">Add / Update Insurance</a>
+                                </div>
+                                <div class="col-6 col-md-3 col-lg-2">
+                                <div class="circle"><i class="bi bi-telephone"></i></div>
+                                <a href="">Contact Us</a>
+                                </div>
+                                <div class="col-6 col-md-3 col-lg-2">
+                                <div class="circle"><i class="bi bi-file-earmark-text"></i></div>
+                                <a href="">View Documents</a>
+                                </div>
+                                <div class="col-6 col-md-3 col-lg-2">
+                                <div class="circle"><i class="bi bi-calendar-check"></i></div>
+                                <a href="">Reserve Amenity</a>
+                                </div>
+                                <div class="col-6 col-md-3 col-lg-2">
+                                <div class="circle"><i class="bi bi-box-seam"></i></div>
+                                <a href="">Rent Items</a>
+                                </div>
+                                <!-- <div class="col-6 col-md-3 col-lg-2">
+                                <div class="circle"><i class="bi bi-people"></i></div>
+                                <a href="">Refer a Friend</a>
+                                </div> -->
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="col-6 col-md-3 col-lg-2 mb-4">
-                <div class="circle"><i class="bi bi-telephone"></i></div>
-                 <a href="">Contact Us</a>
-                </div>
-                <div class="col-6 col-md-3 col-lg-2 mb-4">
-                <div class="circle"><i class="bi bi-file-earmark-text"></i></div>
-                 <a href="">View Documents</a>
-                </div>
-                <div class="col-6 col-md-3 col-lg-2 mb-4">
-                <div class="circle"><i class="bi bi-calendar-check"></i></div>
-                 <a href="">Reserve Amenity</a>
-                </div>
-                <div class="col-6 col-md-3 col-lg-2 mb-4">
-                <div class="circle"><i class="bi bi-box-seam"></i></div>
-                 <a href="">Rent Items</a>
-                </div>
-                <!-- <div class="col-6 col-md-3 col-lg-2 mb-4">
-                <div class="circle"><i class="bi bi-people"></i></div>
-                 <a href="">Refer a Friend</a>
-                </div> -->
             </div>
         </div>
     </div>

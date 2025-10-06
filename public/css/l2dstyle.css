@@ -82,20 +82,70 @@ table tbody tr td{font-size: 13px;}
 .bg-img{margin-bottom: 0px !important;}
 .bg-img .avtar {background: #fff;}
 
-.bg-img .card-body .mb-1{color:#fff;font-weight: 600;}
-.bg-img .card-body h4.mb-0{  color: #fff;}
+.col-lg-3.col-md-6.d-flex .card.bg-custom.radius-40.bg-img.fw-100{margin-top: 20px;}
+.bg-img .card-body .mb-1{color:#fff;font-weight: 600;text-align: right;}
+.bg-img .card-body h4.mb-0.fs-14{color: #fff;font-size:14px;width: 100%;
+  text-align: right;}
+.card.bg-custom.radius-40.bg-img.fw-100 .flex-grow-1.ms-3 .mb-0.text-white{text-align: right;
+  width: 100%;}
+
+.property_view.view-select .d-flex.align-items-center.justify-content-between .mb-0.fs-14{text-align: right;width: 100%;}
+.property_view.view-select .card.bg-custom.radius-40.bg-img h4.mb-0{text-align: right;width: 100%;font-size: 13px;color:#fff}
+
+input, select, optgroup, textarea,
+.choices__list--single .choices__item{color: #8392a5 !important;
+  font-size: 13px !important;}
+
+
+ .tenant_view.view-select .card.bg-custom.radius-40.bg-img,
+ .tenant_view.view-select .d-flex.align-items-center.justify-content-between .mb-0{text-align: right;
+  width: 100%;
+  color: #fff;}
+
+  .property_view.view-select .flex-grow-1.ms-3 .mb-1{text-align: right;}
+  .property_view.view-select .d-flex.align-items-center.justify-content-between .mb-0{text-align: right;font-size: 13px;width: 100%;}
+.property_view.view-select .card.bg-custom.radius-40.bg-box{margin-bottom: 5px;}
+
+.card.border.bg-custom.w-100 .form-label.fw-bold{text-transform: capitalize;
+  font-weight: 500 !important;
+  font-family: 'Roboto';
+  font-size: 13px;}
+
 .date-block{min-height: 14.4px;}
 
+.box-shadow-bg{box-shadow:0 0 10px rgba(219, 213, 213, 0.5);}
+.radius-10{border-radius: 10px;}
+form label{text-transform: capitalize;
+  font-weight: 500;
+  font-family: 'Roboto';
+  font-size: 13px;}
 .page-header{margin-bottom: 15px;}
 #property_form .card-header ul {background: #fff;}
 #property_form .card-header ul li {width: 100%;}
-#property_form .card-header ul li a{width: 100%;margin: 0;padding:15px 10px;border-bottom: 1px solid #ddd}
-#property_form .card-header ul li:hover{background: #181843;color: #fff;}
+#property_form .card-header ul li a{width: 100%;
+  margin: 0;
+  padding: 15px 10px;
+  border-bottom: 1px solid #ddd;
+  font-size: 13px;
+  font-weight: 400;
+  font-family: "Roboto";}
+#property_form .card-header ul li:hover{
+  /* background: #181843;color: #fff; */
+  background: linear-gradient(to bottom, #000, #1a1a47, #0f172a) !important;
+  color: #fff;
+}
 .profile-tabs .nav-item .nav-link::after{background: transparent !important;}
-#property_form .card-header ul li a.active{background: #181843;color: #fff;}
+#property_form .card-header ul li a.active{
+  /* background: #181843;color: #fff; */
+  background: linear-gradient(to bottom, #000, #1a1a47, #0f172a) !important;
+  color: #fff;
+}
 #property_form .card-header ul li a.active i{background-color: #fff !important;}
 .account-tabs .nav-item .nav-link.active .text-muted{color:#ddd !important;}
 #property_form .card-header:hover .text-muted{color:#ddd !important;}
+
+.card .card-header h5{font-size:14px}
+.nav-item .flex-shrink-0 i.f-20{font-size: 16px;}
 
 #property_form .card-header ul li a:hover {
   color: #fff;
@@ -105,15 +155,33 @@ table tbody tr td{font-size: 13px;}
 .card.follower-card .d-flex.align-items-start .flex-grow-1{width: 95%;}
 
 .dropzone{border: 1px solid rgba(0,0,0,.3);}
-.account-tabs .nav-item .nav-link{padding: 10px;margin: 0px;}
+.account-tabs .nav-item .nav-link{padding: 15px;margin: 0px;}
 .account-tabs .nav-item .nav-link h5{font-size: 13px;}
-.account-tabs .nav-item .nav-link.active{background: #181843;color: #fff;}
+.account-tabs .nav-item .nav-link.active{background: linear-gradient(to bottom, #000, #1a1a47, #0f172a) !important;
+  color: #fff;}
 .account-tabs .nav-item .nav-link.active h5{color:#fff}
 .account-tabs .nav-item .nav-link:hover .text-muted{color:#ddd !important;}
 div.dt-container div.dt-search{margin-bottom: 10px;}
 
-.account-tabs .nav-item .nav-link:hover{background: #181843;color: #fff;border-radius: 0px;}
+.account-tabs .nav-item .nav-link:hover{background: linear-gradient(to bottom, #000, #1a1a47, #0f172a) !important;
+  color: #fff;border-radius: 0px;}
 .account-tabs .nav-item .nav-link:hover h5{color: #fff;}
+
+
+
+.row.g-3 .card.bg-custom.radius-40.bg-img.fw-100 .card-body .d-flex.align-items-center .flex-shrink-0{flex-shrink: 0 !important;
+  display: flex;
+  position: absolute;
+  top: -20px;
+  left: 12px;
+  /* background: linear-gradient(60deg, #053029, #0E9D5F); */
+  color: white;
+  width: 70px;
+  height: 70px;
+  box-shadow: 2px 2px 16px rgba(0, 0, 0, 0.15);
+  align-items: center;
+  justify-content: center;
+  border-radius: 25%;}
 
 .pc-sidebar .pc-caption label{color:#fff}
 .card form .card.box-card.w-100{border: 1px solid #ddd;}
@@ -169,6 +237,12 @@ div.dt-container div.dt-search{margin-bottom: 10px;}
     .btn-pay:hover { background: #15803d; }
 /* ./Card payment */
 
+
+@media (min-width: 992px) {
+/* #property_form .col-md-3{width: 20%;}
+#property_form .col-md-9{width: 80%;} */
+
+}
 @media (min-width: 1400px) {
  .properties-dtl .col-xxl-3 {width: 20%; }
 
@@ -341,25 +415,11 @@ div.dt-container div.dt-search{margin-bottom: 10px;}
 }
 .tenant-profile-sec .eme-info h3{font-size: 16px;}
 
-.tenant-avatar {
-  width: 100px;
-  height: 100px;
-  object-fit: cover;
-  background: #e0e0e0;
-  color: #333;
-  font-size: 28px;
-  font-weight: bold;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-transform: uppercase;
-}
-
 .eme-info .info-card .info-label, .eme-info .info-card i{color: #316fed !important;display: flex;
   align-items: center;
   margin-right: 5px;}
 .eme-info .info-card .inline-text {
-  display: block;padding-left: 10px;
+  display: block;padding-left: 10px;font-size: 13px;
 }
 .lease-info .info-card {
   background: #fff7f0;
@@ -369,6 +429,11 @@ div.dt-container div.dt-search{margin-bottom: 10px;}
 .card.table-custom-card .card-body {
   box-shadow: 0 0 10px rgba(223, 222, 222, 0.5);
 }
+
+.card-form__inner .card-input label{text-transform: capitalize;
+  font-weight: 500;
+  font-family: 'Roboto';color: #262626;
+  font-size: 13px;}
 .card.properties-dtl .card-header{border-bottom: 1px solid transparent !important;}
         .property-dtl .icon-wrapper i {
             color: #22c55e;

@@ -23537,10 +23537,10 @@ body {
 }
 
 .btn, .introjs-tooltip .introjs-button {
-  font-size: 14px;
+  font-size: 13px;
 }
 .btn i, .introjs-tooltip .introjs-button i {
-  font-size: 18px;
+  font-size: 16px;
 }
 .btn i.ph-duotone, .introjs-tooltip .introjs-button i.ph-duotone {
   vertical-align: text-bottom;
@@ -28894,7 +28894,7 @@ select[data-multiselectsplitter-secondselect-selector].dataTable-input {
 .invoice-tab .nav-item .nav-link .material-icons-two-tone,
 .kanban-tabs .nav-item .nav-link .material-icons-two-tone,
 .profile-tabs .nav-item .nav-link .material-icons-two-tone {
-  font-size: 20px;
+  font-size: 16px;
 }
 .invoice-tab .nav-item .nav-link:after,
 .kanban-tabs .nav-item .nav-link:after,

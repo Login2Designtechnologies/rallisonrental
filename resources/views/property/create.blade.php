@@ -17,6 +17,20 @@
     }
     .step-status.done{position: absolute;
   right: 10px;}
+  .row.position-relative.mb-2.input-row ~ .row.position-relative.mb-2.input-row {
+  border-top: 1px solid #ddd;
+  padding-top: 15px;
+}
+.remove-row {
+  position: absolute;
+  top: 5px;
+  cursor: pointer;
+  color: #ff0018;
+  font-size: 1.3rem;
+  right: 0;
+  display: flex;
+  justify-content: end;
+}
 </style>
 
 @push('script-page')
@@ -323,61 +337,71 @@
 @section('content')
     {{ Form::open(['url' => 'property', 'method' => 'post', 'enctype' => 'multipart/form-data', 'id' => 'property_form']) }}
     <div class="row mt-4">
-        <div class="col-md-3">
-            <div class="card-header pb-0">
-                <ul class="nav nav-tabs profile-tabs" id="myTab" role="tablist">
-                    <li class="nav-item">
-                        <a class="nav-link active" id="profile-tab-1" data-bs-toggle="tab" href="#profile-1"
-                            role="tab" aria-selected="true">
-                            <i class="material-icons-two-tone me-2">info</i>
-                            {{ __('Property Details') }}
-							<span class="step-status"></span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" id="profile-tab-2" data-bs-toggle="tab" href="#profile-2" role="tab"
-                            aria-selected="true">
-                            <i class="material-icons-two-tone me-2">image</i>
-                            {{ __('Property Images') }}
-							<span class="step-status"></span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" id="profile-tab-3" data-bs-toggle="tab" href="#profile-3" role="tab"
-                            aria-selected="true">
-                            <i class="material-icons-two-tone me-2">layers</i>
-                            {{ __('Unit') }}
-							<span class="step-status"></span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" id="profile-tab-4" data-bs-toggle="tab" href="#profile-4" role="tab"
-                            aria-selected="true">
-                            <i class="material-icons-two-tone ti ti-tools me-2"></i>
-                            {{ __('Amenities') }}
-							<span class="step-status"></span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" id="profile-tab-5" data-bs-toggle="tab" href="#profile-5" role="tab"
-                            aria-selected="true">
-                            <i class="material-icons-two-tone ti ti-bulb me-2"></i>
-                            {{ __('Utilities') }}
-							<span class="step-status"></span>
-                        </a>
-                    </li>
+        <div class="col-md-3 d-flex">
+            <div class="bg-white fw-100 mb-lg-5">
+                <div class="card-header pb-0">
+                    <ul class="nav nav-tabs profile-tabs" id="myTab" role="tablist">
+                        <li class="nav-item">
+                            <a class="nav-link active" id="profile-tab-1" data-bs-toggle="tab" href="#profile-1"
+                                role="tab" aria-selected="true">
+                                <i class="material-icons-two-tone me-2">info</i>
+                                {{ __('Property Details') }}
+                                <span class="step-status"></span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="profile-tab-2" data-bs-toggle="tab" href="#profile-2" role="tab"
+                                aria-selected="true">
+                                <i class="material-icons-two-tone me-2">image</i>
+                                {{ __('Property Images') }}
+                                <span class="step-status"></span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="profile-tab-3" data-bs-toggle="tab" href="#profile-3" role="tab"
+                                aria-selected="true">
+                                <i class="material-icons-two-tone me-2">layers</i>
+                                {{ __('Unit') }}
+                                <span class="step-status"></span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="profile-tab-4" data-bs-toggle="tab" href="#profile-4" role="tab"
+                                aria-selected="true">
+                                <i class="material-icons-two-tone ti ti-tools me-2"></i>
+                                {{ __('Amenities') }}
+                                <span class="step-status"></span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="profile-tab-5" data-bs-toggle="tab" href="#profile-5" role="tab"
+                                aria-selected="true">
+                                <i class="material-icons-two-tone ti ti-bulb me-2"></i>
+                                {{ __('Utilities') }}
+                                <span class="step-status"></span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="profile-tab-6" data-bs-toggle="tab" href="#profile-6" role="tab"
+                                aria-selected="true">
+                                <i class="material-icons-two-tone ti ti-bulb me-2"></i>
+                                {{ __('Our Cost') }}
+                                <span class="step-status"></span>
+                            </a>
+                        </li>
 
-                </ul>
+                    </ul>
+                </div>
             </div>
         </div>
         
-        <div class="col-md-9">
+        <div class="col-md-9 d-flex">
             <div class="card-body w-100">
                 <div class="tab-content">
-                    <div class="tab-pane  show active" id="profile-1" role="tabpanel" aria-labelledby="profile-tab-1">
+                    <div class="tab-pane show active" id="profile-1" role="tabpanel" aria-labelledby="profile-tab-1">
                         <div class="row">
                             <div class="col-lg-12">
-                                <div class="card border bg-custom bg-white">
+                                <div class="card border bg-custom bg-white mb-3">
                                     <div class="card-header">
                                         <h5> {{ __('Add Property Details') }}</h5>
                                     </div>
@@ -403,8 +427,8 @@
                                             
                                             <div class="col-sm-4">
                                                 <!-- Cropper.js -->
-<link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet"/>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+                                    <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet"/>
+                                    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
 
                                                 <div class="mb-3">
                                                     {{--<!-- <div class="form-group">
@@ -418,89 +442,89 @@
                                                     </div>
                                                     
                                                     <!-- Preview & Crop Area -->
-<div id="preview-container" style="display:none; margin-top:10px; text-align:center;">
-    <img id="imagePreview" src="" alt="Preview" style="max-width:100%; border:1px solid #ddd; border-radius:6px;">
-    
-    <!-- Action Buttons -->
-    <div class="mt-2">
-        <button type="button" class="btn btn-success btn-sm" id="cropButton" style="display:none;">Crop & Save</button>
-        <button type="button" class="btn btn-warning btn-sm" id="editButton" style="display:none;">Edit Again</button>
-        <button type="button" class="btn btn-danger btn-sm" id="cancelButton" style="display:none;">Cancel</button>
-    </div>
-</div>
+                                            <div id="preview-container" style="display:none; margin-top:10px; text-align:center;">
+                                                <img id="imagePreview" src="" alt="Preview" style="max-width:100%; border:1px solid #ddd; border-radius:6px;">
+                                                
+                                                <!-- Action Buttons -->
+                                                <div class="mt-2">
+                                                    <button type="button" class="btn btn-success btn-sm" id="cropButton" style="display:none;">Crop & Save</button>
+                                                    <button type="button" class="btn btn-warning btn-sm" id="editButton" style="display:none;">Edit Again</button>
+                                                    <button type="button" class="btn btn-danger btn-sm" id="cancelButton" style="display:none;">Cancel</button>
+                                                </div>
+                                            </div>
 
-<!-- Hidden input for cropped image -->
-<input type="hidden" name="cropped_image" id="croppedImage">
-<script>
-    let cropper;
-    const input = document.getElementById('thumbnailInput');
-    const preview = document.getElementById('imagePreview');
-    const previewContainer = document.getElementById('preview-container');
-    const cropBtn = document.getElementById('cropButton');
-    const editBtn = document.getElementById('editButton');
-    const cancelBtn = document.getElementById('cancelButton');
-    const croppedInput = document.getElementById('croppedImage');
+                                            <!-- Hidden input for cropped image -->
+                                            <input type="hidden" name="cropped_image" id="croppedImage">
+                                            <script>
+                                                let cropper;
+                                                const input = document.getElementById('thumbnailInput');
+                                                const preview = document.getElementById('imagePreview');
+                                                const previewContainer = document.getElementById('preview-container');
+                                                const cropBtn = document.getElementById('cropButton');
+                                                const editBtn = document.getElementById('editButton');
+                                                const cancelBtn = document.getElementById('cancelButton');
+                                                const croppedInput = document.getElementById('croppedImage');
 
-    input.addEventListener('change', e => {
-        const file = e.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = ev => {
-                preview.src = ev.target.result;
-                previewContainer.style.display = 'block';
+                                                input.addEventListener('change', e => {
+                                                    const file = e.target.files[0];
+                                                    if (file) {
+                                                        const reader = new FileReader();
+                                                        reader.onload = ev => {
+                                                            preview.src = ev.target.result;
+                                                            previewContainer.style.display = 'block';
 
-                if (cropper) cropper.destroy();
-                cropper = new Cropper(preview, {
-                    aspectRatio: 16/9,
-                    viewMode: 1,
-                    autoCropArea: 1
-                });
+                                                            if (cropper) cropper.destroy();
+                                                            cropper = new Cropper(preview, {
+                                                                aspectRatio: 16/9,
+                                                                viewMode: 1,
+                                                                autoCropArea: 1
+                                                            });
 
-                cropBtn.style.display = 'inline-block';
-                cancelBtn.style.display = 'inline-block';
-                editBtn.style.display = 'none';
-            };
-            reader.readAsDataURL(file);
-        }
-    });
+                                                            cropBtn.style.display = 'inline-block';
+                                                            cancelBtn.style.display = 'inline-block';
+                                                            editBtn.style.display = 'none';
+                                                        };
+                                                        reader.readAsDataURL(file);
+                                                    }
+                                                });
 
-    // Crop & Save
-    cropBtn.addEventListener('click', () => {
-        if (cropper) {
-            const canvas = cropper.getCroppedCanvas({ width: 800, height: 450 });
-            preview.src = canvas.toDataURL();
-            croppedInput.value = canvas.toDataURL('image/jpeg');
-            cropper.destroy();
-            cropBtn.style.display = 'none';
-            cancelBtn.style.display = 'none';
-            editBtn.style.display = 'inline-block';
-        }
-    });
+                                                // Crop & Save
+                                                cropBtn.addEventListener('click', () => {
+                                                    if (cropper) {
+                                                        const canvas = cropper.getCroppedCanvas({ width: 800, height: 450 });
+                                                        preview.src = canvas.toDataURL();
+                                                        croppedInput.value = canvas.toDataURL('image/jpeg');
+                                                        cropper.destroy();
+                                                        cropBtn.style.display = 'none';
+                                                        cancelBtn.style.display = 'none';
+                                                        editBtn.style.display = 'inline-block';
+                                                    }
+                                                });
 
-    // Edit Again
-    editBtn.addEventListener('click', () => {
-        cropper = new Cropper(preview, {
-            aspectRatio: 16/9,
-            viewMode: 1,
-            autoCropArea: 1
-        });
-        cropBtn.style.display = 'inline-block';
-        cancelBtn.style.display = 'inline-block';
-        editBtn.style.display = 'none';
-    });
+                                                // Edit Again
+                                                editBtn.addEventListener('click', () => {
+                                                    cropper = new Cropper(preview, {
+                                                        aspectRatio: 16/9,
+                                                        viewMode: 1,
+                                                        autoCropArea: 1
+                                                    });
+                                                    cropBtn.style.display = 'inline-block';
+                                                    cancelBtn.style.display = 'inline-block';
+                                                    editBtn.style.display = 'none';
+                                                });
 
-    // Cancel
-    cancelBtn.addEventListener('click', () => {
-        if (cropper) cropper.destroy();
-        preview.src = '';
-        previewContainer.style.display = 'none';
-        input.value = ''; // reset file input
-        croppedInput.value = '';
-        cropBtn.style.display = 'none';
-        editBtn.style.display = 'none';
-        cancelBtn.style.display = 'none';
-    });
-</script>
+                                                // Cancel
+                                                cancelBtn.addEventListener('click', () => {
+                                                    if (cropper) cropper.destroy();
+                                                    preview.src = '';
+                                                    previewContainer.style.display = 'none';
+                                                    input.value = ''; // reset file input
+                                                    croppedInput.value = '';
+                                                    cropBtn.style.display = 'none';
+                                                    editBtn.style.display = 'none';
+                                                    cancelBtn.style.display = 'none';
+                                                });
+                                            </script>
 
                                                 </div>
                                             </div>
@@ -560,7 +584,14 @@
                                                 <div class="mb-3">
                                                     <div class="form-group">
                                                         {{ Form::label('zip_code', __('Zip Code'), ['class' => 'form-label']) }} <span class="text-danger">*</span>
-                                                        {{ Form::text('zip_code', null, ['class' => 'form-control required-field', 'placeholder' => __('Enter Property Zip Code'), 'required' => 'required']) }}
+                                                        <!-- {{ Form::text('zip_code', null, ['class' => 'form-control required-field', 'placeholder' => __('Enter Property Zip Code'), 'required' => 'required']) }} -->
+                                                          {{ Form::text('zip_code', null, [
+                                                            'class' => 'form-control required-field',
+                                                            'placeholder' => __('Enter Property Zip Code'),
+                                                            'required' => 'required',
+                                                            'maxlength' => 6,
+                                                            'pattern' => '[0-9]{6}'
+                                                        ]) }}
                                                     </div>
 
                                                 </div>
@@ -586,7 +617,7 @@
                     <div class="tab-pane" id="profile-2" role="tabpanel" aria-labelledby="profile-tab-2">
                         <div class="row">
                             <div class="col-lg-12">
-                                <div class="card border bg-custom bg-white">
+                                <div class="card border bg-custom bg-white mb-3">
                                     <div class="card-header">
                                         {{ Form::label('demo-upload', __('Add Property Images'), ['class' => 'form-label']) }}
                                     </div>
@@ -632,7 +663,7 @@
                     </div>
                     <div class="tab-pane" id="profile-3" role="tabpanel"
                         aria-labelledby="profile-tab-3">
-                        <div class="card border bg-custom bg-white">
+                        <div class="card border bg-custom bg-white mb-3">
                             <div class="card-body w-100">
                                 <div class="row unit_list d-none">
                                         <div class="form-group col-md-6">
@@ -687,7 +718,7 @@
 
                     <div class="tab-pane" id="profile-4" role="tabpanel"
                         aria-labelledby="profile-tab-4">
-                        <div class="card border bg-custom bg-white">
+                        <div class="card border bg-custom bg-white mb-3">
                             <div class="card-body w-100">
                                 <div class="row">
                                         <div class="form-group col-md-12">
@@ -783,7 +814,7 @@
 
                     <div class="tab-pane" id="profile-5" role="tabpanel"
                         aria-labelledby="profile-tab-5">
-                        <div class="card border bg-custom bg-white">
+                        <div class="card border bg-custom bg-white mb-3">
                             <div class="card-body w-100">
                                 <div class="row">
                                         <div class="form-group col-md-12">
@@ -862,14 +893,89 @@
                         </div>
 
 
-                        <div class="col-lg-12 mb-2">
-                            <div class="d-flex justify-content-between">
-                                <button type="button" class="btn btn-primary btn-rounded prevButton">
-                                    {{ __('Back') }}
-                                </button>
-                                {{ Form::submit(__('Finish'), ['class' => 'btn btn-secondary btn-rounded nextButton', 'id' => 'property-submit']) }}
+                        <div class="d-flex justify-content-between">
+                             <button type="button" class="btn btn-primary btn-rounded prevButton">
+                                {{ __('Back') }}
+                            </button>
+                            <button type="button" class="btn btn-secondary btn-rounded nextButton"
+                                data-next-tab="#profile-5">
+                                {{ __('Next') }}
+                            </button>
+                        </div>
+                        
+
+                    </div>
+
+                    <div class="tab-pane" id="profile-6" role="tabpanel"aria-labelledby="profile-tab-6">
+                       <div class="row">
+                            <div class="col-lg-12">
+                                <div class="card border bg-custom bg-white mb-3">
+                                    <div class="card-header">
+                                        <h5> {{ __('Our Cost') }}</h5>
+                                    </div>
+                                    <div class="card-body w-100">
+                                        <div id="rowsContainer">
+                                            <!-- ===== Row Start ===== -->
+                                            <div class="row position-relative mb-2 input-row">
+                                                <span class="remove-row d-none">&times;</span>
+
+                                                <div class="col-sm-4">
+                                                <div class="mb-3">
+                                                    <div class="form-group">
+                                                    <label class="form-label">Mortgage Amount</label> 
+                                                    <div class="input-group">
+                                                        <span class="input-group-text">$</span>
+                                                        <input type="number" step="0.01" placeholder="e.g. 1000" class="form-control" name="mortgage_amount[]" value="">
+                                                    </div>
+                                                    </div>
+                                                </div>
+                                                </div>
+
+                                                <div class="col-sm-4">
+                                                <div class="mb-3">
+                                                    <div class="form-group">
+                                                    <label class="form-label">Insurance Amount</label> 
+                                                    <div class="input-group">
+                                                        <span class="input-group-text">$</span>
+                                                        <input type="number" step="0.01" placeholder="e.g. 1000" class="form-control" name="insurance_amount[]" value="">
+                                                    </div>
+                                                    </div>
+                                                </div>
+                                                </div>
+
+                                                <div class="col-sm-4">
+                                                <div class="mb-3">
+                                                    <div class="form-group">
+                                                    <label class="form-label">Amenities Amount</label> 
+                                                    <div class="input-group">
+                                                        <span class="input-group-text">$</span>
+                                                        <input type="number" step="0.01" placeholder="e.g. 1000" class="form-control" name="amenities_amount[]" value="">
+                                                    </div>
+                                                    </div>
+                                                </div>
+                                                </div>   
+                                            </div>
+                                            <!-- ===== Row End ===== -->
+                                            </div>
+
+                                            <!-- Add More Button -->
+                                            <div class="text-end">
+                                            <!-- <button id="addMoreBtn" class="btn btn-sm btn-success">
+                                                <i class="bi bi-plus-lg"></i> Add More
+                                            </button> -->
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
+                            <div class="col-lg-12 mb-2">
+                                <div class="d-flex justify-content-between">
+                                    <button type="button" class="btn btn-primary btn-rounded prevButton">
+                                        {{ __('Back') }}
+                                    </button>
+                                    {{ Form::submit(__('Finish'), ['class' => 'btn btn-secondary btn-rounded nextButton text-white', 'id' => 'property-submit']) }}
+                                </div>
+                            </div>
 
                     </div>
 
@@ -882,6 +988,26 @@
     {{ Form::close() }}
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    const container = document.getElementById('rowsContainer');
+    const addMoreBtn = document.getElementById('addMoreBtn');
+
+    addMoreBtn.addEventListener('click', function () {
+      // Clone first row
+      const clone = container.querySelector('.input-row').cloneNode(true);
+      clone.querySelectorAll('input').forEach(input => input.value = ''); // clear inputs
+      clone.querySelector('.remove-row').classList.remove('d-none');
+      container.appendChild(clone);
+    });
+
+    // Remove button event
+    container.addEventListener('click', function (e) {
+      if (e.target.classList.contains('remove-row')) {
+        e.target.closest('.input-row').remove();
+      }
+    });
+  </script>
+
 
 <script>
     $(document).ready(function() {

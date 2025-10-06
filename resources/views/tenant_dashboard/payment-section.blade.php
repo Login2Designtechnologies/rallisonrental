@@ -28,7 +28,7 @@
                                 <i class="bi bi-calendar text-primary fs-3"></i>
                             </div>
                             <div class="card-body position-relative pt-0 pb-3">
-                                <div class="fs-2 fw-bold">Sep 10, 2025</div>
+                                <div class="fs-3 fw-bold">Sep 10, 2025</div>
                                 <p class="text-muted small mb-2">3 days remaining</p>
                                 <!-- <span class="badge bg-warning text-dark">Due Soon</span> -->
                                 <a href="#" class="btn btn-primary btn-sm fs-6">Make Payment</a>
@@ -45,7 +45,7 @@
                                 <i class="bi bi-currency-dollar text-success fs-3"></i>
                             </div>
                             <div class="card-body position-relative pt-0 pb-3">
-                                <div class="fs-2 fw-bold">$1,250.00</div>
+                                <div class="fs-3 fw-bold">$1,250.00</div>
                                 <p class="text-muted small mb-2">Monthly rent</p>
                                 <a href="#" class="btn btn-primary btn-sm fs-6">Make Payment</a>
                             </div>
@@ -61,7 +61,7 @@
                                 <i class="bi bi-exclamation-triangle text-danger fs-3"></i>
                             </div>
                             <div class="card-body position-relative pt-0 pb-3">
-                                <div class="fs-2 fw-bold text-danger">$75.00</div>
+                                <div class="fs-3 fw-bold text-danger">$75.00</div>
                                 <p class="text-muted small mb-2">Late fees included</p>
                                 <span class="badge bg-danger">Overdue</span>
                             </div>
