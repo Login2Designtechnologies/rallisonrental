@@ -344,11 +344,10 @@ class HomeController extends Controller
 
     public function sendEmail(OtherInvoice $otherInvoice)
     {
-        // Mail::to($invoice->tenant->email)->send(new \App\Mail\OtherInvoiceMail($invoice));
         try {
             $otherInvoice->load(['tenant', 'owner', 'property', 'items']);
 
-            Mail::to('komalshani1997@gmail.com')
+            Mail::to($otherInvoice->tenant->user->email)
                 ->send(new OtherInvoiceMail($otherInvoice));
 
             return redirect()->route('other')

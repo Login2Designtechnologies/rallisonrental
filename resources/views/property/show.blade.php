@@ -379,7 +379,7 @@
                                             <tr>
                                                 <th>#</th>
                                                 <th>Amenity Name</th>
-                                                <!-- <th>Price</th> -->
+                                                <th>Cost</th>
                                                 <th>Status</th>
                                                 <!-- <th class="text-center">Action</th> -->
                                             </tr>
@@ -389,7 +389,7 @@
                                             <tr>
                                                 <td class="text-center">{{ $index + 1 }}</td>
                                                 <td>{{ $amenity->name }}</td>
-                                                <!-- <td>$150</td> -->
+                                                <td>${{ $amenity->price }}</td>
                                                 <td>{{ $amenity->status == 1 ? 'Active' : 'Inactive' }}</td>
                                                 {{--<!-- <td class="text-center">
                                                     <a href="{{url('edit-Amenities/'.$amenity->id.'/'.$property->id)}}" class="btn btn-sm btn-primary" title="Edit">

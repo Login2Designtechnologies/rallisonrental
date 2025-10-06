@@ -74,11 +74,11 @@
         <!-- Row 4+: Items -->
         @php $subtotal = 0; @endphp
         @foreach($otherInvoice->items as $item)
-            @php $subtotal += $item->amount; @endphp
+            @php $subtotal += $item->price; @endphp
             <tr>
                 <td class="v-top">{{ $item->item ?? '' }}</td>
-                <td class="text-end v-top">{{ number_format($item->amount, 2) }}</td>
-                <td class="text-end v-top">{{ number_format($item->amount, 2) }}</td>
+                <td class="text-end v-top">{{ number_format($item->price, 2) }}</td>
+                <td class="text-end v-top">{{ number_format($item->price, 2) }}</td>
             </tr>
         @endforeach
         

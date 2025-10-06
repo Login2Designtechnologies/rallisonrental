@@ -41,6 +41,14 @@ use App\Models\User;
 
 require __DIR__ . '/auth.php';
 
+Route::get('storage/upload/{path}', function ($path) {
+    $fullPath = storage_path('upload/' . $path);
+    if (!file_exists($fullPath)) {
+        abort(404);
+    }
+    return response()->file($fullPath);
+})->where('path', '.*');
+
 Route::get('/', [HomeController::class, 'index'])->middleware(
     [
 

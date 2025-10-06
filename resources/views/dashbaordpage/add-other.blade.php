@@ -161,10 +161,11 @@
   // Add Row
   document.getElementById("addRow").addEventListener("click", () => {
     const tbody = document.querySelector("#invoiceTable tbody");
+    const index = tbody.querySelectorAll("tr").length;
     const tr = document.createElement("tr");
     tr.innerHTML = `
-      <td><input type="text" class="form-control" placeholder="Enter detail"></td>
-      <td><input type="number" class="form-control amount" value="0"></td>
+      <td><input type="text" class="form-control" name="items[${index}][detail]" placeholder="Enter detail"></td>
+      <td><input type="number" class="form-control amount" name="items[${index}][amount]" value="0" step="0.01"></td>
       <td class="text-center">
         <button type="button" class="btn btn-sm btn-danger removeRow"><i class="bi bi-x-lg"></i></button>
       </td>

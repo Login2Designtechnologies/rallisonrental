@@ -16,18 +16,18 @@
         : asset('images/avatar.png');
 
     // Helper function for safe date formatting
-    function formatTenantDate($date)
-    {
-        if (!$date) return '-';
-        try {
-            // If date is stored as m-d-Y
-            return \Carbon\Carbon::createFromFormat('m-d-Y', $date)->format('M j, Y');
-        } catch (\Exception $e) {
+    if (!function_exists('formatTenantDate')) {
+        function formatTenantDate($date)
+        {
+            if (!$date) return '-';
             try {
-                // Fallback to parse any other format
-                return \Carbon\Carbon::parse($date)->format('M j, Y');
-            } catch (\Exception $e2) {
-                return '-';
+                return \Carbon\Carbon::createFromFormat('m-d-Y', $date)->format('M j, Y');
+            } catch (\Exception $e) {
+                try {
+                    return \Carbon\Carbon::parse($date)->format('M j, Y');
+                } catch (\Exception $e2) {
+                    return '-';
+                }
             }
         }
     }
@@ -529,10 +529,7 @@
                                             <div class="col-md-4">
                                                 <label class="form-label">Contract Renewal Amount Increase (USD)</label>
                                                 <div class="input-group">
-                                                    <span class="input-group-text">$</span>
-                                                    <input type="number" step="0.01" placeholder="e.g. 100"
-                                                        class="form-control @error('contract_renewal_amount') is-invalid @enderror"
-                                                        name="contract_renewal_amount" value="{{ $renewAmt }}">
+                                                    <span class="input-group-text">$</span>                                                    
                                                 </div>
                                                 @error('contract_renewal_amount')
                                                     <div class="invalid-feedback d-block">{{ $message }}</div>
@@ -780,98 +777,97 @@ document.addEventListener('DOMContentLoaded', function() {
                                     <div class="card theme-card">
                                         <div class="table-responsive">
                                             <table class="table table-bordered mb-0 text-center" id="payment-schedule-table">
-                                                <thead class="table-theme">
-                                                    <tr>
-                                                        <th>Month</th>
-                                                        <th>Rent</th>
-                                                        <th>Security</th>
-                                                        <!-- <th>Last Month Rent</th> -->
-                                                        <th>Amenities</th>
-                                                        <th>Utilities</th>
-                                                        <th>Late Payments</th>
-                                                        <th>Status</th>
-                                                        <th>Actions</th>
-                                                    </tr>
-                                                </thead>
-                                    <tbody>
-                        @if($tenantcontracts && $period)
-                            @foreach ($period as $index => $month)
-                                @php
-                                    $label = $month->format('F Y');
-                                    $ym = $month->format('Y-m');
-                                    $isPending = $contract->status == 'pending';
-                                @endphp
+                                                    @if($tenantcontracts && $period)
+                                                        <thead class="table-theme">
+                                                            <tr>
+                                                                <th>Month</th>
+                                                                <th>Rent</th>
+                                                                <th>Security</th>
+                                                                <!-- <th>Last Month Rent</th> -->
+                                                                <th>Amenities</th>
+                                                                <th>Utilities</th>
+                                                                <th>Late Payments</th>
+                                                                <th>Status</th>
+                                                                <th>Actions</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            @foreach ($period as $index => $month)
+                                                                @php
+                                                                    $label = $month->format('F Y');
+                                                                    $ym = $month->format('Y-m');
+                                                                    $isPending = $contract->status == 'pending';
+                                                                @endphp
 
-                                <tr data-ym="{{ $ym }}">
-                                    <td>{{ $label }}</td>
+                                                                <tr data-ym="{{ $ym }}">
+                                                                    <td>{{ $label }}</td>
 
-                                    {{-- Rent --}}
-                                    <td>${{ number_format($tenantcontracts->standard_rent, 2) }}</td>
+                                                                    {{-- Rent --}}
+                                                                    <td>${{ number_format($tenantcontracts->standard_rent, 2) }}</td>
 
-                                    {{-- Security Deposit --}}
-                                    <td>
-                                        @if($index == 0)
-                                            ${{ number_format($tenantcontracts->security_deposit, 2) }}
-                                        @endif
-                                    </td>
+                                                                    {{-- Security Deposit --}}
+                                                                    <td>
+                                                                        @if($index == 0)
+                                                                            ${{ number_format($tenantcontracts->security_deposit, 2) }}
+                                                                        @endif
+                                                                    </td>
 
-                                    {{-- Last Month Rent --}}
-                                    <!-- <td></td> -->
+                                                                    {{-- Last Month Rent --}}
+                                                                    <!-- <td></td> -->
 
-                                    {{-- Amenities --}}
-                                    <td>${{ number_format($propertyAmenitiesTotal, 2) }}</td>
-                                    <td></td>
-                                    <td></td>
+                                                                    {{-- Amenities --}}
+                                                                    <td>${{ number_format($propertyAmenitiesTotal, 2) }}</td>
+                                                                    <td></td>
+                                                                    <td></td>
 
-                                    {{-- Status --}}
-                                    <td>
-                                        <select class="form-select form-select-sm status-select">
-                                            <option value="pending" {{ $isPending ? 'selected' : '' }}>Pending</option>
-                                            <option value="paid" {{ !$isPending ? 'selected' : '' }}>Paid</option>
-                                        </select>
-                                    </td>
+                                                                    {{-- Status --}}
+                                                                    <td>
+                                                                        <select class="form-select form-select-sm status-select">
+                                                                            <option value="pending" {{ $isPending ? 'selected' : '' }}>Pending</option>
+                                                                            <option value="paid" {{ !$isPending ? 'selected' : '' }}>Paid</option>
+                                                                        </select>
+                                                                    </td>
 
-                                    {{-- Actions --}}
-                                    <td>
-                                        <button class="btn btn-sm btn-primary" title="View Invoice">
-                                            <i class="ti ti-eye"></i>
-                                        </button>
-                                        <button class="btn btn-sm btn-secondary" title="Download Invoice">
-                                            <i class="ti ti-download"></i>
-                                        </button>
-                                        <form action="{{ route('tenants.resend', $tenant->id) }}" method="POST" style="display:inline;">
-                                            @csrf
-                                            <button type="submit" class="btn btn-sm btn-warning" title="Resend Invoice">
-                                                <i class="ti ti-send"></i>
-                                            </button>
-                                        </form>
-                                    </td>
-                                </tr>
-                            @endforeach
-                        @else
-                            <tr>
-                                <td colspan="7">No payment schedule available.</td>
-                            </tr>
-                        @endif
-                        </tbody>
+                                                                    {{-- Actions --}}
+                                                                    <td>
+                                                                        <button class="btn btn-sm btn-primary" title="View Invoice">
+                                                                            <i class="ti ti-eye"></i>
+                                                                        </button>
+                                                                        <button class="btn btn-sm btn-secondary" title="Download Invoice">
+                                                                            <i class="ti ti-download"></i>
+                                                                        </button>
+                                                                        <form action="{{ route('tenants.resend', $tenant->id) }}" method="POST" style="display:inline;">
+                                                                            @csrf
+                                                                            <button type="submit" class="btn btn-sm btn-warning" title="Resend Invoice">
+                                                                                <i class="ti ti-send"></i>
+                                                                            </button>
+                                                                        </form>
+                                                                    </td>
+                                                                </tr>
+                                                            @endforeach                                       
+                                                        </tbody>
 
-                        {{-- Table Footer with grand totals --}}
-                        <tfoot class="table-secondary text-center">
-                        <tr>
-                            <th>Total</th>
-                            <th>${{ number_format((optional($tenantcontracts)->standard_rent ?? 0) * (is_array($period) ? count($period) : 0), 2) }}</th>
-                            <th>
-                                ${{ number_format($tenantcontracts?->security_deposit ?? 0, 2) }}
-                            </th>
-                            <!-- <th>$0.00</th> -->
-                            <th>${{ number_format($propertyAmenitiesTotal * count($period ?? []), 2) }}</th>
-                            <th></th>
-                            <th></th>
-                            <th></th>
-                            <th></th>
-                        </tr>
-                        </tfoot>
-
+                                                        {{-- Table Footer with grand totals --}}
+                                                        <tfoot class="table-secondary text-center">
+                                                        <tr>
+                                                            <th>Total</th>
+                                                            <th>${{ number_format((optional($tenantcontracts)->standard_rent ?? 0) * (is_array($period) ? count($period) : 0), 2) }}</th>
+                                                            <th>
+                                                                ${{ number_format($tenantcontracts?->security_deposit ?? 0, 2) }}
+                                                            </th>
+                                                            <!-- <th>$0.00</th> -->
+                                                            <th>${{ number_format($propertyAmenitiesTotal * count($period ?? []), 2) }}</th>
+                                                            <th></th>
+                                                            <th></th>
+                                                            <th></th>
+                                                            <th></th>
+                                                        </tr>
+                                                        </tfoot>
+                                                    @else
+                                                        <tr>
+                                                            <td colspan="7">No payment schedule available.</td>
+                                                        </tr>
+                                                    @endif
                                             </table>
                                         </div>
                                     </div>
@@ -919,10 +915,10 @@ document.addEventListener('DOMContentLoaded', function() {
                                                     <th>Status</th>
                                                     <th>Actions</th>
                                                 </tr>
-                                            </thead>
+                                            </thead
                                             <tbody>
                                                 @php 
-                                                    $tenantall = DB::table('utility_invoices')->where('tenant_id',$u->id)->where('property_id',$tenant->property)->get();
+                                                    $tenantall = DB::table('utility_invoices')->where('tenant_id',$u->id)->where('property_id',$tenant->property_id)->get();
                                                 @endphp
 
                                                 @forelse ($tenantall as $invoice)
@@ -1004,7 +1000,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                             </tr>
                                         </thead>
                                     @php 
-                                        $tenantotherinvoicesall = DB::table('other_invoices')->where('tenant_id',$u->id)->where('property_id',$tenant->property)->get();
+                                        $tenantotherinvoicesall = DB::table('other_invoices')->where('tenant_id',$u->id)->where('property_id',$tenant->property_id)->get();
                                     @endphp
                                         <tbody class="text-center">
                                             @forelse($tenantotherinvoicesall as $i)

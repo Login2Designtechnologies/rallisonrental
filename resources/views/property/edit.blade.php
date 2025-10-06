@@ -133,14 +133,23 @@
                                 <div class="form-group">
                                     {{ Form::label('thumbnail', __('Thumbnail Image'), ['class' => 'form-label']) }} <span class="text-danger">*</span>
                                     {{ Form::file('thumbnail', ['class' => 'form-control']) }}
-                                @if(!empty($propertyimages->image))
-                                    <a href="{{ asset(Storage::url('upload/thumbnail')) . '/' . $propertyimages->image }}" target="_blank">
-                                        <img src="{{ asset(Storage::url('upload/thumbnail')) . '/' . $propertyimages->image }}"
-                                             alt="{{ $property->name }}"
-                                             class="img-prod"
-                                             style="max-width:50px; height:auto;" />
-                                    </a>
-                                @endif
+                                    @if(!empty($propertyimages->image))
+                                        @php
+                                            $thumbnailPath = 'storage/upload/thumbnail/' . $propertyimages->image;
+                                        @endphp
+
+                                        @if(file_exists(public_path($thumbnailPath)) || file_exists(base_path($thumbnailPath)) || file_exists(storage_path('upload/thumbnail/' . $propertyimages->image)))
+                                            <a href="{{ url($thumbnailPath) }}" target="_blank">
+                                                <img src="{{ url($thumbnailPath) }}"
+                                                    alt="{{ $property->name }}"
+                                                    class="img-prod"
+                                                    style="max-width:50px; height:auto;" />
+                                            </a>
+                                        @else
+                                            <p class="text-danger mt-2">Thumbnail not found on server.</p>
+                                        @endif
+                                    @endif
+
                                 </div>
                             </div>
                         </div>
@@ -164,13 +173,13 @@
                                     <!-- {{ Form::text('state', null, ['class' => 'form-control', 'placeholder' => __('Enter Property State')]) }} -->
                                     {{ Form::select('state', 
                                         $statesdata->pluck('name','id')->toArray(),  // value=id, text=name
-                                        $property->state ?? null, 
+                                        $property->state_id ?? null, 
                                         ['class' => 'form-control basic-select required-field', 'id'=>'company_state', 'required' => 'required', 'placeholder' => __('Select')]
                                     ) }}
                                 </div>
 
                                 @php
-                                  $cities = DB::table('cities')->where('state_id', $property->state)
+                                  $cities = DB::table('cities')->where('state_id', $property->state_id)
                                     ->orderBy('id', 'asc')->get();
                                 @endphp
 
@@ -180,7 +189,7 @@
                                     <select name="city" id="company_city" class="form-control required-field" required>
                                         <option value="" style="background-color: black;">Select</option>
                                     @foreach($cities as $citieval)
-                                        <option value="{{$citieval->id}}" {{ $property->city == $citieval->id ? 'selected' : '' }} selected style="background-color: black;">{{$citieval->name}}</option>
+                                        <option value="{{$citieval->id}}" {{ $property->city_id == $citieval->id ? 'selected' : '' }} selected style="background-color: black;">{{$citieval->name}}</option>
                                     @endforeach
                                     </select>
                                 </div>

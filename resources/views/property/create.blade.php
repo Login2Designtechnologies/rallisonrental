@@ -789,14 +789,8 @@
                                         </div>
                                     </div>
                                 </div>
-
-
-
                             </div>
                         </div>
-
-
-
                             <div class="d-flex justify-content-between">
                              <button type="button" class="btn btn-primary btn-rounded prevButton">
                                 {{ __('Back') }}
@@ -806,7 +800,6 @@
                                 {{ __('Next') }}
                             </button>
                         </div>
-
                     </div>
                     
 
@@ -836,7 +829,7 @@
                                 <div class="">
                                     <div class="row align-items-center g-2">
                                         <div class="col">
-                                            <h5 class="mb-0">Utilities List</h5>
+                                            <h5 class="mb-0" id="utilitiesTitle" style="{{ $utilities->count() == 0 ? 'display:none;' : '' }}">Utilities List</h5>
                                         </div>
                                         <div class="col-auto">
                                                 <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#addUtilitiesModal">
@@ -846,7 +839,7 @@
                                     </div>
                                 </div>
                                 <div class="">
-                                    <div class="new-table mt-3">
+                                    <div class="new-table mt-3" id="utilitiesWrapper" style="{{ $utilities->count() == 0 ? 'display:none;' : '' }}">
                                         <div class="table-responsive">
                                             <table class="table table-bordered mb-0 custom-bg-table" id="UtilitiesTable">
                                                 <thead class="table-theme">
@@ -859,32 +852,14 @@
                                                         <th class="text-center">Action</th>
                                                     </tr>
                                                 </thead>
-                                                <tbody>
-                                                    @foreach($utilities as $index => $utilitval)
-                                                        <tr id="row2-{{ $utilitval->id }}">
-                                                            <td class="text-center">{{ $index + 1 }}</td>
-                                                            <td>{{ $utilitval->name }}</td>
-                                                            <td>{{ $utilitval->sub_category == 1 ? 'Yes' : 'No' }}</td>
-                                                            <td>{{ $utilitval->sub_category_name ?? '' }}</td>
-                                                            <td>{{ $utilitval->status == 1 ? 'Active' : 'Inactive' }}</td>
-                                                            <td class="text-center">
-                                                                <button class="btn btn-sm  btn-warning editUtilitiesBtn" type="button" 
-                                                                    data-id="{{ $utilitval->id }}"
-                                                                    data-name="{{ $utilitval->name }}"
-                                                                    data-status="{{ $utilitval->status }}"
-                                                                    data-sub_category="{{ $utilitval->sub_category }}"
-                                                                    data-sub_category_name="{{ $utilitval->sub_category_name ?? '' }}">
-                                                                    <i class="ti ti-edit"></i>
-                                                                </button>
-                                                            </td>
-                                                        </tr>
-                                                    @endforeach
+                                                <tbody id="utilitiesTableBody">
+                                                    
                                                 </tbody>
+
                                             </table>
                                         </div>
-                                    </div>
-
-                                    </div>
+                                    </div>                                            
+                                </div>
                                 </div>
 
                             </div>
@@ -1104,33 +1079,75 @@
                     $('#UtilitiesForm')[0].reset();
 
                     alert(response.message);
+                    $('#utilitiesTitle').show();
+                    $('#utilitiesWrapper').show();
 
-                    // ✅ Append multiple rows if multiple sub categories
-                    response.data.forEach(function(item) {
-                        let rowCount = $("#UtilitiesTable tbody tr").length + 1;
-
-                        let statusText = item.status == 1 ? 'Active' : 'Inactive';
-                        let subCatText = item.sub_category == 1 ? 'Yes' : 'No';
-                        let subCatNames = item.sub_category_name ?? '';
-
-                        $('#UtilitiesTable tbody').append(`
-                            <tr id="row2-${item.id}">
-                                <td class="text-center">${rowCount}</td>
-                                <td>${item.name}</td>
-                                <td>${subCatText}</td>
-                                <td>${subCatNames}</td>
-                                <td>${statusText}</td>
-                                <td class="text-center">
-                                    <button type="button" class="btn btn-sm btn-warning editUtilitiesModal"
-                                        data-id="${item.id}"
-                                        data-name="${item.name}"
-                                        data-status="${item.status}">
-                                        <i class="ti ti-edit"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                        `);
+                    // ✅ Step 1: Group incoming JSON by company name
+                    let grouped = {};
+                    response.data.forEach(function (item) {
+                        if (!grouped[item.name]) {
+                            grouped[item.name] = {
+                                id: item.id,
+                                name: item.name,
+                                sub_category: item.sub_category,
+                                status: item.status,
+                                sub_names: []
+                            };
+                        }
+                        if (item.sub_category_name) {
+                            grouped[item.name].sub_names.push(item.sub_category_name);
+                        }
                     });
+
+                    // ✅ Step 2: Loop through grouped data and append/update rows
+                    Object.values(grouped).forEach(function (companyData) {
+                        let existingRow = $("#UtilitiesTable tbody tr").filter(function () {
+                            return $(this).find("td:nth-child(2)").text().trim() === companyData.name;
+                        });
+
+                        let subCatText = companyData.sub_category == 1 ? 'Yes' : 'No';
+                        let statusText = companyData.status == 1 ? 'Active' : 'Inactive';
+                        let subCatNames = companyData.sub_names.join(', ');
+
+                        if (existingRow.length > 0) {
+                            // ✅ Update existing row with new subcategories
+                            let existingSubNames = existingRow.find("td:nth-child(4)").text().split(/\s*,\s*/);
+                            companyData.sub_names.forEach(function (sn) {
+                                if (sn && !existingSubNames.includes(sn)) {
+                                    existingSubNames.push(sn);
+                                }
+                            });
+                            existingRow.find("td:nth-child(4)").text(existingSubNames.join(', '));
+                        } else {
+                            // ✅ Add new company row
+                            let rowCount = $("#UtilitiesTable tbody tr").length + 1;
+                            $('#UtilitiesTable tbody').append(`
+                                <tr id="row2-${companyData.id}">
+                                    <td class="text-center">${rowCount}</td>
+                                    <td>${companyData.name}</td>
+                                    <td>${subCatText}</td>
+                                    <td>${subCatNames}</td>
+                                    <td>${statusText}</td>
+                                    <td class="text-center">
+                                        <button type="button" class="btn btn-sm btn-warning editUtilitiesBtn"
+                                            data-id="${companyData.id}"
+                                            data-name="${companyData.name}"
+                                            data-status="${companyData.status}"
+                                            data-sub_category="${companyData.sub_category}"
+                                            data-sub_category_name="${subCatNames}">
+                                            <i class="ti ti-edit"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            `);
+                        }
+                    });
+
+                    // ✅ Step 3: Re-number rows (optional, keeps index clean)
+                    $("#UtilitiesTable tbody tr").each(function (index) {
+                        $(this).find("td:first").text(index + 1);
+                    });
+
                 } else {
                     alert(response.message ?? "Something went wrong!");
                 }

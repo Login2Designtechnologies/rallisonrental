@@ -68,7 +68,7 @@ class PropertyController extends Controller
             ->whereExists(function ($q) {
                 $q->select(DB::raw(1))
                   ->from('tenants')
-                  ->whereColumn('tenants.property', 'properties.id')
+                  ->whereColumn('tenants.property_id', 'properties.id')
                   ->where('tenants.parent_id', auth()->id());
             })
             ->whereExists(function ($q) {
@@ -381,10 +381,15 @@ public function property_amenities_store(Request $request)
     ]);
 
     $userId = Auth::id();
+    
+    // Get last inserted property id (if exists)
+    $lastProperty = DB::table('properties')->latest('id')->first();
+    $propertyId = $lastProperty ? $lastProperty->id + 1 : 1;
 
     // Check if amenity already exists
     $exists = DB::table('amenity_catg')
         ->where('name', $request->name)
+        ->where('property_id', $propertyId)
         ->where('user_id', $userId)
         ->exists();
 
@@ -394,10 +399,6 @@ public function property_amenities_store(Request $request)
             'message' => 'Amenity already exists!'
         ]);
     }
-
-    // Get last inserted property id (if exists)
-    $lastProperty = DB::table('properties')->latest('id')->first();
-    $propertyId = $lastProperty ? $lastProperty->id + 1 : 1;
 
     // Insert new amenity and get ID
     $newAmenityId = DB::table('amenity_catg')->insertGetId([
