@@ -65,7 +65,7 @@
     .form-control.form-control.inline-input{display:none}
 </style>
 <div class="property-dtl ">
-    <div class="row">
+    <div class="row g-3">
     <!-- Sidebar Tabs -->
     <div class="col-md-3 d-flex">
         <div class="fw-100 bg-white navtabsulli">
@@ -100,7 +100,7 @@
     </div>
 
     <!-- Tab Content -->
-    <div class="col-md-9 d-flex flex-column tenant-profile-sec">
+    <div class="col-md-9 d-flex flex-column tenant-profile-sec position-relative">
         <div class="tab-content fw-100 bg-white p-4 h-100" id="propertyTabsContent">
              <div class="col-auto custom-edit-button text-end mb-3">
                         <button id="edit-btn" class="btn btn-secondary text-white">Edit</button>

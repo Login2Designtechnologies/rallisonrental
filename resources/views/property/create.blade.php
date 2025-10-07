@@ -336,7 +336,7 @@
 
 @section('content')
     {{ Form::open(['url' => 'property', 'method' => 'post', 'enctype' => 'multipart/form-data', 'id' => 'property_form']) }}
-    <div class="row mt-4">
+    <div class="row mt-4 g-3">
         <div class="col-md-3 d-flex">
             <div class="bg-white fw-100 mb-lg-5">
                 <div class="card-header pb-0">

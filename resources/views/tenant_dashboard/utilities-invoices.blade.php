@@ -16,7 +16,7 @@
 
         <!-- Page Header -->
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4">
-          <div>
+          <div class="table-head-ttl">
             <h3 class="mb-1">Utilities Invoices</h3>
             <p class="text-muted mb-0">Access your latest Utilities Invoices</p>
           </div>

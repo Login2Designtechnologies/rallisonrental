@@ -13,15 +13,19 @@
 <div class="card border bg-custom w-100">
     <div class="card-body">
         <!-- Property Select -->
-        <div class="mb-3">
-          <label for="propertySelect" class="form-label">Select Property</label>
-          <select class="form-select" id="propertySelect" required>
-            <option value="">Choose...</option>
-            <option value="nyc101">NYC - Times Square Apartment</option>
-            <option value="la202">Los Angeles - Sunset Villa</option>
-            <option value="chicago303">Chicago - Lakeview Condo</option>
-            <option value="houston404">Houston - Greenfield House</option>
-          </select>
+        <div class="row">
+          <div class="col-md-4">
+            <div class="">
+              <label for="propertySelect" class="form-label">Select Property</label>
+              <select class="form-select" id="propertySelect" required>
+                <option value="">Choose...</option>
+                <option value="nyc101">NYC - Times Square Apartment</option>
+                <option value="la202">Los Angeles - Sunset Villa</option>
+                <option value="chicago303">Chicago - Lakeview Condo</option>
+                <option value="houston404">Houston - Greenfield House</option>
+              </select>
+            </div>
+          </div>
         </div>
 
         <!-- Table -->

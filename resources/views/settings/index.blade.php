@@ -249,7 +249,7 @@
                                             <div class="row mt-3">
                                                 <div class="col-6"></div>
                                                 <div class="col-6 text-end">
-                                                    {{ Form::submit(__('Save'), ['class' => 'btn btn-secondary btn-rounded']) }}
+                                                    {{ Form::submit(__('Save'), ['class' => 'btn btn-secondary btn-rounded text-white']) }}
                                                 </div>
                                             </div>
                                             {{ Form::close() }}
@@ -282,7 +282,7 @@
                                             <div class="row mt-3">
                                                 <div class="col-6"></div>
                                                 <div class="col-6 text-end">
-                                                    {{ Form::submit(__('Save'), ['class' => 'btn btn-secondary btn-rounded']) }}
+                                                    {{ Form::submit(__('Save'), ['class' => 'btn btn-secondary btn-rounded text-white']) }}
                                                 </div>
                                             </div>
                                             {{ Form::close() }}
@@ -377,7 +377,7 @@
                                             <div class="row mt-3">
                                                 <div class="col-6"></div>
                                                 <div class="col-6 text-end">
-                                                    {{ Form::submit(__('Save'), ['class' => 'btn btn-secondary btn-rounded']) }}
+                                                    {{ Form::submit(__('Save'), ['class' => 'btn btn-secondary btn-rounded text-white']) }}
                                                 </div>
                                             </div>
                                             {{ Form::close() }}
@@ -501,7 +501,7 @@
                                             <div class="row mt-3">
                                                 <div class="col-6"></div>
                                                 <div class="col-6 text-end">
-                                                    {{ Form::submit(__('Save'), ['class' => 'btn btn-secondary btn-rounded']) }}
+                                                    {{ Form::submit(__('Save'), ['class' => 'btn btn-secondary btn-rounded text-white']) }}
                                                 </div>
                                             </div>
                                             {{ Form::close() }}
@@ -548,7 +548,7 @@
                                             <div class="row mt-3">
                                                 <div class="col-6"></div>
                                                 <div class="col-6 text-end">
-                                                    <a href="#" data-size="md" data-url="{{ route('setting.smtp.test') }}" data-title="{{__('Add Email')}}"  class='btn btn-secondary btn-rounded customModal me-1'> {{ __('Test Mail') }} </a>
+                                                    <a href="#" data-size="md" data-url="{{ route('setting.smtp.test') }}" data-title="{{__('Add Email')}}"  class='btn btn-secondary btn-rounded text-white customModal me-1'> {{ __('Test Mail') }} </a>
                                                     {{ Form::submit(__('Save'), ['class' => 'btn btn-primary btn-rounded']) }}
                                                 </div>
                                             </div>
@@ -711,7 +711,7 @@
                                             <div class="row mt-3">
                                                 <div class="col-6"></div>
                                                 <div class="col-6 text-end">
-                                                    {{ Form::submit(__('Save'), ['class' => 'btn btn-secondary btn-rounded']) }}
+                                                    {{ Form::submit(__('Save'), ['class' => 'btn btn-secondary btn-rounded text-white']) }}
                                                 </div>
                                             </div>
 
@@ -763,7 +763,7 @@
                                                             <div class="row mt-3">
                                                                 <div class="col-6"></div>
                                                                 <div class="col-6 text-end">
-                                                                    {{ Form::submit(__('Save'), ['class' => 'btn btn-secondary btn-rounded']) }}
+                                                                    {{ Form::submit(__('Save'), ['class' => 'btn btn-secondary btn-rounded text-white']) }}
                                                                 </div>
                                                             </div>
 
@@ -808,7 +808,7 @@
                                             <div class="row mt-3">
                                                 <div class="col-6"></div>
                                                 <div class="col-6 text-end">
-                                                    {{ Form::submit(__('Save'), ['class' => 'btn btn-secondary btn-rounded']) }}
+                                                    {{ Form::submit(__('Save'), ['class' => 'btn btn-secondary btn-rounded text-white']) }}
                                                 </div>
                                             </div>
                                             {{ Form::close() }}
@@ -870,7 +870,7 @@
                                             @if (empty(\Auth::user()->twofa_secret))
                                                 <div class="row mt-3">
                                                     <div class="col-12 text-end">
-                                                        {{ Form::submit(__('Verify'), ['class' => 'btn btn-secondary btn-rounded']) }}
+                                                        {{ Form::submit(__('Verify'), ['class' => 'btn btn-secondary btn-rounded text-white']) }}
                                                     </div>
                                                 </div>
                                             @endif

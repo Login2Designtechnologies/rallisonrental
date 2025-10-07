@@ -49,7 +49,7 @@
 </style>
 @section('content')
 <div class="card border bg-custom w-100">
-    <div class="container my-4 p-3">
+    <div class="container my-lg-4 p-lg-3">
         <div class="row">
             <div class="col-md-10 mx-auto">
                 <div class="border p-4 box-shadow-bg radius-10">

@@ -37,7 +37,7 @@
             <input type="date" class="form-control" id="dueDate" name="due_date" value="{{ date('Y-m-d', strtotime('+7 days')) }}">
           </div>
           <!-- Property Select -->
-            <div class="col-6">
+            <div class="col-md-6">
                 <label class="form-label">Select Property</label>
                 <select name="property_id" id="propertySelect" class="form-control">
                   <option value="">-- Select --</option>
@@ -48,7 +48,7 @@
             </div>
 
             <!-- Tenant Select -->
-            <div class="col-6">
+            <div class="col-md-6">
                 <label class="form-label">Select Tenant</label>
                 <select name="tenant_id" id="tenantSelect" class="form-control" disabled>
                   <option value="">-- Select Tenant first --</option>

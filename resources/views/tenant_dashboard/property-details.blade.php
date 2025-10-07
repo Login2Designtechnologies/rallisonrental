@@ -114,11 +114,11 @@
      
 
       <!-- Tab Content -->
-      <div class="tab-content fw-100 bg-white p-4" id="propertyTabsContent">
+      <div class="tab-content fw-100 bg-white p-4 h-100" id="propertyTabsContent">
 
         <div class="tab-pane fade show active" id="propertyDash" role="tabpanel">
           <h4 class="mb-3"><i class="bi bi-building"></i> Property Dashboard</h4>
-          <div class="row g-3 mb-4">
+          <div class="row g-3">
                       <div class="col-md-4 d-flex">
                           <div class="card bg-success text-white shadow-sm w-100 new-bg-1">
                               <div class="card-body p-3 text-center">
@@ -154,7 +154,7 @@
         <!-- Property Info -->
         <div class="tab-pane fade" id="property" role="tabpanel">
           <h4 class="mb-3"><i class="bi bi-building"></i> Property &amp; Unit Information</h4>
-          <div class="row g-3 mb-4">
+          <div class="row g-3">
             <div class="col-md-6 d-flex">
               <div class="card w-100">
                 <div class="card-body">
@@ -231,7 +231,7 @@
         <!-- Lease Agreement -->
         <div class="tab-pane fade" id="lease" role="tabpanel">
           <h4 class="mb-3"><i class="bi bi-file-earmark-text"></i> Lease Agreement</h4>
-          <div class="row g-3 mb-4">
+          <div class="row g-3">
             <div class="col-md-6 d-flex">
               <div class="card w-100">
                 <div class="card-body">
@@ -289,7 +289,7 @@
             </div>
           </div> -->
 
-          <div class="row g-3 mb-4">
+          <div class="row g-3">
             <div class="col-md-4 d-flex">
               <div class="card bg-success text-white shadow-sm w-100 new-bg-1">
                 <div class="card-body">

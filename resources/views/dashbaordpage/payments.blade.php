@@ -6,11 +6,109 @@
     <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">{{ __('Dashboard') }}</a></li>
     <li class="breadcrumb-item" aria-current="page"> {{ __('Payments & Account Summary') }}</li>
 @endsection
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 
+@push('script-page')
+<script>
+        var options = {
+            chart: {
+                type: 'area',
+                height: 250,
+                toolbar: {
+                    show: false
+                },
+                foreColor: '#000000'
+            },
+            colors: ['#30a73cff', '#98f6d2ff'],
+            dataLabels: {
+                enabled: false
+            },
+            legend: {
+                show: true,
+                position: 'top',
+                labels: {
+                    colors: '#000000'
+                }
+            },
+            markers: {
+                size: 1,
+                colors: ['#30a73cff'],
+                strokeColors: ['#98f6d2ff'],
+                strokeWidth: 1,
+                shape: 'circle',
+                hover: {
+                    size: 4
+                }
+            },
+            stroke: {
+                width: 2,
+                curve: 'smooth'
+            },
+            fill: {
+                type: 'gradient',
+                gradient: {
+                    shadeIntensity: 1,
+                    type: 'vertical',
+                    inverseColors: false,
+                    opacityFrom: 0.5,
+                    opacityTo: 0,
+                    colorStops: []
+                }
+            },
+            grid: {
+                show: false
+            },
+            series: [
+                {
+                    name: "Total Income",
+                    data: [1000, 1500, 2000, 1800, 2200, 2500]
+                },
+                {
+                    name: "Total Expense",
+                    data: [700, 1200, 1600, 1300, 1700, 2100]
+                }
+            ],
+            xaxis: {
+                categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                tooltip: {
+                    enabled: false
+                },
+                labels: {
+                    style: {
+                        colors: '#000000'
+                    }
+                },
+                axisBorder: {
+                    show: false
+                },
+                axisTicks: {
+                    show: false
+                }
+            },
+            yaxis: {
+                labels: {
+                    style: {
+                        colors: '#000000'
+                    }
+                }
+            },
+            tooltip: {
+                theme: 'dark'
+            }
+        };
+
+        var chart = new ApexCharts(document.querySelector('#incomeExpense'), options);
+        chart.render();
+    </script>
+@endpush
+
+<style>
+    .card.bg-custom.radius-40.bg-box{border: 1px solid #34a891;}
+</style>
 @section('content')
 <div class="card border bg-custom w-100">
     <div class="card-body">
-        <div class="row">
+        <div class="row g-3">
             <!-- Select Property -->
             <div class="col-md-6">
                 <label for="property" class="form-label fw-bold">Select Property</label>
@@ -39,7 +137,94 @@
     <div class="card-body">
         <!-- Property View -->
         <div class="property_view d-none view-select">
-            <h4 class="ttl">Property Name: Property 1</h4>
+            <div>
+                <h4 class="ttl">Property Name: Property 1</h4>
+                <div class="row g-3 mb-2">
+                    <div class="col-lg-3 col-md-6">
+                        <div class="card bg-custom radius-40 bg-box">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center">
+                                    <div class="flex-shrink-0">
+                                        <div class="avtar bg-light-secondary">
+                                            <i class="ti ti-wallet f-24"></i>
+                                        </div>
+                                    </div>
+                                    <div class="flex-grow-1 ms-3">
+                                        <p class="mb-1">Current Amount Due	</p>
+                                        <div class="d-flex align-items-center justify-content-between">
+                                            <h4 class="mb-0">$<span class="count">0</span></h4>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-3 col-md-6">
+                        <div class="card bg-custom radius-40 bg-box">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center">
+                                    <div class="flex-shrink-0">
+                                        <div class="avtar bg-light-warning">
+                                            <i class="ti ti-alert-circle f-24"></i>
+                                        </div>
+                                    </div>
+                                    <div class="flex-grow-1 ms-3">
+                                        <p class="mb-1">Past Due Amount	</p>
+                                        <div class="d-flex align-items-center justify-content-between">
+                                            <h4 class="mb-0">$<span class="count">0</span></h4>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-3 col-md-6">
+                        <div class="card bg-custom radius-40 bg-box">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center">
+                                    <div class="flex-shrink-0">
+                                        <div class="avtar bg-light-primary">
+                                            <i class="ti ti-file-invoice f-24"></i>
+                                        </div>
+                                    </div>
+                                    <div class="flex-grow-1 ms-3">
+                                        <p class="mb-1">Utilities Due </p>
+                                        <div class="d-flex align-items-center justify-content-between">
+                                            <h4 class="mb-0">$<span class="count">0</span></h4>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-3 col-md-6">
+                        <div class="card bg-custom radius-40 bg-box">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center">
+                                    <div class="flex-shrink-0">
+                                        <div class="avtar bg-light-danger">
+                                            <i class="ti ti-file-alert f-24"></i>
+                                        </div>
+                                    </div>
+                                    <div class="flex-grow-1 ms-3">
+                                        <p class="mb-1">Utilities Past Due </p>
+                                        <div class="d-flex align-items-center justify-content-between">
+                                            <h4 class="mb-0">$<span class="count">0</span></h4>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- ./ -->
+
+            <!-- <h4 class="ttl">Property Name: Property 1</h4> -->
+             <h4 class="ttl">Analysis Report</h4>
             <div class="row g-3">
                 <div class="col-lg-3 col-md-6">
                     <div class="card bg-custom radius-40 bg-1 bg-img">
@@ -91,7 +276,7 @@
                                     </div>
                                 </div>
                                 <div class="flex-grow-1 ms-3">
-                                    <p class="mb-1">Total Invoice</p>
+                                    <p class="mb-1">Amount collected YTD</p>
                                     <div class="d-flex align-items-center justify-content-between">
                                         <h4 class="mb-0">$<span class="count">0</span></h4>
                                     </div>
@@ -111,13 +296,28 @@
                                     </div>
                                 </div>
                                 <div class="flex-grow-1 ms-3">
-                                    <p class="mb-1">Total Expense</p>
+                                    <p class="mb-1">Total Expenses YTD</p>
                                     <div class="d-flex align-items-center justify-content-between">
                                         <h4 class="mb-0">$<span class="count">0</span></h4>
                                     </div>
                                 </div>
                             </div>
                         </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-4">
+                <div class="card bg-custom custom-theme">
+                    <div class="card-body w-100 px-0">
+                        <div class="d-flex align-items-start justify-content-between">
+                            <div>
+                                <h5 class="mb-1">{{ __('Analysis Report') }}</h5>
+                                <p class="text-muted mb-2">{{ __('Income and Expense Overview') }}</p>
+                            </div>
+
+                        </div>
+                        <div id="incomeExpense"></div>
                     </div>
                 </div>
             </div>

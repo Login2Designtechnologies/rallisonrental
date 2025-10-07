@@ -81,7 +81,7 @@
 </style>
 @section('content')
 <div class="card bg-white w-100">
-  <div class="container my-4 p-3">
+  <div class="container my-lg-4 p-lg-3">
       <div class="row">
           <div class="col-md-8 mx-auto">
               <div class="border p-4 box-shadow-bg radius-10">

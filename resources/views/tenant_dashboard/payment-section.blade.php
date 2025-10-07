@@ -18,7 +18,7 @@
                     <h2 class="h4 fw-semibold mb-0">Overview</h2>
                 </div>
 
-                <div class="row g-4">
+                <div class="row g-3">
                     <!-- Next Payment Due -->
                     <div class="col-md-6 col-lg-3 d-flex">
                         <div class="card border-primary border-opacity-25 position-relative overflow-hidden fw-100 mb-0">
@@ -92,8 +92,8 @@
                                 <i class="bi bi-clipboard-data text-muted fs-3"></i>
                             </div>
                             <div class="card-body position-relative pt-0 pb-3">
-                                <a href="#" class="btn btn-primary btn-sm fs-6">View Invoices </a>
-                                <a href="{{ url('view-payment') }}" class="btn btn-outline-secondary btn-sm fs-6">View Payments  </a>
+                                <a href="#" class="btn btn-primary btn-sm fs-6 me-1 mb-1">View Invoices </a>
+                                <a href="{{ url('view-payment') }}" class="btn btn-outline-secondary btn-sm fs-6 mb-1">View Payments  </a>
                             </div>
                         </div>
                     </div>
@@ -106,9 +106,9 @@
                                 <i class="bi bi-receipt text-muted fs-3"></i>
                             </div>
                             <div class="card-body position-relative pt-0 pb-3">
-                                <a href="#" class="btn btn-outline-secondary btn-sm fs-6">Utilities Billings  </a>
-                                <a href="#" class="btn btn-outline-secondary btn-sm fs-6">Other billings   </a>
-                                <a href="#" class="btn btn-outline-secondary btn-sm fs-6">Rent    </a>
+                                <a href="#" class="btn btn-outline-secondary btn-sm fs-6 mb-1 me-1">Utilities Billings  </a>
+                                <a href="#" class="btn btn-outline-secondary btn-sm fs-6 mb-1 me-1">Other billings   </a>
+                                <a href="#" class="btn btn-outline-secondary btn-sm fs-6 mb-1">Rent    </a>
                             </div>
                         </div>
                     </div>

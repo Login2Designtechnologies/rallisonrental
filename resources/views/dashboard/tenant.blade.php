@@ -230,8 +230,13 @@ $settings=settings();
         </div>
 
 
-        <div class="col-md-4 d-flex">
-            <div class="card w-100">
+       
+
+    </div>
+
+    <div class="row g-3 my-1">
+         <div class="col-md-4 d-flex">
+            <div class="card w-100 tenant-card">
                 <div class="card-body">
                     <a href="#" class="d-flex align-items-center link-txt">
                         <i class="ti ti-arrow-right me-2 f-20"></i> New Documents to view
@@ -241,7 +246,7 @@ $settings=settings();
         </div>
 
         <div class="col-md-4 d-flex">
-            <div class="card w-100">
+            <div class="card w-100 tenant-card">
                 <div class="card-body">
                     <a href="#" class="d-flex align-items-center link-txt">
                         <i class="ti ti-arrow-right me-2 f-20"></i> Create a work Order
@@ -251,7 +256,7 @@ $settings=settings();
         </div>
 
         <div class="col-md-4 d-flex">
-            <div class="card w-100">
+            <div class="card w-100 tenant-card">
                 <div class="card-body">
                     <a href="#" class="d-flex align-items-center link-txt">
                         <i class="ti ti-arrow-right me-2 f-20"></i> Notice to Cancel Agreement
@@ -259,7 +264,6 @@ $settings=settings();
                 </div>
             </div>
         </div>
-
     </div>
 
    
