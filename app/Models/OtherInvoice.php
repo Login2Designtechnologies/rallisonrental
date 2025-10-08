@@ -25,8 +25,8 @@ class OtherInvoice extends Model
 
     protected $casts = [
         'invoice_date' => 'date',
+        'due_date' => 'date',
     ];
-
 
     public static function generateInvoiceNo() {
         return 'INV-' . mt_rand(100000, 999999);

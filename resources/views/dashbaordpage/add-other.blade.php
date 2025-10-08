@@ -42,7 +42,7 @@
                 <select name="property_id" id="propertySelect" class="form-control">
                   <option value="">-- Select --</option>
                   @foreach($properties as $property)
-                    <option value="{{ $property->id }}">{{ $property->id }} {{ $property->name }}</option>
+                    <option value="{{ $property->id }}">{{ $property->name }}</option>
                   @endforeach
               </select>
             </div>
@@ -102,10 +102,7 @@
         <div class="text-end">
           <button type="submit" class="btn btn-primary">Submit</button>
         </div>
-      </form>
-            
-
-
+      </form>        
     </div>
 </div>
 
@@ -117,8 +114,6 @@
         });
     })
   );
-
-  console.log('tenantsData', tenantsData);
 
   const propertySelect = document.getElementById("propertySelect");
   const tenantSelect = document.getElementById("tenantSelect");

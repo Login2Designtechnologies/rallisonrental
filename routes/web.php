@@ -128,11 +128,15 @@ Route::post('other-invoice/send-email/{otherInvoice}', [HomeController::class, '
 Route::get('payment/pay-now/{otherInvoice}', [HomeController::class, 'payNow'])
     ->name('payment.pay_now');    
 
-Route::get('edit-other-invoice', [HomeController::class, 'edit_other_invoice'])->name('edit_other_invoice')->middleware(
+Route::get('edit-other-invoice/{id}', [HomeController::class, 'edit_other_invoice'])->name('edit_other_invoice')->middleware(
     [
         'XSS',
     ]
 );
+
+Route::post('/update-other-invoice/{id}', [HomeController::class, 'update_other_invoice'])
+    ->name('update_other_invoice')
+    ->middleware(['XSS']);
 
 // Tenant Dashbaord
 Route::middleware(['auth', 'XSS'])->group(function () {
@@ -429,6 +433,7 @@ Route::group(
         Route::post('addUtilities-update/{id}/{propertyid}', [PropertyController::class, 'addUtilities_update'])->name('addUtilities-update');
         
         Route::get('selectProperty', [PropertyController::class, 'selectProperty'])->name('property.selectProperty');
+        Route::post('/property/image/delete', [PropertyController::class, 'deleteImage'])->name('property.image.delete');
     }
 );
 

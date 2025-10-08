@@ -248,9 +248,9 @@
                                 <li class="pc-item {{ request()->routeIs('property.*') ? 'active' : '' }}">
                                     <a class="pc-link" href="{{ route('property.selectProperty') }}">{{ __('Utilities Invoices') }}</a>
                                 </li>
-                                <li class="pc-item">
+                                <!-- <li class="pc-item">
                                     <a class="pc-link" href="{{ url('late-fees') }}">{{ __('Late Fee') }}</a>
-                                </li>
+                                </li> -->
                                 <li class="pc-item">
                                     <a class="pc-link" href="{{ url('other') }}">{{ __('Other') }}</a>
                                 </li>
@@ -528,7 +528,7 @@
                             </a>
                         </li>
                         <li class="pc-item ">
-                            <a href="{{url('subscription ')}}" class="pc-link">
+                            <a href="{{url('subscriptions ')}}" class="pc-link">
                                 <span class="pc-micon"><i class="ti ti-layout"></i></span>
                                 <span class="pc-mtext">{{ __('Subscription ') }}</span>
                             </a>

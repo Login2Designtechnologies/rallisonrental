@@ -147,7 +147,8 @@
                                     <div class="d-flex align-items-center justify-content-between">
                                         <a href="@can('show property') {{ route('property.show', $property->id) }}  @endcan"
                                             class="fw-semibold mb-0 text-truncate fw-100">
-                                            <h3 class="mb-1 text-center">{{ $property->name }}</h3>
+                                            <h3 class="fw-bold text-center text-uppercase mb-1">{{ $property->name }}</h3>
+                                            <p class="text-muted text-center mb-2">{{ $property->address ?? 'Address not available' }}</p>
                                         </a>
                                         @if (Gate::check('edit property') || Gate::check('delete property') || Gate::check('show property'))
                                             <!-- <div class="dropdown">
@@ -190,8 +191,8 @@
 
                                     </div>
                                     <div class="col-md-12">
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <button type="button" class="btn  my-2 btn-light-secondary fs-6 py-1 p-2">
+                                        <div class="d-flex justify-content-between align-items-center mt-2">
+                                            <button type="button" class="btn my-2 btn-light-secondary fs-6 py-1 p-2">
                                             <i class="material-icons-two-tone">ad_units</i> {{ $property->totalUnit() }}
                                             {{ __('Unit') }}
                                             </button>
@@ -201,7 +202,7 @@
                                                 {{ __('Rooms') }}
                                             </button>--}}
 
-                                            <span class="badge bg-light-secondary h-100" data-bs-toggle="tooltip"
+                                            <span class="badge bg-light-success text-success py-2 px-3 fs-6"
                                                 data-bs-original-title="{{ __('Type') }}">{{ \App\Models\Property::$Type[$property->type] }}</span>
                                         </div>
                                     </div>

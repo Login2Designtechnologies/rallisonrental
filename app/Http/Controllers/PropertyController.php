@@ -14,6 +14,9 @@ use App\Http\Requests\StoreUtilityInvoiceRequest;
 use App\Http\Requests\UpdateUtilityInvoiceRequest;
 use App\Models\UtilityInvoiceDetail;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Storage;
+use Log;
 
 class PropertyController extends Controller
 {
@@ -1735,11 +1738,34 @@ public function utility_invoicesgenerate(Request $request)
     ]);
 }
 
+public function deleteImage(Request $request)
+{
+    $request->validate(['id' => 'required|integer']);
 
+    try {
+        $image = PropertyImage::find($request->id);
 
+        if (! $image) {
+            return response()->json(['success' => false, 'message' => 'Image not found.'], 404);
+        }
 
+        $filePath = storage_path('upload/property/' . $image->image);
 
+        if (File::exists($filePath)) {
+            if (! File::delete($filePath)) {
+                Log::error("Failed to delete file: {$filePath}");
+                return response()->json(['success' => false, 'message' => 'Failed to delete physical file.'], 500);
+            }
+        } else {
+            Log::warning("File not present when deleting image: {$filePath}");
+        }
 
+        $image->delete();
 
-
+        return response()->json(['success' => true, 'message' => 'Image deleted successfully.']);
+    } catch (\Exception $e) {
+        Log::error('Delete image error: ' . $e->getMessage());
+        return response()->json(['success' => false, 'message' => 'Something went wrong: ' . $e->getMessage()], 500);
+    }
+}
 }

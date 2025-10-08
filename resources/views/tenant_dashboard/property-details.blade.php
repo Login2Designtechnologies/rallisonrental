@@ -212,7 +212,11 @@
                 <div class="card-body">
                   <div class="icon-wrapper"><i class="bi bi-door-open"></i></div>
                   <h6 class="text-muted">Email  </h6>
-                  <p class="mb-0 fw-bold"></p>
+                  @if($property && $property->properties && $property->properties->owner)
+                    <p class="mb-0 fw-bold">{{ $property->properties->owner->email }}</p>
+                  @else
+                    <p class="mb-0 fw-bold">{{ 'N/A' }}</p>
+                  @endif
                 </div>
               </div>
             </div>
@@ -221,7 +225,11 @@
                 <div class="card-body">
                   <div class="icon-wrapper"><i class="bi bi-door-open"></i></div>
                   <h6 class="text-muted">Number </h6>
-                  <p class="mb-0 fw-bold"></p>
+                  @if($property && $property->properties && $property->properties->owner)
+                    <p class="mb-0 fw-bold">{{ $property->properties->owner->phone_number }}</p>
+                  @else
+                    <p class="mb-0 fw-bold">{{ 'N/A' }}</p>
+                  @endif
                 </div>
               </div>
             </div>

@@ -104,7 +104,7 @@
     </div>
 </div>
 <div class="modal-footer">
-    {{Form::submit(__('Create'),array('class'=>'btn btn-secondary btn-rounded'))}}
+    {{Form::submit(__('Create'),array('class'=>'btn btn-secondary btn-rounded text-white'))}}
 </div>
 {{ Form::close() }}
 <script>

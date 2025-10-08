@@ -282,59 +282,73 @@
 
 
 <script>
-
     $(document).ready(function() {
-        let firstClick = true;
-
+        // Add new unit
         $(document).on('click', '.add-unit', function() {
-            let originalRow = $('.unit_list:first'); // यह सिर्फ template रहेगा
-
-            if(firstClick) {
-                // पहला क्लिक: hidden वाला form show करो
-                let firstRow = originalRow.clone().removeClass('d-none');
-                firstRow.find('input, select, textarea').val('');
-                $('.unit_list_results').append(firstRow).append('<hr class="mt-4 mb-4 border-dark">');
-                firstClick = false;
-            } else {
-                // बाद में क्लिक: template से नया clone बनाओ
-                let clonedRow = originalRow.clone().removeClass('d-none');
-                clonedRow.find('input, select, textarea').val('');
-                $('.unit_list_results').append(clonedRow).append('<hr class="mt-4 mb-4 border-dark">');
-            }
+            const newUnit = $('.unit_template').clone().removeClass('unit_template d-none').addClass('unit_list new');
+            $('.unit_list_results').append(newUnit);
+            $('.add-container').hide(); // Hide "Add" button until saved
         });
 
-        // Remove logic सिर्फ cloned units पर लागू होगा
+        // Save unit
+        $(document).on('click', '.save-unit', function() {
+            const unitBlock = $(this).closest('.unit_list');
+            const name = unitBlock.find('.unit-name').val().trim();
+            const status = unitBlock.find('.unit-status').val();
+            const notes = unitBlock.find('.unit-notes').val().trim();
+
+            if (!name || !status) {
+                toastr.warning('Please enter unit name and select status.');
+                return;
+            }
+
+            // (Optional) Perform AJAX save here
+            // $.post('/save/unit', {name, status, notes, _token: '{{ csrf_token() }}'}, function(response){ ... });
+
+            // Simulate save success
+            unitBlock.find('input, select, textarea').prop('readonly', true).prop('disabled', true);
+            $(this).removeClass('btn-success save-unit').addClass('btn-danger remove-unit').text('Remove');
+
+            $('.add-container').show().find('.add-unit').text('Add More Unit');
+            toastr.success('Unit saved successfully.');
+        });
+
+        // Remove unit
         $(document).on('click', '.remove-unit', function() {
             $(this).closest('.unit_list').next('hr').remove();
             $(this).closest('.unit_list').remove();
+            toastr.info('Unit removed.');
         });
     });
+</script>
+<script>
+$(document).on('click', '.remove-image-btn', function () {
+    const imageId = $(this).data('id');
+    const button = $(this);
 
-    // $(document).ready(function() {
-    //     let firstClick = true;
+    if (!confirm('Are you sure you want to delete this image?')) return;
 
-    //     $(document).on('click', '.add-unit', function() {
-    //         if(firstClick) {
-    //             // पहला क्लिक: hidden वाला form दिखाओ
-    //             $('.unit_list:first').removeClass('d-none');
-    //             $('hr').removeClass('d-none');
-    //             firstClick = false;
-    //         } else {
-    //             // बाद में क्लिक: clone करो
-    //             let originalRow = $('.unit_list:first');
-    //             let clonedRow = originalRow.clone();
-
-    //             clonedRow.find('input, select, textarea').val('');
-    //             $('.unit_list_results').append(clonedRow).append('<hr class="mt-2 mb-4 border-dark">');
-    //         }
-    //     });
-
-    //     // Remove करने का logic अगर चाहिए तो
-    //     $(document).on('click', '.remove-service', function() {
-    //         $(this).closest('.unit_list').next('hr').remove();
-    //         $(this).closest('.unit_list').remove();
-    //     });
-    // });
+    $.ajax({
+        url: "{{ route('property.image.delete') }}",
+        type: "POST",
+        data: {
+            _token: "{{ csrf_token() }}",
+            id: imageId
+        },
+        success: function (response) {
+            if (response.success) {
+                // Remove image div
+                button.closest('div.position-relative').remove();
+                toastr.success(response.message || 'Image deleted successfully.');
+            } else {
+                toastr.error(response.message || 'Unable to delete image.');
+            }
+        },
+        error: function () {
+            toastr.error('Server error while deleting image.');
+        }
+    });
+});
 </script>
 
 
@@ -472,7 +486,29 @@
                                                         {{ Form::label('thumbnail', __('Thumbnail Image'), ['class' => 'form-label']) }} 
                                                         <span class="text-danger">*</span>
                                                         <!-- {{ Form::file('thumbnail', ['class' => 'form-control required-field', 'required' => 'required', 'id' => 'thumbnailInput', 'accept' => 'image/*']) }} -->
+                                                        
+                                                        
                                                         @if(isset($propertyimages) && $propertyimages->image)
+                                                            <div class="mb-2 text-center">
+                                                                <img src="{{ asset('storage/upload/thumbnail/'.$propertyimages->image) }}" 
+                                                                    alt="Current Thumbnail" 
+                                                                    style="max-width: 100%; border-radius: 6px; border:1px solid #ccc;">
+                                                                <p class="mt-2"><strong>Current file:</strong> {{ $propertyimages->image }}</p>
+                                                            </div>
+
+                                                            <input type="hidden" id="existing_thumbnail" name="existing_thumbnail" value="1">
+
+                                                            <label for="thumbnailInput" class="form-label btn btn-primary btn-sm">Modify File</label>
+                                                            <input type="file" id="thumbnailInput" name="thumbnail" 
+                                                                class="form-control d-none"
+                                                                accept="image/*">
+
+                                                        @else
+                                                            {{ Form::file('thumbnail', ['class' => 'form-control required-field', 'required' => 'required', 'id' => 'thumbnailInput', 'accept' => 'image/*']) }}
+                                                        @endif
+                                                        
+                                                        
+                                                        <!-- @if(isset($propertyimages) && $propertyimages->image)
                                                             {{-- Existing thumbnail (Edit mode) --}}
                                                             <div class="mb-2 text-center">
                                                                 <img src="{{ asset('storage/upload/thumbnail/'.$propertyimages->image) }}" 
@@ -492,7 +528,8 @@
                                                         @else
                                                             {{-- Required input on Create --}}
                                                             {{ Form::file('thumbnail', ['class' => 'form-control required-field', 'required' => 'required', 'id' => 'thumbnailInput', 'accept' => 'image/*']) }}
-                                                        @endif
+                                                        @endif -->
+
                                                     </div>
                                                     
                                                     <!-- Preview & Crop Area -->
@@ -594,8 +631,6 @@
                                                     cancelBtn.style.display = 'none';
                                                 });
                                                 </script>
-
-
                                                 </div>
                                             </div>
                                             <div class="col-sm-12">
@@ -618,9 +653,6 @@
                                             </div>
                                             
                                             {{ Form::hidden('country', $property->country ?? 'USA') }}
-
-                                    
-
                                                 {{-- State --}}
                                                 <div class="col-sm-4">
                                                     <div class="mb-3">
@@ -647,9 +679,6 @@
                                                 </div>
                                                 </div>
                                                 </div>
-                                            
-
-                                        
                                             <div class="col-sm-4">
                                                 <div class="mb-3">
                                                     <div class="form-group">
@@ -680,8 +709,6 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                            
-
                                         </div>
                                     </div>
                                 </div>
@@ -774,47 +801,48 @@
                     <div class="tab-pane" id="profile-3" role="tabpanel" aria-labelledby="profile-tab-3">
                         <div class="card border bg-custom bg-white mb-3">
                             <div class="card-body w-100">
-                                
-                                {{-- Hidden Template for Adding New Units --}}
-                                <div class="row unit_list d-none">
+
+                                {{-- Hidden Template --}}
+                                <div class="row unit_template d-none">
                                     <div class="form-group col-md-6">
                                         {{ Form::label('unitname', __('Name'), ['class' => 'form-label']) }}
-                                        {{ Form::text('unitname[]', null, ['class' => 'form-control', 'placeholder' => __('Enter unit name')]) }}
+                                        {{ Form::text('unitname[]', null, ['class' => 'form-control unit-name', 'placeholder' => __('Enter unit name')]) }}
                                     </div>
 
                                     <div class="form-group col-md-6">
                                         {{ Form::label('status', __('Status'), ['class' => 'form-label']) }}
-                                        {{ Form::select('status[]', ['1' => 'Active', '0' => 'Inactive'], null, ['class' => 'form-control', 'placeholder' => __('Select Status')]) }}
+                                        {{ Form::select('status[]', ['1' => 'Active', '0' => 'Inactive'], null, ['class' => 'form-control unit-status', 'placeholder' => __('Select Status')]) }}
                                     </div>
 
                                     <div class="form-group col-md-12">
                                         {{ Form::label('notes', __('Description'), ['class' => 'form-label']) }}
-                                        {{ Form::textarea('notes[]', null, ['class' => 'form-control', 'rows' => 1, 'placeholder' => __('Enter notes')]) }}
+                                        {{ Form::textarea('notes[]', null, ['class' => 'form-control unit-notes', 'rows' => 1, 'placeholder' => __('Enter notes')]) }}
                                     </div>
 
                                     <div class="col-md-12 text-end mt-2">
-                                        <button type="button" class="btn btn-danger btn-sm remove-unit">{{ __('Remove') }}</button>
+                                        <button type="button" class="btn btn-success btn-sm save-unit">{{ __('Save') }}</button>
                                     </div>
+                                    <hr class="mt-4 mb-4 border-dark">
                                 </div>
 
-                                {{-- ✅ Existing Units (Edit Mode) --}}
+                                {{-- ✅ Existing Units --}}
                                 <div class="unit_list_results">
                                     @if(isset($units) && $units->isNotEmpty())
                                         @foreach($units as $unit)
-                                            <div class="row unit_list">
+                                            <div class="row unit_list saved">
                                                 <div class="form-group col-md-6">
                                                     {{ Form::label('unitname', __('Name'), ['class' => 'form-label']) }}
-                                                    {{ Form::text('unitname[]', $unit->name, ['class' => 'form-control', 'placeholder' => __('Enter unit name')]) }}
+                                                    {{ Form::text('unitname[]', $unit->name, ['class' => 'form-control', 'readonly' => true]) }}
                                                 </div>
 
                                                 <div class="form-group col-md-6">
                                                     {{ Form::label('status', __('Status'), ['class' => 'form-label']) }}
-                                                    {{ Form::select('status[]', ['1' => 'Active', '0' => 'Inactive'], $unit->status, ['class' => 'form-control', 'placeholder' => __('Select Status')]) }}
+                                                    {{ Form::select('status[]', ['1' => 'Active', '0' => 'Inactive'], $unit->status, ['class' => 'form-control', 'disabled' => true]) }}
                                                 </div>
 
                                                 <div class="form-group col-md-12">
                                                     {{ Form::label('notes', __('Description'), ['class' => 'form-label']) }}
-                                                    {{ Form::textarea('notes[]', $unit->notes, ['class' => 'form-control', 'rows' => 1, 'placeholder' => __('Enter notes')]) }}
+                                                    {{ Form::textarea('notes[]', $unit->notes, ['class' => 'form-control', 'rows' => 1, 'readonly' => true]) }}
                                                 </div>
 
                                                 <div class="col-md-12 text-end mt-2">
@@ -826,11 +854,9 @@
                                     @endif
                                 </div>
 
-                                {{-- Add Button --}}
-                                <div class="col-lg-12 mb-2 text-center">
-                                    <button type="button" class="btn btn-secondary btn-md add-unit">
-                                        {{ __('Add More') }}
-                                    </button>
+                                {{-- Initial Create Button --}}
+                                <div class="col-lg-12 mb-2 text-center add-container">
+                                    <button type="button" class="btn btn-secondary btn-md add-unit">{{ __('Create Unit') }}</button>
                                 </div>
                             </div>
                         </div>
@@ -930,10 +956,6 @@
                             </button>
                         </div>
                     </div>
-                    
-
-
-
                     <div class="tab-pane" id="profile-5" role="tabpanel" aria-labelledby="profile-tab-5">
                         <div class="card border bg-custom bg-white mb-3">
                             @php
@@ -1356,7 +1378,6 @@ $(document).ready(function () {
 });
 </script>
 
-
 <script>
     $(document).ready(function () {
 
@@ -1458,7 +1479,6 @@ $(document).ready(function () {
     });
 </script>
 
-
 <script>
     $(document).on('click', '.editAmenityBtn', function () {
         let id = $(this).data('id');
@@ -1555,9 +1575,6 @@ $(document).ready(function () {
     // });
 </script>
 
-
-
-
 <!-- jQuery Script -->
 <script>
     $(document).ready(function(){
@@ -1577,7 +1594,6 @@ $(document).ready(function () {
         });
     });
 </script>
-
 
 <script>
 $(document).ready(function () {
@@ -1753,13 +1769,7 @@ error: function (xhr) {
     });
 });
 </script>
-
-
-
-
 @endsection
-
-
 <!-- Add Amenities Modal -->
 <div class="modal fade" id="addAmenityModal" tabindex="-1" aria-labelledby="addAmenitiesModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
@@ -1802,7 +1812,6 @@ error: function (xhr) {
     </div>
 </div>
 
-
 <div class="modal fade" id="editAmenityModal" tabindex="-1" aria-labelledby="editAmenityLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
@@ -1843,9 +1852,6 @@ error: function (xhr) {
     </div>
   </div>
 </div>
-
-
-
 
 <!-- Add Utilities Modal -->
 <div class="modal fade" id="addUtilitiesModal" tabindex="-1">

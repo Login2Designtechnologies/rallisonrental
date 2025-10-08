@@ -65,4 +65,9 @@ class Property extends Model
     {
         return $this->belongsTo(State::class, 'state_id');
     }
+
+    public function owner()
+    {
+        return $this->belongsTo(User::class, 'parent_id', 'id');
+    }
 }

@@ -53,7 +53,7 @@
                             <td>{{ $otherInvoice->invoice_date->format('Y-m-d') }}</td>
                             <td>${{ number_format($otherInvoice->amount, 2) }}</td>
                             <td>
-                                <a href="">
+                                <a href="{{ route('edit_other_invoice', $otherInvoice->id) }}">
                                     <i class="ti ti-pencil editRow fs-4" data-bs-toggle="tooltip" title="Edit"></i>
                                 </a>
                                 <a href="{{ route('other_invoices.email_preview', $otherInvoice->id) }}" target="_blank">
@@ -61,11 +61,11 @@
                                 </a>
                             </td>
                         </tr>
-                    @empty
+                        @empty
                         <tr>
                             <td colspan="6" class="text-center">No invoices found.</td>
                         </tr>
-                    @endforelse                    
+                    @endforelse                   
                 </tbody>
             </table>
         </div>
@@ -81,5 +81,19 @@ document.getElementById('tableFilter').addEventListener('keyup', function() {
         row.style.display = tenantName.includes(filter) ? '' : 'none';
     });
 });
+</script>
+<script>
+    document.getElementById('tableFilter').addEventListener('keyup', function() {
+        let search = this.value;
+        fetch(`{{ route('other') }}?search=${search}`, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.text())
+        .then(html => {
+            document.querySelector('#otherInvoicesTable tbody').innerHTML = html;
+        });
+    });
 </script>
 @endsection

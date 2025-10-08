@@ -257,7 +257,8 @@ class HomeController extends Controller
         return View('dashbaordpage.edit-late-fee');
     } 
 
-    public function other(Request $request) {        
+    public function other(Request $request)
+    {
         $query = OtherInvoice::with(['property', 'tenant.user'])
             ->where('owner_id', Auth::user()->id);
 
@@ -267,19 +268,23 @@ class HomeController extends Controller
             $query->where(function ($q) use ($search) {
                 $q->where('invoice_no', 'like', "%$search%")
                 ->orWhere('subject', 'like', "%$search%")
-                ->orWhereHas('tenant.user', function($q2) use ($search) {
-                    $q2->where('name', 'like', "%$search%");
+                ->orWhere('terms', 'like', "%$search%")
+                ->orWhereHas('tenant.user', function ($q2) use ($search) {
+                    $q2->where('first_name', 'like', "%$search%")
+                    ->orWhere('last_name', 'like', "%$search%");
                 })
-                ->orWhereHas('property', function($q3) use ($search) {
+                ->orWhereHas('property', function ($q3) use ($search) {
                     $q3->where('name', 'like', "%$search%");
                 });
             });
         }
 
-        if ($request->ajax()) {
-            return view('dashbaordpage.partials.other_table', compact('otherInvoices'));
-        }
         $otherInvoices = $query->latest()->get();
+
+        if ($request->ajax()) {
+            return view('dashbaordpage.partials.other_table', compact('otherInvoices'))->render();
+        }
+
         return view('dashbaordpage.other', compact('otherInvoices'));
     } 
 	
@@ -363,9 +368,52 @@ class HomeController extends Controller
         return response()->json('Payment gateway integration pending');
     }    
 	
-    public function edit_other_invoice() {
-        return View('dashbaordpage.edit-other-invoice');
+    public function edit_other_invoice($id) {
+        $otherInvoice = OtherInvoice::with('items')->findOrFail($id);
+        $properties = Property::where('parent_id', Auth::id())->get();
+        $tenants = Tenant::where('parent_id', Auth::id())->get();
+
+        return View('dashbaordpage.edit-other-invoice', compact('otherInvoice', 'properties', 'tenants'));
     } 
+
+    public function update_other_invoice(Request $request, $id)
+    {
+        $request->validate([
+            'invoice_date' => 'required|date',
+            'due_date' => 'required|date',
+            'terms' => 'required|string',
+            'property_id' => 'required|integer',
+            'tenant_id' => 'required|integer',
+            'subject' => 'required|string|max:255',
+            'items' => 'required|array|min:1',
+            'items.*.detail' => 'required|string|max:255',
+            'items.*.amount' => 'required|numeric|min:0.01',
+        ]);
+        $otherInvoice = OtherInvoice::findOrFail($id);
+
+        $otherInvoice->update([
+            'invoice_date' => $request->invoice_date,
+            'due_date' => $request->due_date,
+            'terms' => $request->terms,
+            'property_id' => $request->property_id,
+            'tenant_id' => $request->tenant_id,
+            'subject' => $request->subject,
+            'amount' => collect($request->items)->sum('price')
+        ]);
+
+        $otherInvoice->items()->delete();
+
+        foreach ($request->items as $item) {
+            $otherInvoice->items()->create([
+                'item' => $item['item'],
+                'qty' => 1,
+                'price' => $item['price'],
+                'line_total' => $item['price'],
+            ]);
+        }
+
+        return redirect()->route('other')->with('success', 'Invoice updated successfully.');
+    }
 
 
     public function view_payment() {
@@ -469,12 +517,75 @@ class HomeController extends Controller
     }
 
     public function property_details() {
-		$property = Tenant::where('user_id', Auth::user()->id)->with(['properties', 'units', 'properties.city', 'properties.state'])->first();
+		$property = Tenant::where('user_id', Auth::user()->id)
+            ->with(['properties', 'units', 'properties.city', 'properties.state'])
+            ->first();
+
         return View('tenant_dashboard.property-details', compact('property'));
     } 
     public function payment_section() {
-        $payments = TenantContract::where('tenant_id', Auth::user()->tenants->id)->get();
-        return View('tenant_dashboard.payment-section', compact('payments'));
+        // Fetch the tenant contract
+        $contract = TenantContract::where('tenant_id', Auth::user()->tenants->id)
+            ->with('renewals')
+            ->first();
+                
+        if (!$contract) {
+            return view('tenant_dashboard.payment-section', ['payments' => []]);
+        }
+
+        $startDate = Carbon::parse($contract->start_date)->startOfMonth();
+        $endDate = Carbon::parse($contract->end_date)->startOfMonth();
+
+        $months = [];
+
+        // Base contract months
+        $monthCounter = 1;
+        $current = $startDate->copy();
+        while ($current <= $endDate) {
+            $months[] = [
+                'month_number' => $monthCounter,
+                'month' => $current->format('Y-m'),
+                'rent' => $contract->standard_rent,
+                'security' => $contract->security_deposit,
+                'last_month_rent' => $contract->standard_rent,
+                'amenities' => 110.00,
+                'status' => 'Pending'
+            ];
+            $monthCounter++;
+            $current->addMonth();
+        }
+
+        // Renewal months (numeric start/end like 13, 20, etc.)
+        foreach ($contract->renewals as $renewal) {
+            $renewalStartMonth = (int)$renewal->start_month;
+            $renewalEndMonth = (int)$renewal->end_month;
+
+            // Calculate real calendar month for start of renewal
+            $renewalStartDate = Carbon::parse($contract->start_date)->addMonths($renewalStartMonth - 1)->startOfMonth();
+            $renewalEndDate = Carbon::parse($contract->start_date)->addMonths($renewalEndMonth - 1)->startOfMonth();
+
+            $renewalCurrent = $renewalStartDate->copy();
+            $counter = $renewalStartMonth;
+
+            while ($renewalCurrent <= $renewalEndDate) {
+                $months[] = [
+                    'month_number' => $counter,
+                    'month' => $renewalCurrent->format('Y-m'),
+                    'rent' => $contract->standard_rent + $renewal->amount_increase,
+                    'security' => $contract->security_deposit,
+                    'last_month_rent' => $contract->standard_rent + $renewal->amount_increase,
+                    'amenities' => 110.00,
+                    'status' => 'Pending'
+                ];
+                $renewalCurrent->addMonth();
+                $counter++;
+            }
+        }
+
+        // Sort months by month_number
+        usort($months, fn($a, $b) => $a['month_number'] <=> $b['month_number']);
+
+        return view('tenant_dashboard.payment-section', ['payments' => $months]);
     } 
     
     public function tenant_ticket_support() {
