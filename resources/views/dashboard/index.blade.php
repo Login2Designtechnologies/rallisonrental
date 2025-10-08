@@ -197,7 +197,7 @@ chart.render();
 
     <hr/>
 
-    <!-- <div class="row g-3">
+    <div class="row g-3">
         <div class="col-lg-3 col-md-6 d-flex">
             <div class="card bg-custom radius-40 bg-1 bg-img fw-100">
                 <div class="card-body">
@@ -286,7 +286,7 @@ chart.render();
         </div>
 
 
-    </div> -->
+    </div>
 
 
 

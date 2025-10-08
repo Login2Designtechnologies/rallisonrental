@@ -44,4 +44,14 @@ class TenantContract extends Model
     {
         return $this->belongsTo(\App\Models\Owner::class);
     }
+
+    public function renewals()
+    {
+        return $this->hasMany(ContractRenewal::class);
+    }
+
+    public function latePayments()
+    {
+        return $this->hasMany(LatePaymentRule::class);
+    }
 }

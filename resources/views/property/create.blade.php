@@ -1,6 +1,6 @@
 @extends('layouts.app')
 @section('page-title')
-    {{ __('Property Create') }}
+    {{ isset($property) && $property->id ? __('Edit Property') : __('Create Property') }}
 @endsection
 
 <style>
@@ -36,96 +36,107 @@
 @push('script-page')
     <script src="{{ asset('assets/js/vendors/dropzone/dropzone.js') }}"></script>
     <script>
-        var dropzone = new Dropzone('#demo-upload', {
-            previewTemplate: document.querySelector('.preview-dropzon').innerHTML,
-            parallelUploads: 10,
-            thumbnailHeight: 120,
-            thumbnailWidth: 120,
-            maxFilesize: 10,
-            filesizeBase: 1000,
-            autoProcessQueue: false,
-            thumbnail: function(file, dataUrl) {
-                if (file.previewElement) {
-                    file.previewElement.classList.remove("dz-file-preview");
-                    var images = file.previewElement.querySelectorAll("[data-dz-thumbnail]");
-                    for (var i = 0; i < images.length; i++) {
-                        var thumbnailElement = images[i];
-                        thumbnailElement.alt = file.name;
-                        thumbnailElement.src = dataUrl;
-                    }
-                    setTimeout(function() {
-                        file.previewElement.classList.add("dz-image-preview");
-                    }, 1);
-                }
-            }
-
-        });
-        $('#property-submit').on('click', function() {
+        $(document).ready(function () {
             "use strict";
-            $('#property-submit').attr('disabled', true);
-            var fd = new FormData();
-            var croppedImage = $('#croppedImage').val();
-            if (croppedImage) {
-                // Convert base64 to Blob
-                var byteString = atob(croppedImage.split(',')[1]);
-                var mimeString = croppedImage.split(',')[0].split(':')[1].split(';')[0];
-                var ab = new ArrayBuffer(byteString.length);
-                var ia = new Uint8Array(ab);
-                for (var i = 0; i < byteString.length; i++) {
-                    ia[i] = byteString.charCodeAt(i);
-                }
-                var blob = new Blob([ab], { type: mimeString });
-                fd.append('thumbnail', blob, 'thumbnail.jpg');
-            } else {
-                // fallback: if no cropping done, use original file
-                var fileInput = document.getElementById('thumbnailInput');
-                if (fileInput && fileInput.files.length > 0) {
-                    fd.append('thumbnail', fileInput.files[0]);
-                }
-            }
 
-            var files = $('#demo-upload').get(0).dropzone.getAcceptedFiles();
-            $.each(files, function(key, file) {
-                fd.append('property_images[' + key + ']', $('#demo-upload')[0].dropzone
-                    .getAcceptedFiles()[key]); // attach dropzone image element
+            var dropzone = new Dropzone('#demo-upload', {
+                previewTemplate: document.querySelector('.preview-dropzon').innerHTML,
+                parallelUploads: 10,
+                thumbnailHeight: 120,
+                thumbnailWidth: 120,
+                maxFilesize: 10,
+                filesizeBase: 1000,
+                autoProcessQueue: false,
+                thumbnail: function (file, dataUrl) {
+                    if (file.previewElement) {
+                        file.previewElement.classList.remove("dz-file-preview");
+                        var images = file.previewElement.querySelectorAll("[data-dz-thumbnail]");
+                        for (var i = 0; i < images.length; i++) {
+                            var thumbnailElement = images[i];
+                            thumbnailElement.alt = file.name;
+                            thumbnailElement.src = dataUrl;
+                        }
+                        setTimeout(function () {
+                            file.previewElement.classList.add("dz-image-preview");
+                        }, 1);
+                    }
+                }
             });
-            
-            var other_data = $('#property_form').serializeArray();
-            $.each(other_data, function(key, input) {
-                fd.append(input.name, input.value);
-            });
-            $.ajax({
-                url: "{{ route('property.store') }}",
-                headers: {
-                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                },
-                data: fd,
-                contentType: false,
-                processData: false,
-                type: 'POST',
-                success: function(data) {
-                    if (data.status == "success") {
-                        $('#property-submit').attr('disabled', true);
-                        toastrs(data.status, data.msg, data.status);
-                        var url = '{{ route('property.show', ':id') }}';
-                        url = url.replace(':id', data.id);
-                        setTimeout(() => {
-                            window.location.href = url;
-                        }, "1000");
 
-                    } else {
-                        toastrs('Error', data.msg, 'error');
+            $('#property-submit').on('click', function (e) {
+                e.preventDefault();
+                $('#property-submit').attr('disabled', true);
+
+                const formMode = $('#form_mode').val();
+                let fd = new FormData();
+
+                // ✅ Thumbnail (Cropped or Original)
+                var croppedImage = $('#croppedImage').val();
+                if (croppedImage) {
+                    var byteString = atob(croppedImage.split(',')[1]);
+                    var mimeString = croppedImage.split(',')[0].split(':')[1].split(';')[0];
+                    var ab = new ArrayBuffer(byteString.length);
+                    var ia = new Uint8Array(ab);
+                    for (var i = 0; i < byteString.length; i++) ia[i] = byteString.charCodeAt(i);
+                    var blob = new Blob([ab], { type: mimeString });
+                    fd.append('thumbnail', blob, 'thumbnail.jpg');
+                } else {
+                    var fileInput = document.getElementById('thumbnailInput');
+                    if (fileInput && fileInput.files.length > 0) {
+                        fd.append('thumbnail', fileInput.files[0]);
+                    }
+                }
+
+                // ✅ Dropzone Files
+                var files = $('#demo-upload').get(0).dropzone.getAcceptedFiles();
+                $.each(files, function (key, file) {
+                    fd.append('property_images[' + key + ']', file);
+                });
+
+                // ✅ Serialize all form fields (includes costs)
+                var other_data = $('#property_form').serializeArray();
+                $.each(other_data, function (key, input) {
+                    fd.append(input.name, input.value);
+                });
+
+                // ✅ Detect correct URL and method
+                let ajaxUrl = '';
+                let ajaxType = '';
+
+                if (formMode === 'edit') {
+                    ajaxUrl = "{{ isset($property) ? route('property.update', $property->id) : '' }}";
+                    ajaxType = 'POST'; // Laravel needs POST with _method=PUT
+                    fd.append('_method', 'PUT');
+                } else {
+                    ajaxUrl = "{{ route('property.store') }}";
+                    ajaxType = 'POST';
+                }
+
+                // ✅ AJAX call
+                $.ajax({
+                    url: ajaxUrl,
+                    headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') },
+                    data: fd,
+                    contentType: false,
+                    processData: false,
+                    type: ajaxType,
+                    success: function (data) {
+                        if (data.status === "success") {
+                            toastrs(data.status, data.msg, data.status);
+
+                            // ✅ Redirect to property show
+                            const url = '{{ route('property.index', ':id') }}'.replace(':id', data.id);
+                            setTimeout(() => window.location.href = url, 1000);
+                        } else {
+                            toastrs('Error', data.msg, 'error');
+                            $('#property-submit').attr('disabled', false);
+                        }
+                    },
+                    error: function (data) {
                         $('#property-submit').attr('disabled', false);
+                        toastrs('Error', data.responseText || 'Something went wrong', 'error');
                     }
-                },
-                error: function(data) {
-                    $('#property-submit').attr('disabled', false);
-                    if (data.error) {
-                        toastrs('Error', data.error, 'error');
-                    } else {
-                        toastrs('Error', data, 'error');
-                    }
-                },
+                });
             });
         });
 
@@ -149,121 +160,125 @@
 
     <script>
         $(document).ready(function() {
+            const formMode = $('#form_mode').val(); // 'create' or 'edit'
 
-        function checkTabFields($tab) {
-            let allFilled = true;
-            $tab.find('.required-field').each(function() {
-                if (!$(this).val() || $(this).val().trim() === '') {
-                    allFilled = false;
-                    return false; // break loop
+            $(window).on('load', function () {
+                const $address = $('textarea[name="address"]');
+                const addressVal = $address.val();
+                if (addressVal && addressVal.trim() !== '') {
+                    // Simulate typing once full DOM is ready and all form values are bound
+                    $address.trigger('input');
+                }
+                updateNextButton();
+            });
+
+            // Check all required fields inside the active tab
+            function checkTabFields($tab) {
+                let allFilled = true;
+                $tab.find('.required-field').each(function() {
+                    const val = $(this).val();
+                    // For file input (e.g. thumbnail)
+                    if ($(this).attr('type') === 'file') {
+                        const hasExistingThumb = $('#existing_thumbnail').length > 0;
+                        if (!val && !hasExistingThumb) {
+                            allFilled = false;
+                            return false;
+                        }
+                    } else if (!val || val.trim() === '') {
+                        allFilled = false;
+                        return false;
+                    }
+                });
+                return allFilled;
+            }
+
+            // Enable or disable Next button
+            function updateNextButton() {
+                const $activeTab = $('.tab-content .tab-pane.active');
+                const allFilled = checkTabFields($activeTab);
+                $('.nextButton').prop('disabled', !allFilled);
+
+                // Remove green tick if tab becomes incomplete again
+                let currentTabId = $activeTab.attr('id');
+                if (!allFilled) {
+                    $('a[href="#' + currentTabId + '"] .step-status')
+                        .html('')
+                        .removeClass('done');
+                }
+            }
+
+            // On field change or input
+            $(document).on('input change', '.required-field', function() {
+                updateNextButton();
+            });
+
+            // Next button logic
+            $(document).on('click', '.nextButton', function() {
+                const $activeTab = $('.tab-content .tab-pane.active');
+                if (!checkTabFields($activeTab)) return false;
+
+                // ✅ Mark current tab as complete
+                let currentTabId = $activeTab.attr('id');
+                $('a[href="#' + currentTabId + '"]').find('.step-status').addClass('done');
+
+                const $nextTab = $activeTab.next('.tab-pane');
+                if ($nextTab.length > 0) {
+                    const nextTabId = $nextTab.attr('id');
+                    $('a[href="#' + nextTabId + '"]').tab('show');
+
+                    if ($nextTab.is(':last-child')) {
+                        const submitText = formMode === 'edit' ? 'Update' : 'Finish';
+                        $(this).text(submitText).addClass('submit-button');
+                    }
+                    updateNextButton();
+                } else if ($(this).hasClass('submit-button')) {
+                    if (!checkTabFields($activeTab)) return false;
+                    $('form').submit();
                 }
             });
-            return allFilled;
-        }
 
-        function updateNextButton() {
-            let $activeTab = $('.tab-content .tab-pane.active');
-            let allFilled = checkTabFields($activeTab);
-            $('.nextButton').prop('disabled', !allFilled);
-        }
+            // Back button
+            $(document).on('click', '.prevButton', function() {
+                const $activeTab = $('.tab-content .tab-pane.active');
+                const $prevTab = $activeTab.prev('.tab-pane');
+                if ($prevTab.length > 0) {
+                    const prevTabId = $prevTab.attr('id');
+                    $('a[href="#' + prevTabId + '"]').tab('show');
+                    $('.nextButton').text('Next').removeClass('submit-button');
+                }
+            });
 
-        // Run on input/select change
-        $(document).on('input change', '.required-field', function () {
-            updateNextButton();
-        });
-
-        // Initial check
-        updateNextButton();
-
-        // Next button click
-        $('.nextButton').on('click', function() {
-            let $activeTab = $('.tab-content .tab-pane.active');
-
-            // Validate current tab
-            if (!checkTabFields($activeTab)) {
-                // alert('Please fill all required fields in this tab!');
-                return false;
-            }
-
-            // ✅ Mark current tab as complete
-            let currentTabId = $activeTab.attr('id');
-            $('a[href="#' + currentTabId + '"]').find('.step-status').addClass('done');
-
-            let $nextTab = $activeTab.next('.tab-pane');
-
-            if ($nextTab.length > 0) {
-                let nextTabId = $nextTab.attr('id');
-                $('a[href="#' + nextTabId + '"]').tab('show');
-
-                // If next tab is last, change button text to Submit
-                if ($nextTab.is(':last-child')) {
-                    $(this).text('Submit').addClass('submit-button');
+            // Manual tab switch
+            $('a[data-bs-toggle="tab"]').on('shown.bs.tab', function() {
+                const $activeTab = $('.tab-content .tab-pane.active');
+                const isLastTab = $activeTab.is(':last-child');
+                const submitText = formMode === 'edit' ? 'Update' : 'Finish';
+                if (!isLastTab) {
+                    $('.nextButton').text('Next').removeClass('submit-button');
+                } else {
+                    $('.nextButton').text(submitText).addClass('submit-button');
                 }
                 updateNextButton();
-            } else if ($(this).hasClass('submit-button')) {
-                if (!checkTabFields($activeTab)) {
-                    return false;
-                }
-                $('form').submit();
-            }
+            });
 
-            if ($nextTab.length > 0) {
-                let nextTabId = $nextTab.attr('id');
-                $('a[href="#' + nextTabId + '"]').tab('show');
-
-                // If next tab is last, change button text to Submit
-                if ($nextTab.is(':last-child')) {
-                    $(this).text('Submit').addClass('submit-button');
-                }
-
-                // Update button enable/disable
-                updateNextButton();
-            } else if ($(this).hasClass('submit-button')) {
-                // Validate last tab before submitting
-                if (!checkTabFields($activeTab)) {
-                    // alert('Please fill all required fields in this tab!');
-                    return false;
-                }
-                $('form').submit();
+            // Important fix:
+            // On EDIT mode, trigger a check for all prefilled required fields once
+            if (formMode === 'edit') {
+                setTimeout(() => {
+                    $('.required-field').each(function() {
+                        const val = $(this).val();
+                        if (val && val.trim() !== '') {
+                            $(this).trigger('input');
+                        }
+                    });
+                    updateNextButton(); // final validation after preload
+                }, 800);
+            } else {
+                // On CREATE mode, keep disabled until filled
+                $('.nextButton').prop('disabled', true);
             }
         });
-
-        // Update button text on manual tab switch
-        $('a[data-bs-toggle="tab"]').on('shown.bs.tab', function() {
-            let $activeTab = $('.tab-content .tab-pane.active');
-            let isLastTab = $activeTab.is(':last-child');
-            if (!isLastTab) {
-                $('.nextButton').text('Next').removeClass('submit-button');
-            }
-            updateNextButton();
-        });
-
-        $(document).on('click', '.prevButton', function() {
-            let $activeTab = $('.tab-content .tab-pane.active');
-            let $prevTab = $activeTab.prev('.tab-pane');
-
-            if ($prevTab.length > 0) {
-                let prevTabId = $prevTab.attr('id');
-                $('a[href="#' + prevTabId + '"]').tab('show');
-
-                // Reset Next button text if not on last tab anymore
-                $('.nextButton').text('Next').removeClass('submit-button');
-            }
-        });
-
-        // Update button text on manual tab switch
-        $('a[data-bs-toggle="tab"]').on('shown.bs.tab', function() {
-            let $activeTab = $('.tab-content .tab-pane.active');
-            let isLastTab = $activeTab.is(':last-child');
-            if (!isLastTab) {
-                $('.nextButton').text('Next').removeClass('submit-button');
-            }
-            updateNextButton();
-        });
-    });
-
     </script>
-
 
 
 <script>
@@ -326,16 +341,34 @@
 @endpush
 
 @section('breadcrumb')
-    <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">{{ __('Dashboard') }}</a></li>
+    <li class="breadcrumb-item">
+        <a href="{{ route('dashboard') }}">{{ __('Dashboard') }}</a>
+    </li>
     <li class="breadcrumb-item">
         <a href="{{ route('property.index') }}">{{ __('Property') }}</a>
     </li>
-    <li class="breadcrumb-item active"><a href="#">{{ __('Create') }}</a>
+    <li class="breadcrumb-item active">
+        <a href="#">
+            {{ isset($property) && $property->id ? __('Edit') : __('Create') }}
+        </a>
     </li>
 @endsection
 
 @section('content')
-    {{ Form::open(['url' => 'property', 'method' => 'post', 'enctype' => 'multipart/form-data', 'id' => 'property_form']) }}
+    @if(isset($property) && $property->id)
+        {{-- EDIT MODE --}}
+        {{ Form::model($property, ['route' => ['property.update', $property->id], 'method' => 'PUT', 'enctype' => 'multipart/form-data', 'id' => 'property_form']) }}
+    @else
+        {{-- CREATE MODE --}}
+        {{ Form::open(['route' => 'property.store', 'method' => 'POST', 'enctype' => 'multipart/form-data', 'id' => 'property_form']) }}
+    @endif
+    <input type="hidden" id="form_mode" value="{{ isset($property->id) ? 'edit' : 'create' }}">
+    @if(isset($property) && $property->id)
+        <input type="hidden" id="property_id" name="propertyid" value="{{ $property->id }}">
+    @else
+        <input type="hidden" id="property_id" name="propertyid" value="">
+    @endif
+    
     <div class="row mt-4 g-3">
         <div class="col-md-3 d-flex">
             <div class="bg-white fw-100 mb-lg-5">
@@ -438,28 +471,48 @@
                                                     <div class="form-group">
                                                         {{ Form::label('thumbnail', __('Thumbnail Image'), ['class' => 'form-label']) }} 
                                                         <span class="text-danger">*</span>
-                                                        {{ Form::file('thumbnail', ['class' => 'form-control required-field', 'required' => 'required', 'id' => 'thumbnailInput', 'accept' => 'image/*']) }}
+                                                        <!-- {{ Form::file('thumbnail', ['class' => 'form-control required-field', 'required' => 'required', 'id' => 'thumbnailInput', 'accept' => 'image/*']) }} -->
+                                                        @if(isset($propertyimages) && $propertyimages->image)
+                                                            {{-- Existing thumbnail (Edit mode) --}}
+                                                            <div class="mb-2 text-center">
+                                                                <img src="{{ asset('storage/upload/thumbnail/'.$propertyimages->image) }}" 
+                                                                    alt="Current Thumbnail" 
+                                                                    style="max-width: 100%; border-radius: 6px; border:1px solid #ccc;">
+                                                            </div>
+
+                                                            {{-- Hidden flag for existing image --}}
+                                                            <input type="hidden" id="existing_thumbnail" name="existing_thumbnail" value="1">
+
+                                                            {{-- Optional input on Edit --}}
+                                                            {{ Form::file('thumbnail', [
+                                                                'class' => 'form-control', // NOT required-field on edit
+                                                                'id' => 'thumbnailInput',
+                                                                'accept' => 'image/*'
+                                                            ]) }}
+                                                        @else
+                                                            {{-- Required input on Create --}}
+                                                            {{ Form::file('thumbnail', ['class' => 'form-control required-field', 'required' => 'required', 'id' => 'thumbnailInput', 'accept' => 'image/*']) }}
+                                                        @endif
                                                     </div>
                                                     
                                                     <!-- Preview & Crop Area -->
-                                            <div id="preview-container" style="display:none; margin-top:10px; text-align:center;">
-                                                <img id="imagePreview" src="" alt="Preview" style="max-width:100%; border:1px solid #ddd; border-radius:6px;">
-                                                
-                                                <!-- Action Buttons -->
-                                                <div class="mt-2">
-                                                    <button type="button" class="btn btn-success btn-sm" id="cropButton" style="display:none;">Crop & Save</button>
-                                                    <button type="button" class="btn btn-warning btn-sm" id="editButton" style="display:none;">Edit Again</button>
-                                                    <button type="button" class="btn btn-danger btn-sm" id="cancelButton" style="display:none;">Cancel</button>
-                                                </div>
-                                            </div>
+                                                    <div id="preview-container" style="display:none; margin-top:10px; text-align:center;">
+                                                        <img id="imagePreview" src="" alt="Preview" 
+                                                            style="max-width:100%; border:1px solid #ddd; border-radius:6px;">
+                                                        <div class="mt-2">
+                                                            <button type="button" class="btn btn-success btn-sm" id="cropButton" style="display:none;">Crop & Save</button>
+                                                            <button type="button" class="btn btn-warning btn-sm" id="editButton" style="display:none;">Edit Again</button>
+                                                            <button type="button" class="btn btn-danger btn-sm" id="cancelButton" style="display:none;">Cancel</button>
+                                                        </div>
+                                                    </div>
 
                                             <!-- Hidden input for cropped image -->
                                             <input type="hidden" name="cropped_image" id="croppedImage">
                                             <script>
                                                 let cropper;
                                                 const input = document.getElementById('thumbnailInput');
-                                                const preview = document.getElementById('imagePreview');
                                                 const previewContainer = document.getElementById('preview-container');
+                                                const preview = document.getElementById('imagePreview');
                                                 const cropBtn = document.getElementById('cropButton');
                                                 const editBtn = document.getElementById('editButton');
                                                 const cancelBtn = document.getElementById('cancelButton');
@@ -470,14 +523,22 @@
                                                     if (file) {
                                                         const reader = new FileReader();
                                                         reader.onload = ev => {
+                                                            // ✅ Hide old existing image (if in edit mode)
+                                                            const existingThumb = document.querySelector('.text-center img');
+                                                            if (existingThumb) {
+                                                                existingThumb.style.display = 'none';
+                                                            }
+
+                                                            // ✅ Show new preview
                                                             preview.src = ev.target.result;
                                                             previewContainer.style.display = 'block';
 
+                                                            // ✅ Initialize Cropper
                                                             if (cropper) cropper.destroy();
                                                             cropper = new Cropper(preview, {
-                                                                aspectRatio: 16/9,
+                                                                aspectRatio: 16 / 9,
                                                                 viewMode: 1,
-                                                                autoCropArea: 1
+                                                                autoCropArea: 1,
                                                             });
 
                                                             cropBtn.style.display = 'inline-block';
@@ -488,43 +549,52 @@
                                                     }
                                                 });
 
-                                                // Crop & Save
+                                                // ✅ Crop & Save
                                                 cropBtn.addEventListener('click', () => {
                                                     if (cropper) {
                                                         const canvas = cropper.getCroppedCanvas({ width: 800, height: 450 });
                                                         preview.src = canvas.toDataURL();
                                                         croppedInput.value = canvas.toDataURL('image/jpeg');
                                                         cropper.destroy();
+
                                                         cropBtn.style.display = 'none';
                                                         cancelBtn.style.display = 'none';
                                                         editBtn.style.display = 'inline-block';
                                                     }
                                                 });
 
-                                                // Edit Again
+                                                // ✅ Edit Again
                                                 editBtn.addEventListener('click', () => {
                                                     cropper = new Cropper(preview, {
-                                                        aspectRatio: 16/9,
+                                                        aspectRatio: 16 / 9,
                                                         viewMode: 1,
-                                                        autoCropArea: 1
+                                                        autoCropArea: 1,
                                                     });
                                                     cropBtn.style.display = 'inline-block';
                                                     cancelBtn.style.display = 'inline-block';
                                                     editBtn.style.display = 'none';
                                                 });
 
-                                                // Cancel
+                                                // ✅ Cancel
                                                 cancelBtn.addEventListener('click', () => {
                                                     if (cropper) cropper.destroy();
                                                     preview.src = '';
                                                     previewContainer.style.display = 'none';
-                                                    input.value = ''; // reset file input
+                                                    input.value = '';
                                                     croppedInput.value = '';
+
+                                                    // ✅ Re-show the old image (if exists)
+                                                    const existingThumb = document.querySelector('.text-center img');
+                                                    if (existingThumb) {
+                                                        existingThumb.style.display = 'block';
+                                                    }
+
                                                     cropBtn.style.display = 'none';
                                                     editBtn.style.display = 'none';
                                                     cancelBtn.style.display = 'none';
                                                 });
-                                            </script>
+                                                </script>
+
 
                                                 </div>
                                             </div>
@@ -547,7 +617,7 @@
                                                 </div>
                                             </div>
                                             
-                                            {{ Form::hidden('country', $unit->country ?? 'USA') }}
+                                            {{ Form::hidden('country', $property->country ?? 'USA') }}
 
                                     
 
@@ -557,8 +627,8 @@
                                                         <div class="form-group">
                                                             {{ Form::label('state', __('State'), ['class' => 'form-label']) }} <span class="text-danger">*</span>
                                                             {{ Form::select('state', 
-                                                                $statesdata->pluck('name','id')->toArray(),  // value=id, text=name
-                                                                $unit->state ?? null, 
+                                                                $statesdata->pluck('name','id')->toArray(),
+                                                                $property->state_id ?? null, 
                                                                 ['class' => 'form-control basic-select required-field', 'id'=>'company_state', 'required' => 'required', 'placeholder' => __('Select')]
                                                             ) }}
                                                         </div>
@@ -593,7 +663,21 @@
                                                             'pattern' => '[0-9]{6}'
                                                         ]) }}
                                                     </div>
+                                                </div>
+                                            </div>
 
+                                            <div class="col-sm-4">
+                                                <div class="mb-3">
+                                                    <div class="form-group">
+                                                        {{ Form::label('is_active', __('Status'), ['class' => 'form-label']) }}
+                                                        <span class="text-danger">*</span>
+                                                        {{ Form::select(
+                                                            'is_active',
+                                                            [1 => 'Active', 0 => 'Inactive'],
+                                                            $property->is_active ?? 1,
+                                                            ['class' => 'form-control required-field', 'required' => 'required']
+                                                        ) }}
+                                                    </div>
                                                 </div>
                                             </div>
                                             
@@ -629,6 +713,32 @@
                                                     <h3 class="mb-0">{{ __('Drop files here or click to upload.') }}</h3>
                                                 </div>
                                             </div>
+                                            @if(isset($propertyextraimages) && $propertyextraimages->isNotEmpty())
+                                                <div class="existing-images mt-3">
+                                                    <h6 class="mb-2 text-muted">{{ __('Existing Images') }}</h6>
+                                                    <div class="d-flex flex-wrap gap-2">
+                                                        @foreach($propertyextraimages as $propertyval)
+                                                            <div class="position-relative">
+                                                                <a href="{{ asset(Storage::url('upload/property')) . '/' . $propertyval->image }}" 
+                                                                target="_blank">
+                                                                    <img src="{{ asset(Storage::url('upload/property')) . '/' . $propertyval->image }}"
+                                                                        alt="{{ $property->name }}"
+                                                                        class="img-thumbnail"
+                                                                        style="width:80px; height:80px; object-fit:cover;">
+                                                                </a>
+                                                                <!-- Optional delete button -->
+                                                                <button type="button" 
+                                                                        class="btn btn-sm btn-danger position-absolute top-0 end-0 remove-image-btn"
+                                                                        data-id="{{ $propertyval->id }}"
+                                                                        title="Remove Image"
+                                                                        style="padding:0 4px;">
+                                                                    <i class="ti ti-trash"></i>
+                                                                </button>
+                                                            </div>
+                                                        @endforeach
+                                                    </div>
+                                                </div>
+                                            @endif
                                             <div class="preview-dropzon" style="display: none;">
                                                 <div class="dz-preview dz-file-preview">
                                                     <div class="dz-image"><img data-dz-thumbnail="" src=""
@@ -661,95 +771,117 @@
 
                         </div>
                     </div>
-                    <div class="tab-pane" id="profile-3" role="tabpanel"
-                        aria-labelledby="profile-tab-3">
+                    <div class="tab-pane" id="profile-3" role="tabpanel" aria-labelledby="profile-tab-3">
                         <div class="card border bg-custom bg-white mb-3">
                             <div class="card-body w-100">
+                                
+                                {{-- Hidden Template for Adding New Units --}}
                                 <div class="row unit_list d-none">
-                                        <div class="form-group col-md-6">
-                                            {{ Form::label('unitname', __('Name'), ['class' => 'form-label']) }}
-                                            {{ Form::text('unitname[]', null, ['class' => 'form-control', 'placeholder' => __('Enter unit name')]) }}
-                                        </div>
+                                    <div class="form-group col-md-6">
+                                        {{ Form::label('unitname', __('Name'), ['class' => 'form-label']) }}
+                                        {{ Form::text('unitname[]', null, ['class' => 'form-control', 'placeholder' => __('Enter unit name')]) }}
+                                    </div>
 
-                                        <div class="form-group col-md-6">
-                                            {{ Form::label('status', __('Status'), ['class' => 'form-label']) }}
-                                            {{ Form::select('status[]', [
-                                                '1' => 'Active',
-                                                '0' => 'Inactive'
-                                            ], null, ['class' => 'form-control', 'placeholder' => __('Select Status')]) }}
-                                        </div>
+                                    <div class="form-group col-md-6">
+                                        {{ Form::label('status', __('Status'), ['class' => 'form-label']) }}
+                                        {{ Form::select('status[]', ['1' => 'Active', '0' => 'Inactive'], null, ['class' => 'form-control', 'placeholder' => __('Select Status')]) }}
+                                    </div>
 
-                                        
-                                        <div class="form-group col-md-12">
-                                            {{ Form::label('notes', __('Description'), ['class' => 'form-label']) }}
-                                            {{ Form::textarea('notes[]', null, ['class' => 'form-control', 'rows' => 1, 'placeholder' => __('Enter notes')]) }}
-                                        </div>
-                                     <!-- Remove button -->
+                                    <div class="form-group col-md-12">
+                                        {{ Form::label('notes', __('Description'), ['class' => 'form-label']) }}
+                                        {{ Form::textarea('notes[]', null, ['class' => 'form-control', 'rows' => 1, 'placeholder' => __('Enter notes')]) }}
+                                    </div>
+
                                     <div class="col-md-12 text-end mt-2">
                                         <button type="button" class="btn btn-danger btn-sm remove-unit">{{ __('Remove') }}</button>
                                     </div>
                                 </div>
 
-                                <!-- <hr class="mt-2 mb-4 border border-secondary"> -->
-                                <div class="unit_list_results"></div>
+                                {{-- ✅ Existing Units (Edit Mode) --}}
+                                <div class="unit_list_results">
+                                    @if(isset($units) && $units->isNotEmpty())
+                                        @foreach($units as $unit)
+                                            <div class="row unit_list">
+                                                <div class="form-group col-md-6">
+                                                    {{ Form::label('unitname', __('Name'), ['class' => 'form-label']) }}
+                                                    {{ Form::text('unitname[]', $unit->name, ['class' => 'form-control', 'placeholder' => __('Enter unit name')]) }}
+                                                </div>
 
-                                <div class="col-lg-12 mb-2  text-center">
-                                    <button type="button" class="btn btn-secondary btn-md add-unit ">
+                                                <div class="form-group col-md-6">
+                                                    {{ Form::label('status', __('Status'), ['class' => 'form-label']) }}
+                                                    {{ Form::select('status[]', ['1' => 'Active', '0' => 'Inactive'], $unit->status, ['class' => 'form-control', 'placeholder' => __('Select Status')]) }}
+                                                </div>
+
+                                                <div class="form-group col-md-12">
+                                                    {{ Form::label('notes', __('Description'), ['class' => 'form-label']) }}
+                                                    {{ Form::textarea('notes[]', $unit->notes, ['class' => 'form-control', 'rows' => 1, 'placeholder' => __('Enter notes')]) }}
+                                                </div>
+
+                                                <div class="col-md-12 text-end mt-2">
+                                                    <button type="button" class="btn btn-danger btn-sm remove-unit">{{ __('Remove') }}</button>
+                                                </div>
+                                                <hr class="mt-4 mb-4 border-dark">
+                                            </div>
+                                        @endforeach
+                                    @endif
+                                </div>
+
+                                {{-- Add Button --}}
+                                <div class="col-lg-12 mb-2 text-center">
+                                    <button type="button" class="btn btn-secondary btn-md add-unit">
                                         {{ __('Add More') }}
                                     </button>
                                 </div>
-
                             </div>
                         </div>
 
-
-            
                         <div class="d-flex justify-content-between">
-                             <button type="button" class="btn btn-primary btn-rounded prevButton">
+                            <button type="button" class="btn btn-primary btn-rounded prevButton">
                                 {{ __('Back') }}
                             </button>
-                            <button type="button" class="btn btn-secondary btn-rounded nextButton"
-                                data-next-tab="#profile-4">
+                            <button type="button" class="btn btn-secondary btn-rounded nextButton" data-next-tab="#profile-4">
                                 {{ __('Next') }}
                             </button>
                         </div>
-
                     </div>
 
-                    <div class="tab-pane" id="profile-4" role="tabpanel"
-                        aria-labelledby="profile-tab-4">
+
+                    <div class="tab-pane" id="profile-4" role="tabpanel" aria-labelledby="profile-tab-4">
                         <div class="card border bg-custom bg-white mb-3">
                             <div class="card-body w-100">
                                 <div class="row">
-                                        <div class="form-group col-md-12">
-                                        <label class="form-label">Do we have amenities in the property to billed out ?
-                                        </label>
+                                    <div class="form-group col-md-12">
+                                        <label class="form-label">Do we have amenities in the property to billed out?</label>                                        
+                                        @php
+                                            $hasAmenities = isset($amenities) && $amenities instanceof \Illuminate\Support\Collection && $amenities->count() > 0;
+                                        @endphp
+
                                         <div>
                                             <label class="me-3">
-                                                {{ Form::radio('is_billed', 'yes', false, ['class' => 'form-check-input is-billed']) }} Yes
+                                                <input type="radio" name="is_billed" value="yes" 
+                                                    class="form-check-input is-billed"
+                                                    {{ $hasAmenities ? 'checked' : '' }}> Yes
                                             </label>
-                                            <label class="">
-                                                {{ Form::radio('is_billed', 'no', true, ['class' => 'form-check-input is-billed']) }} No
+
+                                            <label>
+                                                <input type="radio" name="is_billed" value="no" 
+                                                    class="form-check-input is-billed"
+                                                    {{ !$hasAmenities ? 'checked' : '' }}> No
                                             </label>
                                         </div>
                                     </div>
                                 </div>
 
-                                <div class="tab-pane" id="isbilleddata" role="tabpanel" aria-labelledby="isbilleddata" style="display: none;">
+                                <div id="isbilleddata" style="display: {{ $hasAmenities ? 'block' : 'none' }};">
                                     <div class="card bg-custom bg-white w-100">
-                                        <div class="">
-                                            <div class="row align-items-center g-2">
-                                                <!-- <div class="col">
-                                                    <h5>Amenities List</h5>
-                                                </div> -->
-                                                <div class="col-auto mx-auto">
-                                                    <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#addAmenityModal">
-                                                        <i class="ti ti-circle-plus align-text-bottom"></i> Add Amenities 
-                                                    </button>
-                                                </div>
-
+                                        <div class="row align-items-center g-2">
+                                            <div class="col-auto mx-auto">
+                                                <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#addAmenityModal">
+                                                    <i class="ti ti-circle-plus align-text-bottom"></i> Add Amenities 
+                                                </button>
                                             </div>
                                         </div>
+
                                         <div class="new-table mt-3" id="amenitiesWrapper" style="{{ $amenities->count() == 0 ? 'display:none;' : '' }}">
                                             <div class="table-responsive">
                                                 <table class="table table-bordered mb-0" id="amenitiesTable">
@@ -768,18 +900,15 @@
                                                                 <td class="text-center">{{ $index + 1 }}</td>
                                                                 <td class="text-center">{{ $amenity->name }}</td>
                                                                 <td class="text-center">$ {{ $amenity->price }}</td>
+                                                                <td class="text-center">{{ $amenity->status == 1 ? 'Active' : 'Inactive' }}</td>
                                                                 <td class="text-center">
-                                                                    {{ $amenity->status == 1 ? 'Active' : 'Inactive' }}
-                                                                </td>
-                                                                <td class="text-center">
-                                            <button class="btn btn-sm btn-warning editAmenityBtn" 
-                                                data-id="{{ $amenity->id }}" 
-                                                data-name="{{ $amenity->name }}"
-                                                data-price="{{ $amenity->price }}" 
-                                                data-status="{{ $amenity->status }}">
-                                            <i class="ti ti-edit"></i>
-                                        </button>
-
+                                                                    <button class="btn btn-sm btn-warning editAmenityBtn" 
+                                                                            data-id="{{ $amenity->id }}" 
+                                                                            data-name="{{ $amenity->name }}"
+                                                                            data-price="{{ $amenity->price }}" 
+                                                                            data-status="{{ $amenity->status }}">
+                                                                        <i class="ti ti-edit"></i>
+                                                                    </button>
                                                                 </td>
                                                             </tr>
                                                         @endforeach
@@ -791,12 +920,12 @@
                                 </div>
                             </div>
                         </div>
-                            <div class="d-flex justify-content-between">
-                             <button type="button" class="btn btn-primary btn-rounded prevButton">
+
+                        <div class="d-flex justify-content-between">
+                            <button type="button" class="btn btn-primary btn-rounded prevButton">
                                 {{ __('Back') }}
                             </button>
-                            <button type="button" class="btn btn-secondary btn-rounded nextButton"
-                                data-next-tab="#profile-5">
+                            <button type="button" class="btn btn-secondary btn-rounded nextButton" data-next-tab="#profile-5">
                                 {{ __('Next') }}
                             </button>
                         </div>
@@ -805,71 +934,106 @@
 
 
 
-                    <div class="tab-pane" id="profile-5" role="tabpanel"
-                        aria-labelledby="profile-tab-5">
+                    <div class="tab-pane" id="profile-5" role="tabpanel" aria-labelledby="profile-tab-5">
                         <div class="card border bg-custom bg-white mb-3">
+                            @php
+                                // Check if any utilities exist
+                                $hasUtilities = isset($utilities) && $utilities instanceof \Illuminate\Support\Collection && $utilities->count() > 0;
+                            @endphp
                             <div class="card-body w-100">
                                 <div class="row">
-                                        <div class="form-group col-md-12">
-                                        <label class="form-label">Do we have Utilities in the property to billed out ?
-                                        </label>
+                                    <div class="form-group col-md-12">
+                                        <label class="form-label">Do we have Utilities in the property to billed out ?</label>
                                         <div>
                                             <label class="me-3">
-                                                {{ Form::radio('utilities', 'yes','false', false, ['class' => 'form-check-input']) }} Yes
+                                                <input type="radio" name="utilities" value="yes" class="form-check-input utilities-radio"{{ $hasUtilities ? 'checked' : '' }}> Yes
                                             </label>
-                                            <label class="">
-                                                {{ Form::radio('utilities', 'no','true', false, ['class' => 'form-check-input']) }} No
+                                            <label>
+                                                <input type="radio" name="utilities" value="no" class="form-check-input utilities-radio" {{ !$hasUtilities ? 'checked' : '' }}> No
                                             </label>
                                         </div>
                                     </div>
                                 </div>
 
-                        <div class="tab-pane" id="utilitiesdata" role="tabpanel" aria-labelledby="utilitiesdata" style="display: none;">
-                            <div class="w-100">
-                                <div class="">
-                                    <div class="row align-items-center g-2">
-                                        <div class="col">
-                                            <h5 class="mb-0" id="utilitiesTitle" style="{{ $utilities->count() == 0 ? 'display:none;' : '' }}">Utilities List</h5>
+                                <div class="tab-pane" id="utilitiesdata" role="tabpanel" aria-labelledby="utilitiesdata" style="display: {{ $hasUtilities ? 'block' : 'none' }};">
+                                    <div class="w-100">
+                                        <div class="">
+                                            <div class="row align-items-center g-2">
+                                                <div class="col">
+                                                    <h5 class="mb-0" id="utilitiesTitle" style="{{ $utilities->count() == 0 ? 'display:none;' : '' }}">Utilities List</h5>
+                                                </div>
+                                                <div class="col-auto">
+                                                        <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#addUtilitiesModal">
+                                                        <i class="ti ti-circle-plus align-text-bottom"></i> Add New
+                                                    </button>
+                                                </div>
+                                            </div>
                                         </div>
-                                        <div class="col-auto">
-                                                <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#addUtilitiesModal">
-                                                <i class="ti ti-circle-plus align-text-bottom"></i> Add New
-                                            </button>
+                                        <div class="">
+                                            <div class="new-table mt-3" id="utilitiesWrapper" style="{{ $utilities->count() == 0 ? 'display:none;' : '' }}">
+                                                <div class="table-responsive">
+                                                    <table class="table table-bordered mb-0 custom-bg-table" id="UtilitiesTable">
+                                                        <thead class="table-theme">
+                                                            <tr>
+                                                                <th>#</th>
+                                                                <th>Company Name</th>
+                                                                <th>Sub Category</th>
+                                                                <th>Sub Category Name</th>
+                                                                <th>Status</th>
+                                                                <th class="text-center">Action</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody id="utilitiesTableBody">
+                                                        @php
+                                                            // Group utilities by company name
+                                                            $groupedUtilities = $utilities
+                                                                ->groupBy('name')
+                                                                ->map(function ($items) {
+                                                                    $first = $items->first();
+                                                                    return [
+                                                                        'id' => $first->id,
+                                                                        'name' => $first->name,
+                                                                        'sub_category' => $first->sub_category,
+                                                                        'status' => $first->status,
+                                                                        'sub_category_names' => $items->pluck('sub_category_name')->filter()->unique()->implode(', ')
+                                                                    ];
+                                                                })
+                                                                ->values();
+                                                        @endphp
+
+                                                        @foreach($groupedUtilities as $index => $utility)
+                                                        <tr id="row2-{{ $utility['id'] }}">
+                                                            <td class="text-center">{{ $index + 1 }}</td>
+                                                            <td>{{ $utility['name'] }}</td>
+                                                            <td>{{ $utility['sub_category'] == 1 ? 'Yes' : 'No' }}</td>
+                                                            <td>{{ $utility['sub_category_names'] }}</td>
+                                                            <td>{{ $utility['status'] == 1 ? 'Active' : 'Inactive' }}</td>
+                                                            <td class="text-center">
+                                                                <button type="button" 
+                                                                        class="btn btn-sm btn-warning editUtilitiesBtn"
+                                                                        data-id="{{ $utility['id'] }}"
+                                                                        data-name="{{ $utility['name'] }}"
+                                                                        data-status="{{ $utility['status'] }}"
+                                                                        data-sub_category="{{ $utility['sub_category'] }}"
+                                                                        data-sub_category_name="{{ $utility['sub_category_names'] }}">
+                                                                    <i class="ti ti-edit"></i>
+                                                                </button>
+                                                            </td>
+                                                        </tr>
+                                                        @endforeach
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>                                            
                                         </div>
                                     </div>
                                 </div>
-                                <div class="">
-                                    <div class="new-table mt-3" id="utilitiesWrapper" style="{{ $utilities->count() == 0 ? 'display:none;' : '' }}">
-                                        <div class="table-responsive">
-                                            <table class="table table-bordered mb-0 custom-bg-table" id="UtilitiesTable">
-                                                <thead class="table-theme">
-                                                    <tr>
-                                                        <th>#</th>
-                                                        <th>Company Name</th>
-                                                        <th>Sub Category</th>
-                                                        <th>Sub Category Name</th>
-                                                        <th>Status</th>
-                                                        <th class="text-center">Action</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody id="utilitiesTableBody">
-                                                    
-                                                </tbody>
-
-                                            </table>
-                                        </div>
-                                    </div>                                            
-                                </div>
-                                </div>
-
-                            </div>
-
                             </div>
                         </div>
 
 
                         <div class="d-flex justify-content-between">
-                             <button type="button" class="btn btn-primary btn-rounded prevButton">
+                            <button type="button" class="btn btn-primary btn-rounded prevButton">
                                 {{ __('Back') }}
                             </button>
                             <button type="button" class="btn btn-secondary btn-rounded nextButton"
@@ -877,12 +1041,10 @@
                                 {{ __('Next') }}
                             </button>
                         </div>
-                        
-
                     </div>
 
                     <div class="tab-pane" id="profile-6" role="tabpanel"aria-labelledby="profile-tab-6">
-                       <div class="row">
+                        <div class="row">
                             <div class="col-lg-12">
                                 <div class="card border bg-custom bg-white mb-3">
                                     <div class="card-header">
@@ -900,7 +1062,7 @@
                                                     <label class="form-label">Mortgage Amount</label> 
                                                     <div class="input-group">
                                                         <span class="input-group-text">$</span>
-                                                        <input type="number" step="0.01" placeholder="e.g. 1000" class="form-control" name="mortgage_amount[]" value="">
+                                                        <input type="number" step="0.01" placeholder="e.g. 1000" class="form-control" name="mortgage_amount" value="{{ old('mortgage_amount', $property->mortgage_amount ?? '') }}">
                                                     </div>
                                                     </div>
                                                 </div>
@@ -912,7 +1074,7 @@
                                                     <label class="form-label">Insurance Amount</label> 
                                                     <div class="input-group">
                                                         <span class="input-group-text">$</span>
-                                                        <input type="number" step="0.01" placeholder="e.g. 1000" class="form-control" name="insurance_amount[]" value="">
+                                                        <input type="number" step="0.01" placeholder="e.g. 1000" class="form-control" name="insurance_amount" value="{{ old('insurance_amount', $property->insurance_amount ?? '') }}">
                                                     </div>
                                                     </div>
                                                 </div>
@@ -923,8 +1085,8 @@
                                                     <div class="form-group">
                                                     <label class="form-label">Amenities Amount</label> 
                                                     <div class="input-group">
-                                                        <span class="input-group-text">$</span>
-                                                        <input type="number" step="0.01" placeholder="e.g. 1000" class="form-control" name="amenities_amount[]" value="">
+                                                        <span class="input-group-text">$</span>                                                        
+                                                        <input type="number" step="0.01" placeholder="e.g. 1000" class="form-control" name="amenities_amount" value="{{ old('amenities_amount', $property->amenities_amount ?? '') }}">
                                                     </div>
                                                     </div>
                                                 </div>
@@ -983,10 +1145,9 @@
     });
   </script>
 
-
 <script>
     $(document).ready(function() {
-
+        // Function to load cities based on state_id
         function loadCities(state_id, selectedCity = null) {
             if (state_id) {
                 $.ajax({
@@ -997,10 +1158,10 @@
                         $('#company_city').empty().append('<option value="">Select</option>');
 
                         $.each(data, function(index, city) {
-                            $('#company_city').append('<option value="'+ city.id +'"">'+ city.name +'</option>');
+                            $('#company_city').append('<option value="'+ city.id +'">'+ city.name +'</option>');
                         });
 
-                        // pre-select city if available
+                        // ✅ Pre-select city in edit mode
                         if (selectedCity) {
                             $('#company_city').val(selectedCity);
                         }
@@ -1011,39 +1172,21 @@
             }
         }
 
-        // On change of state
+        // Trigger city load when state changes
         $('#company_state').on('change', function() {
             var state_id = $(this).val();
             loadCities(state_id);
         });
 
-        // On edit form (pre-select values)
-        var selectedState = "{{ $unit->state ?? '' }}";
-        var selectedCity = "{{ $unit->city ?? '' }}";
+        // ✅ Detect edit mode (when property exists)
+        var selectedState = "{{ $property->state_id ?? '' }}";
+        var selectedCity  = "{{ $property->city_id ?? '' }}";
 
+        // ✅ If editing, pre-select state and city
         if (selectedState) {
             $('#company_state').val(selectedState);
             loadCities(selectedState, selectedCity);
         }
-    });
-</script>
-
-
-<script>
-    $(document).ready(function () {
-        // ✅ Default check (अगर Yes पहले से selected है तो div दिखेगा)
-        if ($('input[name="is_billed"]:checked').val() === 'yes') {
-            $('#isbilleddata').show();
-        }
-
-        // ✅ Radio change event
-        $(document).on('change', 'input[name="is_billed"]', function () {
-            if ($(this).val() === 'yes') {
-                $('#isbilleddata').show();
-            } else {
-                $('#isbilleddata').hide();
-            }
-        });
     });
 </script>
 
@@ -1066,23 +1209,67 @@
 </script>
 
 <script>
+$(document).ready(function () {
+
+    // ✅ Default: Show utilities section on edit if already has records
+    if ($('input[name="utilities"]:checked').val() === 'yes') {
+        $('#utilitiesdata').show();
+    }
+
+    // ✅ Toggle section on Yes/No
+    $(document).on('change', 'input[name="utilities"]', function () {
+        if ($(this).val() === 'yes') $('#utilitiesdata').slideDown();
+        else $('#utilitiesdata').slideUp();
+    });
+
+    // ✅ Show/Hide Subcategory fields
+    function refreshSubCategorySection() {
+        let val = $('#addUtilitiesModal select[name="sub_category"]').val();
+        if (val === '1') $('#subCategorySection').show();
+        else $('#subCategorySection').hide();
+    }
+
+    $('#addUtilitiesModal').on('shown.bs.modal', refreshSubCategorySection);
+    $(document).on('change', '#addUtilitiesModal select[name="sub_category"]', refreshSubCategorySection);
+
+    // ✅ Add More sub-category input
+    $(document).on('click', '#addMoreSubCategory', function (e) {
+        e.preventDefault();
+        $('#subCategoryWrapper').append('<input type="text" name="sub_category_name[]" class="form-control mb-2">');
+    });
+
+    // ✅ CLICK HANDLER — Run AJAX only when Save is clicked
     $(document).on('click', '#saveUtilities', function (e) {
         e.preventDefault();
 
+        // --- Validate property_id ---
+        let propertyId = $('#property_id').val();
+        if (!propertyId) {
+            alert("Property ID not found. Please save the property first.");
+            return;
+        }
+
+        // --- Collect form data ---
+        let formArray = $('#UtilitiesForm').serializeArray();
+        formArray.push({ name: 'property_id', value: propertyId });
+        let payload = $.param(formArray);
+
+        console.log('🚀 Sending payload:', payload);
+
+        // --- AJAX POST call ---
         $.ajax({
             url: "{{ url('property-utilities-store') }}",
             type: "POST",
-            data: $('#UtilitiesForm').serialize(),
+            data: payload,
             success: function (response) {
                 if (response.success) {
                     $('#addUtilitiesModal').modal('hide');
                     $('#UtilitiesForm')[0].reset();
-
-                    alert(response.message);
                     $('#utilitiesTitle').show();
                     $('#utilitiesWrapper').show();
+                    alert(response.message);
 
-                    // ✅ Step 1: Group incoming JSON by company name
+                    // ✅ Group incoming JSON by company name
                     let grouped = {};
                     response.data.forEach(function (item) {
                         if (!grouped[item.name]) {
@@ -1099,7 +1286,7 @@
                         }
                     });
 
-                    // ✅ Step 2: Loop through grouped data and append/update rows
+                    // ✅ Update DOM table
                     Object.values(grouped).forEach(function (companyData) {
                         let existingRow = $("#UtilitiesTable tbody tr").filter(function () {
                             return $(this).find("td:nth-child(2)").text().trim() === companyData.name;
@@ -1110,16 +1297,12 @@
                         let subCatNames = companyData.sub_names.join(', ');
 
                         if (existingRow.length > 0) {
-                            // ✅ Update existing row with new subcategories
                             let existingSubNames = existingRow.find("td:nth-child(4)").text().split(/\s*,\s*/);
                             companyData.sub_names.forEach(function (sn) {
-                                if (sn && !existingSubNames.includes(sn)) {
-                                    existingSubNames.push(sn);
-                                }
+                                if (sn && !existingSubNames.includes(sn)) existingSubNames.push(sn);
                             });
                             existingRow.find("td:nth-child(4)").text(existingSubNames.join(', '));
                         } else {
-                            // ✅ Add new company row
                             let rowCount = $("#UtilitiesTable tbody tr").length + 1;
                             $('#UtilitiesTable tbody').append(`
                                 <tr id="row2-${companyData.id}">
@@ -1143,72 +1326,134 @@
                         }
                     });
 
-                    // ✅ Step 3: Re-number rows (optional, keeps index clean)
                     $("#UtilitiesTable tbody tr").each(function (index) {
                         $(this).find("td:first").text(index + 1);
                     });
 
+                    $('input[name="utilities"][value="yes"]').prop('checked', true);
+                    $('#utilitiesdata').slideDown();
+
                 } else {
                     alert(response.message ?? "Something went wrong!");
                 }
             },
             error: function (xhr) {
+                console.error(xhr);
                 alert("Error: " + xhr.responseText);
             }
         });
     });
+
+    // ✅ Prefill modal for edit
+    $(document).on('click', '.editUtilitiesBtn', function () {
+        $('#utilities_id').val($(this).data('id'));
+        $('#utilities_name').val($(this).data('name'));
+        $('#utilities_status').val($(this).data('status'));
+        $('#utilities_sub_category').val($(this).data('sub_category'));
+        $('#utilities_sub_category_name').val($(this).data('sub_category_name'));
+        $('#addUtilitiesModal').modal('show');
+    });
+});
 </script>
 
 
 <script>
-    $(document).on('click', '#saveAmenity', function (e) {
-        e.preventDefault();
+    $(document).ready(function () {
 
-        $.ajax({
-            url: "{{ url('property-amenities-store') }}", 
-            type: "POST",
-            data: $('#amenityForm').serialize(),
-            success: function (response) {
-                if (response.success) {
-                    // Modal close + form reset
-                    $('#addAmenityModal').modal('hide');
-                    $('#amenityForm')[0].reset();
-
-                    // ✅ Success message (no reload)
-                    alert(response.message);
-					$('#amenitiesWrapper').show();
-                    // Row count (next number)
-                    let rowCount = $("#amenitiesTable tbody tr").length + 1;
-
-                    // Status setup
-                    let statusText = response.data.status == 1 ? 'Active' : 'Inactive';
-                    let checked = response.data.status == 1 ? 'checked' : '';
-
-                    // ✅ Append new row to table
-                    $('#amenitiesTable tbody').append(`
-                        <tr>
-                            <td class="text-center">${rowCount}</td>
-                            <td class="text-center">${response.data.name}</td>
-                            <td class="text-center">${response.data.price}</td>
-                            <td class="text-center">${statusText}</td>
-                            <td class="text-center">
-                                <button type="button" class="btn btn-sm btn-warning editAmenityBtn" 
-                                    data-id="${response.data.id}" 
-                                    data-name="${response.data.name}" 
-                                    data-price="${response.data.price}" 
-                                    data-status="${response.data.status}">
-                                <i class="ti ti-edit"></i>
-                            </button>
-                            </td>
-                        </tr>
-                    `);
-                } else {
-                    alert(response.message ?? "Something went wrong!");
-                }
-            },
-            error: function (xhr) {
-                alert("Error: " + xhr.responseText);
+        // ✅ Function: Toggle amenities section smoothly
+        function toggleAmenitiesSection(show) {
+            if (show) {
+                $('#isbilleddata').slideDown();
+            } else {
+                $('#isbilleddata').slideUp();
             }
+        }
+
+        // ✅ Check default (on page load)
+        const isCheckedYes = $('input[name="is_billed"]:checked').val() === 'yes';
+        toggleAmenitiesSection(isCheckedYes);
+
+        // ✅ When radio value changes
+        $(document).on('change', 'input[name="is_billed"]', function () {
+            toggleAmenitiesSection($(this).val() === 'yes');
+        });
+
+        // ✅ Add/Edit Amenity Form submission
+        $(document).on('submit', '#amenityForm', function (e) {
+            e.preventDefault();
+
+            let formData = $(this).serializeArray();
+            let propertyId = $('#property_id').val();
+
+            if (propertyId) {
+                formData.push({ name: 'propertyid', value: propertyId });
+            }
+
+            $.ajax({
+                url: propertyId 
+                    ? "{{ route('propertyamenities-store2') }}"  // edit mode (with property_id)                                       
+                    : "{{ url('property-amenities-store') }}",   // create mode
+                type: "POST",
+                data: $.param(formData),
+                success: function (response) {
+                    if (response.success) {
+                        $('#addAmenityModal').modal('hide');
+                        $('#amenityForm')[0].reset();
+                        $('#amenitiesWrapper').show();
+
+                        let data = response.data;
+                        let row = $("#row-" + data.id);
+                        let statusText = data.status == 1 ? 'Active' : 'Inactive';
+
+                        if (row.length) {
+                            // ✅ Update existing row
+                            row.find('td:eq(1)').text(data.name);
+                            row.find('td:eq(2)').text('$ ' + data.price);
+                            row.find('td:eq(3)').text(statusText);
+                        } else {
+                            // ✅ Add new row
+                            let rowCount = $("#amenitiesTable tbody tr").length + 1;
+                            $('#amenitiesTable tbody').append(`
+                                <tr id="row-${data.id}">
+                                    <td class="text-center">${rowCount}</td>
+                                    <td class="text-center">${data.name}</td>
+                                    <td class="text-center">$ ${data.price}</td>
+                                    <td class="text-center">${statusText}</td>
+                                    <td class="text-center">
+                                        <button type="button" class="btn btn-sm btn-warning editAmenityBtn"
+                                            data-id="${data.id}" 
+                                            data-name="${data.name}" 
+                                            data-price="${data.price}" 
+                                            data-status="${data.status}">
+                                            <i class="ti ti-edit"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            `);
+                        }
+
+                        // ✅ Always select "Yes" once an amenity is added
+                        $('input[name="is_billed"][value="yes"]').prop('checked', true);
+                        toggleAmenitiesSection(true);
+
+                        alert(response.message);
+                    } else {
+                        alert(response.message || "Something went wrong!");
+                    }
+                },
+                error: function (xhr) {
+                    alert("Error: " + xhr.responseText);
+                }
+            });
+        });
+
+        // ✅ Prefill modal on edit click
+        $(document).on('click', '.editAmenityBtn', function () {
+            $('#amenity_id').val($(this).data('id'));
+            $('#amenity_name').val($(this).data('name'));
+            $('#amenity_price').val($(this).data('price'));
+            $('#amenity_status').val($(this).data('status'));
+            $('#addAmenityModal').modal('show');
         });
     });
 </script>
@@ -1335,6 +1580,9 @@
 
 
 <script>
+$(document).ready(function () {
+
+    // Open Modal and Prefill Data
     $(document).on('click', '.editUtilitiesBtn', function () {
         let data = $(this).data();
 
@@ -1342,11 +1590,81 @@
         $('#editUtilitiesName').val(data.name);
         $('#editUtilitiesStatus').val(data.status);
         $('#editUtilitiesSubCategory').val(data.sub_category);
-        $('#editUtilitiesSubCategoryName').val(data.sub_category_name);
+
+        // ✅ Handle sub-category visibility
+        if (data.sub_category == 1) {
+            $('#editSubCategorySection').show();
+
+            // Clear old inputs
+            $('#editSubCategoryWrapper').empty();
+
+            // Split sub-category names by comma
+            let subNames = [];
+            if (data.sub_category_name) {
+                subNames = data.sub_category_name.split(',').map(s => s.trim());
+            }
+
+            // Create inputs for each name
+            if (subNames.length > 0) {
+                subNames.forEach(function (name) {
+                    $('#editSubCategoryWrapper').append(`
+                        <div class="d-flex mb-2 align-items-center subcat-row">
+                            <input type="text" name="sub_category_name[]" class="form-control me-2" value="${name}" required>
+                            <button type="button" class="btn btn-danger btn-sm removeEditSubCategory">&times;</button>
+                        </div>
+                    `);
+                });
+            } else {
+                // If no subcategories exist
+                $('#editSubCategoryWrapper').append(`
+                    <div class="d-flex mb-2 align-items-center subcat-row">
+                        <input type="text" name="sub_category_name[]" class="form-control me-2" placeholder="Enter Sub Category" required>
+                        <button type="button" class="btn btn-danger btn-sm removeEditSubCategory">&times;</button>
+                    </div>
+                `);
+            }
+        } else {
+            $('#editSubCategorySection').hide();
+            $('#editSubCategoryWrapper').empty();
+        }
 
         $('#editUtilitiesModal').modal('show');
     });
 
+    // 🟢 Add More Subcategory Input
+    $(document).on('click', '#addMoreEditSubCategory', function () {
+        $('#editSubCategoryWrapper').append(`
+            <div class="d-flex mb-2 align-items-center subcat-row">
+                <input type="text" name="sub_category_name[]" class="form-control me-2" placeholder="Enter Sub Category" required>
+                <button type="button" class="btn btn-danger btn-sm removeEditSubCategory">&times;</button>
+            </div>
+        `);
+    });
+
+    // 🟢 Remove a subcategory input
+    $(document).on('click', '.removeEditSubCategory', function () {
+        $(this).closest('.subcat-row').remove();
+    });
+
+    // 🟢 Show/Hide subcategory section when main select changes
+    $(document).on('change', '#editUtilitiesSubCategory', function () {
+        if ($(this).val() == 1) {
+            $('#editSubCategorySection').slideDown();
+            if ($('#editSubCategoryWrapper').children().length === 0) {
+                $('#editSubCategoryWrapper').append(`
+                    <div class="d-flex mb-2 align-items-center subcat-row">
+                        <input type="text" name="sub_category_name[]" class="form-control me-2" placeholder="Enter Sub Category" required>
+                        <button type="button" class="btn btn-danger btn-sm removeEditSubCategory">&times;</button>
+                    </div>
+                `);
+            }
+        } else {
+            $('#editSubCategorySection').slideUp();
+            $('#editSubCategoryWrapper').empty();
+        }
+    });
+
+    // 🟢 Update AJAX
     $(document).on('click', '#updateUtilities', function (e) {
         e.preventDefault();
 
@@ -1355,30 +1673,85 @@
             type: "POST",
             data: $('#editUtilitiesForm').serialize(),
             success: function (response) {
-                if (response.success) {
-                    $('#editUtilitiesModal').modal('hide');
-                    alert(response.message);
+    if (response.success) {
+        const item = response.data;
 
-                    let row = $('#row2-' + response.data.id);
-                    row.find('td:eq(1)').text(response.data.name);
-                    row.find('td:eq(2)').text(response.data.sub_category == 1 ? 'Yes' : 'No');
-                    row.find('td:eq(3)').text(response.data.sub_category_name ?? '');
-                    row.find('td:eq(4)').text(response.data.status == 1 ? 'Active' : 'Inactive');
+        // ✅ Close modal
+        $('#editUtilitiesModal').modal('hide');
 
-                    let btn = row.find('.editUtilitiesBtn');
-                    btn.data('name', response.data.name);
-                    btn.data('status', response.data.status);
-                    btn.data('sub_category', response.data.sub_category);
-                    btn.data('sub_category_name', response.data.sub_category_name ?? '');
-                } else {
-                    alert(response.message ?? "Something went wrong!");
-                }
-            },
-            error: function (xhr) {
-                alert("Error: " + xhr.responseText);
+        // ✅ Success toast
+        toastr.success(response.message);
+
+        const companyName = item.name.trim().toLowerCase();
+        let updated = false;
+
+        // ✅ Try to find matching row by company name
+        $("#UtilitiesTable tbody tr").each(function () {
+            const rowCompanyName = $(this).find("td:nth-child(2)").text().trim().toLowerCase();
+
+            if (rowCompanyName === companyName) {
+                // ✅ Update existing row values inline
+                $(this).find("td:nth-child(2)").text(item.name);
+                $(this).find("td:nth-child(3)").text(item.sub_category == 1 ? 'Yes' : 'No');
+                $(this).find("td:nth-child(4)").text(item.sub_category_names || '');
+                $(this).find("td:nth-child(5)").text(item.status == 1 ? 'Active' : 'Inactive');
+
+                // ✅ Update edit button data attributes
+                const editBtn = $(this).find(".editUtilitiesBtn");
+                editBtn.data('id', item.id);
+                editBtn.data('name', item.name);
+                editBtn.data('status', item.status);
+                editBtn.data('sub_category', item.sub_category);
+                editBtn.data('sub_category_name', item.sub_category_names || '');
+
+                // ✅ Highlight row for feedback
+                $(this).css('background-color', '#d4edda');
+                setTimeout(() => $(this).css('background-color', ''), 1000);
+
+                updated = true;
+                return false; // stop loop
             }
         });
+
+        // ✅ If company not found (renamed or new), append a new row
+        if (!updated) {
+            const subCatText = item.sub_category == 1 ? 'Yes' : 'No';
+            const statusText = item.status == 1 ? 'Active' : 'Inactive';
+            const subCats = item.sub_category_names || '';
+            const rowCount = $("#UtilitiesTable tbody tr").length + 1;
+
+            const newRow = `
+                <tr id="row2-${item.id}">
+                    <td class="text-center">${rowCount}</td>
+                    <td>${item.name}</td>
+                    <td>${subCatText}</td>
+                    <td>${subCats}</td>
+                    <td>${statusText}</td>
+                    <td class="text-center">
+                        <button type="button" class="btn btn-sm btn-warning editUtilitiesBtn"
+                            data-id="${item.id}"
+                            data-name="${item.name}"
+                            data-status="${item.status}"
+                            data-sub_category="${item.sub_category}"
+                            data-sub_category_name="${subCats}">
+                            <i class="ti ti-edit"></i>
+                        </button>
+                    </td>
+                </tr>
+            `;
+            $("#UtilitiesTable tbody").append(newRow);
+        }
+
+    } else {
+        toastr.error(response.message ?? "Something went wrong!");
+    }
+},
+error: function (xhr) {
+    toastr.error("Error: " + xhr.responseText);
+}
+        });
     });
+});
 </script>
 
 
@@ -1399,7 +1772,7 @@
             
             <div class="modal-body">
                 <form id="amenityForm">
-                  @csrf
+                    @csrf
                     <div class="mb-3">
                         <label for="amenityName" class="form-label">Amenity Name <span class="text-danger">*</span></label>
                         <input type="text" class="form-control" name="name" id="amenityName" placeholder="Enter amenity name" required>
@@ -1407,7 +1780,7 @@
 
                     <div class="mb-3">
                         <label for="amenityAmount" class="form-label">Cost ($) <span class="text-danger">*</span></label>
-                        <input type="number" class="form-control" id="amenityAmount" placeholder="Enter amount" name="price" required>
+                        <input type="number" class="form-control" id="amenityAmount" name="price" placeholder="Enter amount" required>
                     </div>
 
                     <div class="mb-3">
@@ -1417,17 +1790,17 @@
                             <option value="0">Inactive</option>
                         </select>
                     </div>
+
+                    <!-- ✅ Proper submit button -->
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary">Save</button>
+                    </div>
                 </form>
-            </div>
-            
-            <div class="modal-footer">
-                <button type="button" id="saveAmenity" form="amenitiesForm" class="btn btn-primary">Save</button>
             </div>
 
         </div>
     </div>
 </div>
-
 
 
 <div class="modal fade" id="editAmenityModal" tabindex="-1" aria-labelledby="editAmenityLabel" aria-hidden="true">
@@ -1515,7 +1888,7 @@
             </div>
 
            <div class="text-end">
-             <button type="submit" id="saveUtilities" class="btn btn-success">Save</button>
+             <button type="button" id="saveUtilities" class="btn btn-success">Save</button>
            </div>
         </form>
       </div>
@@ -1523,46 +1896,52 @@
   </div>
 </div>
 
-
-
-
+<!-- ✅ Edit Utilities Modal -->
 <div class="modal fade" id="editUtilitiesModal" tabindex="-1" aria-labelledby="editUtilitiesLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
+
       <div class="modal-header">
         <h5 class="modal-title" id="editUtilitiesLabel">Edit Utilities</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
+
       <div class="modal-body">
         <form id="editUtilitiesForm">
-            @csrf
-            <input type="hidden" name="id" id="editUtilitiesId">
+          @csrf
+          <input type="hidden" name="id" id="editUtilitiesId">
 
-            <div class="mb-3">
-                <label for="editUtilitiesName" class="form-label">Company Name <span class="text-danger">*</span></label>
-                <input type="text" class="form-control" id="editUtilitiesName" name="name" required>
-            </div>
+          <div class="mb-3">
+            <label class="form-label">Company Name <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="editUtilitiesName" name="name" required>
+          </div>
 
-            <div class="mb-3">
-                <label for="editUtilitiesSubCategory" class="form-label">Sub Category <span class="text-danger">*</span></label>
-                <select name="sub_category" id="editUtilitiesSubCategory" class="form-select" required>
-                    <option value="0">No</option>
-                    <option value="1">Yes</option>
-                </select>
-            </div>
+          <div class="mb-3">
+            <label class="form-label">Sub Category <span class="text-danger">*</span></label>
+            <select name="sub_category" id="editUtilitiesSubCategory" class="form-select" required>
+              <option value="0">No</option>
+              <option value="1">Yes</option>
+            </select>
+          </div>
 
-            <div class="mb-3">
-                <label for="editUtilitiesSubCategoryName" class="form-label">Sub Category Name <span class="text-danger">*</span></label>
-                <input type="text" id="editUtilitiesSubCategoryName" name="sub_category_name" class="form-control">
-            </div>
+          <!-- ✅ Subcategory section -->
+          <div class="mb-3" id="editSubCategorySection" style="display:none;">
+            <label class="form-label">Sub Category Name <span class="text-danger">*</span></label>
+            <div id="editSubCategoryWrapper"></div>
 
-            <div class="mb-3">
-                <label for="editUtilitiesStatus" class="form-label">Status <span class="text-danger">*</span></label>
-                <select class="form-control" id="editUtilitiesStatus" name="status" required>
-                    <option value="1">Active</option>
-                    <option value="0">Inactive</option>
-                </select>
-            </div>
+            <!-- Add new sub-category input -->
+            <button type="button" id="addMoreEditSubCategory" class="btn btn-outline-success btn-sm mt-2">
+              + Add More
+            </button>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Status <span class="text-danger">*</span></label>
+            <select class="form-control" id="editUtilitiesStatus" name="status" required>
+              <option value="1">Active</option>
+              <option value="0">Inactive</option>
+            </select>
+          </div>
         </form>
       </div>
 
@@ -1570,8 +1949,7 @@
         <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Close</button>
         <button type="button" class="btn btn-primary" id="updateUtilities">Update</button>
       </div>
+
     </div>
   </div>
 </div>
-
-

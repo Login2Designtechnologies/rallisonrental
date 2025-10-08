@@ -108,7 +108,7 @@ class PropertyController extends Controller
             ->whereExists(function ($q) {
                 $q->select(DB::raw(1))
                   ->from('tenants')
-                  ->whereColumn('tenants.property', 'properties.id')
+                  ->whereColumn('tenants.property_id', 'properties.id')
                   ->where('tenants.parent_id', auth()->id());
             })
             ->whereExists(function ($q) {
@@ -178,6 +178,10 @@ class PropertyController extends Controller
                     'address' => 'required',
                     'thumbnail' => 'required',
                     // 'property_images' => 'required',
+                    'is_active' => 'required|in:0,1',
+                    'mortgage_amount' => 'nullable|numeric|min:0',
+                    'insurance_amount' => 'nullable|numeric|min:0',
+                    'amenities_amount' => 'nullable|numeric|min:0',
                 ]
             );
             if ($validator->fails()) {
@@ -212,6 +216,10 @@ class PropertyController extends Controller
             $property->address = $request->address;
             $property->is_billed = $request->is_billed;
             $property->utilities = $request->utilities;
+            $property->is_active = $request->is_active ?? 1;
+            $property->mortgage_amount = $request->mortgage_amount ?? null;
+            $property->insurance_amount = $request->insurance_amount ?? null;
+            $property->amenities_amount = $request->amenities_amount ?? null;
             $property->parent_id = parentId();
             $property->save();
 
@@ -443,12 +451,10 @@ public function propertyamenities_store2(Request $request)
         ->exists();
 
     if ($exists) {
-
-        return redirect('property/'.$request->propertyid.'/'.'edit')->with('error', 'Amenity already exists!');
-        // return response()->json([
-        //     'success' => false,
-        //     'message' => 'Amenity already exists!'
-        // ]);
+        return response()->json([
+            'success' => false,
+            'message' => 'Amenity already exists!'
+        ]);
     }
 
     // Insert new amenity and get ID
@@ -460,7 +466,16 @@ public function propertyamenities_store2(Request $request)
         'user_id' => $userId,
     ]);
     
-    return redirect('property/'.$request->propertyid.'/'.'edit')->with('success', 'Amenities added successfully!');
+    return response()->json([
+        'success' => true,
+        'message' => 'Amenity added successfully!',
+        'data' => [
+            'id' => $newAmenityId,
+            'name' => $request->name,
+            'price' => $request->price,
+            'status' => $request->status,
+        ]
+    ]);
 
     // Return JSON response with data
     // return response()->json([
@@ -501,9 +516,13 @@ public function property_utilities_store(Request $request)
 
             if (!$exists) {
 
-                // Get last inserted property id (if exists)
-                $lastProperty = DB::table('properties')->latest('id')->first();
-                $propertyId = $lastProperty ? $lastProperty->id + 1 : 1;
+                // ✅ Use property_id if provided, else fallback
+                if ($request->property_id) {                    
+                    $propertyId = $request->property_id;
+                } else {
+                    $lastProperty = DB::table('properties')->latest('id')->first();
+                    $propertyId = $lastProperty ? $lastProperty->id + 1 : 1;
+                }
 
                 $id = DB::table('utilities_catg')->insertGetId([
                     'name' => $request->name,
@@ -547,9 +566,12 @@ public function property_utilities_store(Request $request)
 
         if (!$exists) {
 
-            // Get last inserted property id (if exists)
-            $lastProperty = DB::table('properties')->latest('id')->first();
-            $propertyId = $lastProperty ? $lastProperty->id + 1 : 1;
+            if ($request->property_id) {                    
+                $propertyId = $request->property_id;
+            } else {
+                $lastProperty = DB::table('properties')->latest('id')->first();
+                $propertyId = $lastProperty ? $lastProperty->id + 1 : 1;
+            }
 
             $id = DB::table('utilities_catg')->insertGetId([
                 'name' => $request->name,
@@ -885,54 +907,77 @@ public function addUtilities_store(Request $request,$id)
 public function property_Utilities_update(Request $request)
 {
     $request->validate([
-        'id' => 'required|integer|exists:utilities_catg,id',
+        'id' => 'required|integer',
         'name' => 'required|string|max:255',
         'sub_category' => 'required|in:0,1',
-        'sub_category_name' => 'nullable|string|max:255',
+        'sub_category_name' => 'nullable|array',
+        'sub_category_name.*' => 'nullable|string|max:255',
         'status' => 'required|in:0,1',
     ]);
 
-    // Check if combination already exists (except current record)
-    $exists = DB::table('utilities_catg')
-        ->where('name', $request->name)
-        ->where('sub_category', $request->sub_category)
-        ->where(function($query) use ($request) {
-            if ($request->sub_category == 1) {
-                $query->where('sub_category_name', $request->sub_category_name);
-            } else {
-                $query->whereNull('sub_category_name');
-            }
-        })
-        ->where('id', '!=', $request->id)
-        ->exists();
+    $id = $request->id;
+    $name = $request->name;
+    $status = $request->status;
+    $subCategory = $request->sub_category;
+    $subNames = $request->sub_category_name ?? [];
+    $userId = Auth::id();
 
-    if ($exists) {
-        return response()->json([
-            'success' => false,
-            'message' => 'Utilities already exists!'
-        ]);
+    // 🧹 Clean duplicate and empty names
+    $subNames = array_filter(array_unique(array_map('trim', $subNames)));
+
+    if ($subCategory == 0) {
+        // ✅ If sub_category = No, update single record
+        DB::table('utilities_catg')
+            ->where('id', $id)
+            ->update([
+                'name' => $name,
+                'sub_category' => 0,
+                'sub_category_name' => null,
+                'status' => $status,
+            ]);
+
+    } else {
+        // ✅ If sub_category = Yes, remove old subcategories and re-insert new
+        $record = DB::table('utilities_catg')->where('id', $id)->first();
+
+        if ($record) {
+            DB::table('utilities_catg')
+                ->where('name', $record->name)
+                ->where('sub_category', 1)
+                ->where('user_id', $userId)
+                ->delete();
+
+            foreach ($subNames as $subName) {
+                DB::table('utilities_catg')->insert([
+                    'name' => $name,
+                    'sub_category' => 1,
+                    'sub_category_name' => $subName,
+                    'status' => $status,
+                    'property_id' => $record->property_id ?? null,
+                    'user_id' => $userId,
+                ]);
+            }
+        }
     }
 
-    // Update the record
-    DB::table('utilities_catg')
-        ->where('id', $request->id)
-        ->update([
-            'name' => $request->name,
-            'sub_category' => $request->sub_category,
-            'sub_category_name' => $request->sub_category == 1 ? $request->sub_category_name : null,
-            'status' => $request->status,
-        ]);
+    // ✅ Fetch updated list of this company's utilities
+    $updatedRecords = DB::table('utilities_catg')
+        ->select(
+            'name',
+            'sub_category',
+            'status',
+            DB::raw('GROUP_CONCAT(sub_category_name ORDER BY sub_category_name SEPARATOR ", ") AS sub_category_names'),
+            DB::raw('MIN(id) AS id')
+        )
+        ->where('name', $name)
+        ->where('user_id', $userId)
+        ->groupBy('name', 'sub_category', 'status')
+        ->first();
 
     return response()->json([
         'success' => true,
         'message' => 'Utilities updated successfully!',
-        'data' => [
-            'id' => $request->id,
-            'name' => $request->name,
-            'sub_category' => $request->sub_category,
-            'sub_category_name' => $request->sub_category == 1 ? $request->sub_category_name : null,
-            'status' => $request->status,
-        ]
+        'data' => $updatedRecords,
     ]);
 }
 
@@ -1070,7 +1115,8 @@ public function addUtilities_update(Request $request,$id,$propertyid)
             $propertyextraimages = DB::table('property_images')->where('property_id',$property->id)->where('type','extra')->get();
             $amenities = DB::table('amenity_catg')->where('property_id',$property->id)->where('user_id',$userId)->get();
             $utilities = DB::table('utilities_catg')->where('property_id',$property->id)->where('user_id',$userId)->get();
-            return view('property.edit', compact('types', 'property','statesdata','propertyimages','propertyextraimages','amenities','utilities'));
+            $units = DB::table('property_units')->where('property_id', $property->id)->get();
+            return view('property.create', compact('types', 'property', 'statesdata', 'propertyimages', 'propertyextraimages', 'amenities', 'utilities', 'units'));
         } else {
             return redirect()->back()->with('error', __('Permission Denied!'));
         }
@@ -1092,7 +1138,9 @@ public function addUtilities_update(Request $request,$id,$propertyid)
                     'city' => 'required',
                     'zip_code' => 'required',
                     'address' => 'required',
-
+                    'mortgage_amount' => 'nullable|numeric|min:0',
+                    'insurance_amount' => 'nullable|numeric|min:0',
+                    'amenities_amount' => 'nullable|numeric|min:0',
                 ]
 
             );
@@ -1110,10 +1158,13 @@ public function addUtilities_update(Request $request,$id,$propertyid)
             $property->description = $request->description;
             $property->type = $request->type;
             $property->country = $request->country;
-            $property->state = $request->state;
-            $property->city = $request->city;
+            $property->state_id = $request->state;
+            $property->city_id = $request->city;
             $property->zip_code = $request->zip_code;
             $property->address = $request->address;
+            $property->mortgage_amount = $request->mortgage_amount ?? null;
+            $property->insurance_amount = $request->insurance_amount ?? null;
+            $property->amenities_amount = $request->amenities_amount ?? null;
             $property->save();
 
             if (!empty($request->thumbnail)) {

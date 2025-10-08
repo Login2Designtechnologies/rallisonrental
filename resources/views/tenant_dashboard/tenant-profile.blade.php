@@ -117,11 +117,11 @@
                             accept="image/*" class="form-control form-control inline-input" style="display:none">
                         
                         <!-- hidden by default -->
-                        <!-- <span id="profile-edit-btn" 
+                        <span id="profile-edit-btn" 
                             class="position-absolute bg-white p-1 rounded-circle d-none" 
                             style="cursor:pointer;">
                             <i class="bi bi-pencil"></i>
-                        </span> -->
+                        </span>
                     </div>
                     <div class="col">
                         <h2 class="h4 mb-2 editable" data-field="name">

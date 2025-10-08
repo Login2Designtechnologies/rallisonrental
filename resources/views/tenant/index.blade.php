@@ -49,8 +49,8 @@
                                                         <h4>
                                                             <!-- <span class="d-block">{{ ucfirst(!empty($tenant->user) ? $tenant->user->first_name : '') }}</span>
                                                             <span class="d-block">{{ ucfirst(!empty($tenant->user) ? $tenant->user->last_name : '') }}</span> -->
-                                                            <span class="d-block">{{ strtoupper(substr(!empty($tenant->user) ? $tenant->user->first_name : '', 0, 1)) }}</span>
-                                                            <span class="d-block">{{ strtoupper(substr(!empty($tenant->user) ? $tenant->user->last_name : '', 0, 1)) }}</span>
+                                                            <span class="d-block">{{ strtoupper(!empty($tenant->user) ? $tenant->user->first_name : '') }}</span>
+                                                            <span class="d-block">{{ strtoupper(!empty($tenant->user) ? $tenant->user->last_name : '') }}</span>
 
                                                         </h4>
                                                     </a>
@@ -142,26 +142,24 @@
 
                                             <div class="col-sm-6 mb-3">
                                                 <p class="mb-0  text-sm">{{ __('Amount Due') }} :</p>
-                                                <h6 class="mb-0">
-                                                    $</h6>
+                                                <h6 class="mb-0">${{ number_format($tenant->amount_due ?? 0, 2) }}</h6>
                                             </div>
                                             <div class="col-sm-6 mb-3">
                                                 <p class="mb-0  text-sm">{{ __('Amount Past Due') }} :</p>
-                                                <h6 class="mb-0"> $</h6>
+                                                <h6 class="mb-0">${{ number_format($tenant->amount_past_due ?? 0, 2) }}</h6>
                                             </div>
 
                                             <div class="col-sm-6 mb-3">
-                                                <p class="mb-0  text-sm">{{ __('Dtilities Due') }} :</p>
-                                                <h6 class="mb-0">
-                                                    $</h6>
+                                                <p class="mb-0  text-sm">{{ __('Utilities Due') }} :</p>
+                                                <h6 class="mb-0">${{ number_format($tenant->utilities_due ?? 0, 2) }}</h6>
                                             </div>
                                             <div class="col-sm-6 mb-3">
-                                                <p class="mb-0  text-sm">{{ __('Dtilities Past Due') }} :</p>
-                                                <h6 class="mb-0"> $</h6>
+                                                <p class="mb-0  text-sm">{{ __('Utilities Past Due') }} :</p>
+                                                <h6 class="mb-0">${{ number_format($tenant->utilities_past_due ?? 0, 2) }}</h6>
                                             </div>
                                             <div class="col-sm-12 mb-3">
                                                 <p class="mb-0  text-sm">{{ __('Months Left on Lease') }} : $</p>
-                                                
+                                                <h6>{{ is_null($tenant->months_left) ? '-' : $tenant->months_left }}</h6>
                                             </div>
                                             
                                             <div class="btn-block">

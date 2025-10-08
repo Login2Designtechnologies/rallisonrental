@@ -19,6 +19,9 @@ class Property extends Model
         'address',
         'parent_id',
         'is_active',
+        'mortgage_amount',
+        'insurance_amount', 
+        'amenities_amount', 
     ];
 
     public static $Type=[

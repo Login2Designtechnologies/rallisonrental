@@ -12,6 +12,22 @@
     .text-small{font-size:.9rem}
     .w-20{width:20%}.w-25{width:25%}.w-30{width:30%}.w-35{width:35%}.w-50{width:50%}
     .v-top{vertical-align:top}
+
+    /* status badge styling */
+    .invoice-status {
+        top: 1rem;        /* distance from top of header */
+        right: 1rem;      /* distance from right of header */
+        font-size: 1rem;  /* slightly larger text */
+        padding: .45rem .9rem;
+        border-radius: .5rem;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+        display: inline-block;
+        line-height: 1;
+    }
+
+    @media (max-width: 576px) {
+    .invoice-status { font-size: 0.9rem; padding: .35rem .6rem; top: .6rem; right: .6rem; }
+    }
   </style>
    
 </head>
@@ -19,20 +35,17 @@
 <div class="page-frame">
 
     <div class="d-flex justify-content-between mb-3 no-print">
-        <div>
-            <span class="badge bg-warning text-dark">Unpaid</span>
-        </div>        
+        <div class="d-flex justify-content-end float-end">
+            <span class="badge bg-warning text-dark fs-7 py-2 px-3">Unpaid</span>
+        </div>     
     </div>  
     <table class="table table-bordered align-middle mb-0">
         <!-- Row 1: Company info (left) + Date/Invoice# (right) -->
         <tr>
         <td class="v-top w-50" rowspan="2" colspan="2">
-            <div class="fw-semibold">Insert Company Logo</div>
             <img src="{{ asset('assets/images/authentication/logo2.png') }}" alt="image" class="img-fluid brand-logo">
-            <div class="mt-2 fw-bold">{{ $otherInvoice->owner->company_name ?? 'Company Name' }}</div>
-            <div>{{ $otherInvoice->owner->address ?? 'Street Address' }}</div>
-            <div>{{ $otherInvoice->owner->city ?? 'CITY, ST ZIP' }}</div>
-            <div>Phone: {{ $otherInvoice->owner->phone ?? 'XXX.XXX.XXXX' }}</div>
+            <div class="mt-2 fw-bold">{{ $otherInvoice->owner->name ?? 'Company Name' }}</div>
+            <div>Phone: {{ $otherInvoice->owner->phone_number ?? 'XXX.XXX.XXXX' }}</div>
             <div class="text-muted">{{ $otherInvoice->owner->email ?? 'email@example.com' }}</div>
         </td>
         <td class="w-25" rowspan="2" style="vertical-align: top;">
@@ -58,8 +71,8 @@
                 <div class="border p-2">
                 <div class="fw-semibold">{{ $otherInvoice->tenant->name }}</div>
                 <div>{{ $otherInvoice->tenant->address ?? '' }}</div>
-                <div>{{ $otherInvoice->tenant->city ?? '' }}</div>
-                <div>{{ $otherInvoice->tenant->email ?? '' }}</div>
+                <div>{{ $otherInvoice->tenant->city->name ?? '' }}</div>
+                <div>{{ $otherInvoice->tenant->user->email ?? '' }}</div>
                 </div>
             </td>
         </tr>

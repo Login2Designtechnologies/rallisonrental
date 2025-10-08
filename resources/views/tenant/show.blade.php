@@ -375,7 +375,8 @@
 
                                             {{-- Hidden inputs --}}
                                             <input type="hidden" name="tenant_id" value="{{ $tenantId }}">
-                                            <input type="hidden" name="property_id" value="{{$contract->property ?? '' }}">
+                                            <input type="hidden" name="property_id" value="{{ $tenantcontracts->property_id ?? $tenant->property_id ?? '' }}">
+                                            <small class="text-muted">Property ID: {{ $tenantcontracts->property_id ?? $tenant->property_id ?? 'N/A' }}</small>
                                             <input type="hidden" name="owner_id" value="{{ $contract->user_id ?? '' }}">
 
                                             {{-- Top error summary --}}
@@ -394,15 +395,13 @@
                                             <div class="row g-3 mb-3">
                                                 <div class="col-md-4">
                                                     <label class="form-label">Start Date</label>
-                                            @if(!empty($tenantcontracts->start_date))
-                                                    <input type="text" style="pointer-events: none;" 
-                                                        class="form-control"
-                                                        placeholder="MM-DD-YYYY" autocomplete="off" value="{{ old('start_date', $tenantcontracts->start_date ?? '') }}">
-                                            @else
-                                                    <input type="text" id="start_date" name="start_date"
+                                                    <input
+                                                        type="date"
+                                                        id="start_date"
+                                                        name="start_date"
                                                         class="form-control @error('start_date') is-invalid @enderror"
-                                                        placeholder="MM-DD-YYYY" autocomplete="off" value="{{ old('start_date', $tenantcontracts->start_date ?? '') }}">
-                                            @endif
+                                                        value="{{ old('start_date', $tenantcontracts->start_date ?? '') }}"
+                                                        {{ !empty($tenantcontracts->start_date) ? 'readonly' : '' }}>
                                                     @error('start_date')
                                                         <div class="invalid-feedback d-block">{{ $message }}</div>
                                                     @enderror
@@ -410,22 +409,21 @@
 
                                                 <div class="col-md-4">
                                                     <label class="form-label">End Date</label>
-                                            @if(!empty($tenantcontracts->end_date))
-                                                    <input type="text" style="pointer-events: none;"
-                                                        class="form-control"
-                                                        placeholder="MM-DD-YYYY" autocomplete="off" value="{{$tenantcontracts->end_date ?? ''}}">
-                                            @else
-                                                    <input type="text" id="end_date" name="end_date"
+                                                    <input
+                                                        type="date"
+                                                        id="end_date"
+                                                        name="end_date"
                                                         class="form-control @error('end_date') is-invalid @enderror"
-                                                        placeholder="MM-DD-YYYY" autocomplete="off" value="{{$tenantcontracts->end_date ?? ''}}">
-                                            @endif
+                                                        value="{{ old('end_date', $tenantcontracts->end_date ?? '') }}"
+                                                        {{ !empty($tenantcontracts->end_date) ? 'readonly' : '' }}>
                                                     @error('end_date')
                                                         <div class="invalid-feedback d-block">{{ $message }}</div>
                                                     @enderror
                                                 </div>
+
                                                 <div class="col-md-4">
-                                                    <label class="form-label">Lease Term</label>
-                                                    <input class="form-control  form-control input" placeholder="" type="number">
+                                                    <label class="form-label">Lease Term (Months)</label>
+                                                    <input type="number" id="lease_term" name="lease_term" class="form-control" readonly>
                                                 </div>
                                             </div>
 
@@ -493,18 +491,15 @@
                                                         <div class="invalid-feedback d-block">{{ $message }}</div>
                                                     @enderror
 
-                                                    @if ($isEdit && optional($tenantcontracts)->contract_doc)
+                                                    @if (!empty($tenantcontracts->contract_doc))
                                                         <div class="mt-2">
-                                                            <a href="{{ asset(Storage::url('upload/contracts/' . $tenantcontracts->contract_doc)) }}" target="_blank" class="small">
-                                                                View current contract
+                                                            <a href="{{ asset('storage/upload/contracts/' . $tenantcontracts->contract_doc) }}" target="_blank" class="btn btn-outline-primary btn-sm">
+                                                                👁 Preview Contract
                                                             </a>
                                                         </div>
                                                     @endif
                                                 </div>
                                             </div>
-
-                                            
-
                                             {{-- Contract Renewal --}}
                                             <div class="col-lg-12 mb-2">
                                                 <h3 class="mb-0 mt-3">Contract Renewal Setup</h3>
@@ -615,12 +610,6 @@
                                             container.appendChild(newRow);
                                         });
                                         </script>
-
-
-
-
-
-
                                         <div class="late-payment">
                                             <div id="late-rows">
                                             <!-- Default Row -->
@@ -777,7 +766,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                     <div class="card theme-card">
                                         <div class="table-responsive">
                                             <table class="table table-bordered mb-0 text-center" id="payment-schedule-table">
-                                                    @if($tenantcontracts && $period)
+                                                    @if($tenantcontracts && $periods)
                                                         <thead class="table-theme">
                                                             <tr>
                                                                 <th>Month</th>
@@ -792,77 +781,71 @@ document.addEventListener('DOMContentLoaded', function() {
                                                             </tr>
                                                         </thead>
                                                         <tbody>
-                                                            @foreach ($period as $index => $month)
+                                                            @foreach ($periods as $index => $month)
                                                                 @php
-                                                                    $label = $month->format('F Y');
-                                                                    $ym = $month->format('Y-m');
-                                                                    $isPending = $contract->status == 'pending';
+                                                                    $label = $month['month_label'];
+                                                                    $ym = $month['ym'];
+                                                                    $rent = $month['rent'];
+                                                                    $security = $month['security'];
                                                                 @endphp
 
                                                                 <tr data-ym="{{ $ym }}">
-                                                                    <td>{{ $label }}</td>
+                                                                    <td>
+                                                                        {{ $label }}                                                                        
+                                                                    </td>
 
                                                                     {{-- Rent --}}
-                                                                    <td>${{ number_format($tenantcontracts->standard_rent, 2) }}</td>
+                                                                    <td>${{ number_format($rent, 2) }}</td>
 
                                                                     {{-- Security Deposit --}}
                                                                     <td>
-                                                                        @if($index == 0)
-                                                                            ${{ number_format($tenantcontracts->security_deposit, 2) }}
+                                                                        @if(($month['type'] ?? '') === 'base' && $loop->first && $security > 0)
+                                                                            ${{ number_format($security, 2) }}
                                                                         @endif
                                                                     </td>
 
-                                                                    {{-- Last Month Rent --}}
-                                                                    <!-- <td></td> -->
-
                                                                     {{-- Amenities --}}
-                                                                    <td>${{ number_format($propertyAmenitiesTotal, 2) }}</td>
+                                                                    <td>${{ number_format($propertyAmenitiesTotal ?? 0, 2) }}</td>
+
                                                                     <td></td>
                                                                     <td></td>
 
                                                                     {{-- Status --}}
+                                                                    @php
+                                                                        $isPending = (optional($tenantcontracts)->status ?? 'pending') === 'pending';
+                                                                    @endphp
                                                                     <td>
-                                                                        <select class="form-select form-select-sm status-select">
+                                                                        <select class="form-select form-select-sm status-select" data-ym="{{ $ym }}">
                                                                             <option value="pending" {{ $isPending ? 'selected' : '' }}>Pending</option>
                                                                             <option value="paid" {{ !$isPending ? 'selected' : '' }}>Paid</option>
                                                                         </select>
                                                                     </td>
 
                                                                     {{-- Actions --}}
-                                                                    <td>
-                                                                        <button class="btn btn-sm btn-primary" title="View Invoice">
-                                                                            <i class="ti ti-eye"></i>
-                                                                        </button>
-                                                                        <button class="btn btn-sm btn-secondary" title="Download Invoice">
-                                                                            <i class="ti ti-download"></i>
-                                                                        </button>
-                                                                        <form action="{{ route('tenants.resend', $tenant->id) }}" method="POST" style="display:inline;">
-                                                                            @csrf
-                                                                            <button type="submit" class="btn btn-sm btn-warning" title="Resend Invoice">
-                                                                                <i class="ti ti-send"></i>
-                                                                            </button>
-                                                                        </form>
-                                                                    </td>
+                                                                    <td> ... </td>
                                                                 </tr>
-                                                            @endforeach                                       
-                                                        </tbody>
+                                                            @endforeach
+                                                            </tbody>
+
 
                                                         {{-- Table Footer with grand totals --}}
+                                                        @php
+                                                            $totalRent = collect($periods)->sum('rent');
+                                                            $totalAmenities = $propertyAmenitiesTotal * count($periods);
+                                                        @endphp
                                                         <tfoot class="table-secondary text-center">
                                                         <tr>
                                                             <th>Total</th>
-                                                            <th>${{ number_format((optional($tenantcontracts)->standard_rent ?? 0) * (is_array($period) ? count($period) : 0), 2) }}</th>
-                                                            <th>
-                                                                ${{ number_format($tenantcontracts?->security_deposit ?? 0, 2) }}
-                                                            </th>
-                                                            <!-- <th>$0.00</th> -->
-                                                            <th>${{ number_format($propertyAmenitiesTotal * count($period ?? []), 2) }}</th>
+                                                            <th>${{ number_format($totalRent, 2) }}</th>
+                                                            <th>${{ number_format($tenantcontracts->security_deposit ?? 0, 2) }}</th>
+                                                            <th>${{ number_format($totalAmenities, 2) }}</th>
                                                             <th></th>
                                                             <th></th>
                                                             <th></th>
                                                             <th></th>
                                                         </tr>
                                                         </tfoot>
+
                                                     @else
                                                         <tr>
                                                             <td colspan="7">No payment schedule available.</td>
@@ -1418,108 +1401,68 @@ document.addEventListener('DOMContentLoaded', function() {
 
 @stop
 
-
-
-
-
-
 @push('script')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('✅ Lease term script loaded');
 
+    // ===== ELEMENTS =====
+    const startEl = document.getElementById('start_date');
+    const endEl = document.getElementById('end_date');
+    const renewEl = document.getElementById('contract_renewal_month');
+    const leaseTermEl = document.getElementById('lease_term');
 
-    {{-- ===== Dynamic behaviour (vanilla JS) ===== --}}
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const startEl = document.getElementById('start_date');
-            const endEl = document.getElementById('end_date');
-            const renewEl = document.getElementById('contract_renewal_month');
-            const fileEl = document.getElementById('contractFile');
-            const previewEl = document.getElementById('preview');
+    // ===== 1️⃣ Calculate lease term =====
+    function calculateLeaseTerm() {
 
-            // Auto-suggest end date = start date + renewal months
-            function suggestEndDate() {
-                if (!startEl.value || !renewEl?.value) return;
-                const months = parseInt(renewEl.value, 10);
-                const d = new Date(startEl.value);
-                if (isNaN(d.getTime())) return;
+        if (!startEl?.value || !endEl?.value) {
+            leaseTermEl.value = '';
+            return;
+        }
 
-                // add months
-                const end = new Date(d);
-                end.setMonth(end.getMonth() + months);
-                // format yyyy-mm-dd for <input type="date">
-                const yyyy = end.getFullYear();
-                const mm = String(end.getMonth() + 1).padStart(2, '0');
-                const dd = String(end.getDate()).padStart(2, '0');
-                endEl.value = `${yyyy}-${mm}-${dd}`;
-                endEl.min = startEl.value; // enforce end >= start
-            }
+        const startDate = new Date(startEl.value);
+        const endDate = new Date(endEl.value);
 
-            startEl?.addEventListener('change', suggestEndDate);
-            renewEl?.addEventListener('change', suggestEndDate);
+        if (isNaN(startDate) || isNaN(endDate) || endDate <= startDate) {
+            leaseTermEl.value = '';
+            console.log('Invalid or missing dates');
+            return;
+        }
 
-            // File preview (image thumb or filename for pdf/others)
-            fileEl?.addEventListener('change', function() {
-                previewEl.innerHTML = '';
-                const file = this.files && this.files[0] ? this.files[0] : null;
-                if (!file) return;
+        const diffDays = Math.floor((endDate - startDate) / (1000 * 60 * 60 * 24));
+        const months = Math.floor(diffDays / 30);
+        console.log('Lease Term:', months, 'months');
+        leaseTermEl.value = months;
+    }
 
-                const type = file.type.toLowerCase();
-                if (type.startsWith('image/')) {
-                    const reader = new FileReader();
-                    reader.onload = e => {
-                        const img = document.createElement('img');
-                        img.src = e.target.result;
-                        img.alt = 'Contract preview';
-                        img.style.maxHeight = '120px';
-                        img.className = 'img-thumbnail';
-                        previewEl.appendChild(img);
-                    };
-                    reader.readAsDataURL(file);
-                } else {
-                    const p = document.createElement('div');
-                    p.className = 'small text-muted';
-                    p.textContent = `Selected: ${file.name}`;
-                    previewEl.appendChild(p);
-                }
-            });
+    // ===== 2️⃣ Auto-suggest End Date =====
+    function suggestEndDate() {
+        if (!startEl?.value || !renewEl?.value) return;
+        const months = parseInt(renewEl.value, 10);
+        if (isNaN(months)) return;
 
-            // ensure end >= start even if user edits manually
-            endEl?.addEventListener('change', function() {
-                if (startEl.value && endEl.value && endEl.value < startEl.value) {
-                    alert('End Date cannot be before Start Date.');
-                    endEl.value = startEl.value;
-                }
-            });
-        });
-    </script>
+        const start = new Date(startEl.value);
+        const end = new Date(start);
+        end.setMonth(end.getMonth() + months);
 
-    <script>
-        $(function() {
-            var $group = $('#myTab');
-            if (!$group.length || !window.bootstrap || !bootstrap.Tab) return;
+        endEl.value = end.toISOString().split('T')[0];
+        endEl.min = startEl.value;
 
-            var key = 'tabs:' + location.pathname + ':' + $group.attr('id');
+        calculateLeaseTerm();
+    }
 
-            // Restore saved tab
-            var saved = localStorage.getItem(key);
-            if (saved) {
-                var $trigger = $group.find('[data-bs-toggle="tab"][href="' + saved +
-                    '"], [data-bs-toggle="tab"][data-bs-target="' + saved + '"]');
-                if ($trigger.length) {
-                    new bootstrap.Tab($trigger[0]).show();
-                }
-            }
+    // ===== 3️⃣ Event bindings =====
+    startEl?.addEventListener('change', () => {
+        suggestEndDate();
+        calculateLeaseTerm();
+    });
+    endEl?.addEventListener('change', calculateLeaseTerm);
+    renewEl?.addEventListener('change', suggestEndDate);
 
-            // Save on change
-            $group.find('[data-bs-toggle="tab"]').on('shown.bs.tab', function(e) {
-                var target = $(e.target).attr('data-bs-target') || $(e.target).attr('href');
-                if (target && target.charAt(0) === '#') {
-                    localStorage.setItem(key, target);
-                }
-            });
-        });
-    </script>
-
-   
+    // ===== 4️⃣ Recalculate if data already filled (edit mode) =====
+    if (startEl?.value && endEl?.value) {
+        calculateLeaseTerm();
+    }
+});
+</script>
 @endpush
-
-

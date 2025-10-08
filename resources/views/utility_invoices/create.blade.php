@@ -53,7 +53,7 @@
                 <th>Price ($)</th>
                 @if($property)
                    @php
-                    $tenantsdata = DB::table('tenants')->where('property',$property->id)->where('parent_id',auth()->id())->first();
+                    $tenantsdata = DB::table('tenants')->where('property_id',$property->id)->where('parent_id',auth()->id())->first();
                     $tenantsuserdata = DB::table('users')->where('id',$tenantsdata->user_id)->get();
                   @endphp
 
@@ -78,7 +78,7 @@
                     @endphp
                     <td contenteditable="true" class="price-cell"><span>${{ $existing }}</span></td>
                     @php
-                        $tenantsdata = DB::table('tenants')->where('property',$property->id)->where('parent_id',auth()->id())->first();
+                        $tenantsdata = DB::table('tenants')->where('property_id',$property->id)->where('parent_id',auth()->id())->first();
                         $tenantsuserdata = DB::table('users')->where('id',$tenantsdata->user_id)->get();
                     @endphp
                     @if(!empty($property))
