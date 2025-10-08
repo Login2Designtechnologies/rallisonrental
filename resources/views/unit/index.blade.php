@@ -18,7 +18,7 @@
     @media (min-width: 991px) {
   div.dt-container div.dt-search {
     position: absolute;
-    top: 28px;
+    top: 12px;
     left: 100px;
   }
 }
@@ -28,7 +28,7 @@
     <div class="row">
         <div class="col-sm-12">
             <div class="card table-card">
-                <div class="card-header">
+                <div class="card-header py-2 px-0">
                     <div class="row align-items-center g-2">
                         <div class="col">
                             <h5>{{ __('Unit List') }}</h5>

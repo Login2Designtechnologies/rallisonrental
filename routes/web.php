@@ -73,38 +73,7 @@ Route::get('payments', [HomeController::class, 'payments'])->name('payments')->m
         'XSS',
     ]
 );
-Route::get('manage-notice', [HomeController::class, 'manage_notice'])->name('manage_notice')->middleware(
-    [
-        'XSS',
-    ]
-);
-Route::get('add-notice', [HomeController::class, 'add_notice'])->name('add_notice')->middleware(
-    [
-        'XSS',
-    ]
-);
-Route::get('edit-notice', [HomeController::class, 'edit_notice'])->name('edit_notice')->middleware(
-    [
-        'XSS',
-    ]
-);
 
-
-Route::get('manage-template', [HomeController::class, 'manage_template'])->name('manage_template')->middleware(
-    [
-        'XSS',
-    ]
-);
-Route::get('add-template', [HomeController::class, 'add_template'])->name('add_template')->middleware(
-    [
-        'XSS',
-    ]
-);
-Route::get('edit-template', [HomeController::class, 'edit_template'])->name('edit_template')->middleware(
-    [
-        'XSS',
-    ]
-);
 
 
 Route::get('ticket-support', [HomeController::class, 'ticket_support'])->name('ticket_support')->middleware(
@@ -310,6 +279,45 @@ Route::group(
 
     Route::get('language/{lang}', [SettingController::class,'lanquageChange'])->name('language.change');
     Route::post('theme/settings', [SettingController::class,'themeSettings'])->name('theme.settings');
+
+    Route::get('manage-notice', [SettingController::class, 'manage_notice'])->name('manage_notice')->middleware(
+    [
+        'XSS',
+    ]
+    );
+    Route::get('add-notice', [SettingController::class, 'add_notice'])->name('add_notice')->middleware(
+        [
+            'XSS',
+        ]
+    );
+    Route::post('manage-notice-store', [SettingController::class, 'managenotice_store'])->name('manage-notice-store')->middleware(
+        [
+            'XSS',
+        ]
+    );
+    Route::get('edit-notice/{id}', [SettingController::class, 'edit_notice'])->name('edit_notice')->middleware(
+        [
+            'XSS',
+        ]
+    );
+
+
+    Route::get('manage-template', [SettingController::class, 'manage_template'])->name('manage_template')->middleware(
+        [
+            'XSS',
+        ]
+    );
+    Route::get('add-template', [SettingController::class, 'add_template'])->name('add_template')->middleware(
+        [
+            'XSS',
+        ]
+    );
+    Route::get('edit-template', [SettingController::class, 'edit_template'])->name('edit_template')->middleware(
+        [
+            'XSS',
+        ]
+    );
+
 }
 );
 
