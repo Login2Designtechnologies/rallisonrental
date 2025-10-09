@@ -6,7 +6,7 @@ use App\Models\Custom;
 use App\Models\Setting;
 use App\Models\User;
 use App\Models\Page;
-
+use DB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
@@ -834,4 +834,155 @@ class SettingController extends Controller
 
        throw ValidationException::withMessages(['otp' => 'Incorrect value. Please try again...']);
    }
+
+
+    public function manage_notice() {
+        
+        $noticedata = DB::table('managen-notice')->get();
+        return View('settings.manage-notice.index',compact('noticedata'));
+    } 
+
+    public function add_notice() {
+        // dd("Hello");
+        return View('settings.manage-notice.add-notice');
+    } 
+
+     public function managenotice_store(Request $request)
+    {
+        $request->validate([
+            'name' => 'required',
+            'subject' => 'required',
+            'body' => 'required',
+        ]);
+        
+        $user = auth()->user();
+        $createdby = $user->id;
+        $managenoticedata = [
+            'name' => $request->name,
+            'subject' => $request->subject,
+            'body' => $request->body,
+            'status' => ($request->status) ? '1' : '0',
+            'created_by' => $createdby,
+        ];
+        
+        DB::table('managen-notice')->insert($managenoticedata);
+        
+       return redirect('manage-notice')->with('success', __('Manage Notice Successfully created.'));
+    }
+
+    public function edit_notice($id) {
+        $noticeedit = DB::table('managen-notice')->where('id',$id)->first();
+        return View('settings.manage-notice.edit-notice',compact('noticeedit'));
+    } 
+
+    public function managenotice_update(Request $request,$id) {
+        
+        $request->validate([
+            'name' => 'required',
+            'subject' => 'required',
+            'body' => 'required',
+        ]);
+
+        $noticeupdate = [
+            'name' => $request->name,
+            'subject' => $request->subject,
+            'body' => $request->body,
+            'status' => ($request->status) ? '1' : '0',
+        ];
+
+        DB::table('managen-notice')->where('id', $id)->update($noticeupdate);
+
+       if(!empty($request->test_mail)){
+        
+             $data = [
+                 'request' =>$request,
+             ];
+
+              Mail::send([], [], function ($message) use ($request) {
+                $message->to($request->test_mail)
+                    ->subject($request->subject)
+                    ->setBody($request->body, 'text/html');
+            });
+      }
+
+      return redirect('manage-notice')->with('success', __('Manage Notice Successfully updated.'));
+    } 
+
+    public function manage_template() {
+        $templatedata = DB::table('manage-template')->get();
+        return View('settings.manage-template.index',compact('templatedata'));
+    } 
+
+    public function add_template() {
+        return View('settings.manage-template.add-template');
+    } 
+
+     public function managetemplate_store(Request $request)
+    {
+        $request->validate([
+            'name' => 'required',
+            'subject' => 'required',
+            'body' => 'required',
+        ]);
+
+        $user = auth()->user();
+        $createdby = $user->id;
+        $managetemplatedata = [
+            'name' => $request->name,
+            'subject' => $request->subject,
+            'body' => $request->body,
+            'status' => ($request->status) ? '1' : '0',
+            'created_by' => $createdby,
+        ];
+        
+        DB::table('manage-template')->insert($managetemplatedata);
+        
+       return redirect('manage-template')->with('success', __('Manage Template Successfully created.'));
+    }
+
+    public function edit_template($id) {
+         $templateedit = DB::table('manage-template')->where('id',$id)->first();
+        return View('settings.manage-template.edit-template',compact('templateedit'));
+    }
+
+    public function managetemp_update(Request $request,$id) {
+        
+        $request->validate([
+            'name' => 'required',
+            'subject' => 'required',
+            'body' => 'required',
+        ]);
+
+        $tempupdate = [
+            'name' => $request->name,
+            'subject' => $request->subject,
+            'body' => $request->body,
+            'status' => ($request->status) ? '1' : '0',
+        ];
+
+        DB::table('manage-template')->where('id', $id)->update($tempupdate);
+
+       if(!empty($request->test_mail)){
+        
+             $data = [
+                 'request' =>$request,
+             ];
+
+              Mail::send([], [], function ($message) use ($request) {
+                $message->to($request->test_mail)
+                    ->subject($request->subject)
+                    ->setBody($request->body, 'text/html');
+            });
+      }
+
+      return redirect('manage-template')->with('success', __('Manage Template Successfully updated.'));
+    } 
+
+
+
+
+
+
+
+
 }
