@@ -4,7 +4,7 @@
 @endsection
 @section('breadcrumb')
    <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">{{ __('Dashboard') }}</a></li>
-    <li class="breadcrumb-item"><a href="{{ url('manage_notice') }}">{{ __('Manage notice List') }}</a></li>
+    <li class="breadcrumb-item"><a href="{{ url('manage-notice') }}">{{ __('Manage notice List') }}</a></li>
     <li class="breadcrumb-item" aria-current="page"> {{ __('Edit') }}</li>
     
 @endsection
@@ -12,22 +12,23 @@
 @section('content')
 <div class="card border bg-custom w-100">
     <div class="card-body">
-        <form>
+        <form action="{{url('managenotice-update/'.$noticeedit->id)}}" method="post">
+        @csrf
             <!-- Template Name -->
             <div class="mb-3">
             <label for="NoticeName" class="form-label">Notice Name <span class="text-danger">*</span></label>
-            <input type="text" class="form-control" id="NoticeeName" placeholder="Enter Notice name" >
+            <input type="text" class="form-control" id="NoticeeName" name="name" value="{{$noticeedit->name}}" placeholder="Enter Notice name" required>
             </div>
 
             <!-- Subject -->
             <div class="mb-3">
             <label for="subject" class="form-label">Subject <span class="text-danger">*</span></label>
-            <input type="text" class="form-control" id="subject" placeholder="Enter subject">
+            <input type="text" class="form-control" id="subject" placeholder="Enter subject" name="subject" value="{{$noticeedit->subject}}" required>
             </div>
 
             <!-- Send Email Status -->
             <div class="form-check mb-3">
-            <input class="form-check-input" type="checkbox" id="sendStatus" checked>
+            <input class="form-check-input" type="checkbox" id="sendStatus" name="status" value="1" {{ $noticeedit->status == 1 ? 'checked' : '' }}>
             <label class="form-check-label" for="sendStatus">
                 Send Email Status
             </label>
@@ -36,8 +37,8 @@
             <!-- Message (CKEditor) -->
             <div class="mb-3">
             <label for="message" class="form-label">Message <span class="text-danger">*</span></label>
-            <textarea id="editor">
-                Message
+            <textarea id="editor" name="body" required>
+                {{$noticeedit->body}}
             </textarea>
             </div>
 
@@ -47,8 +48,8 @@
             <div class="mb-3">
                 <label for="preview" class="form-label">Preview </label>
                 <div class="d-flex">
-                    <input type="email" id="emailInput" class="form-control me-2" placeholder="Enter recipient email">
-                    <button type="button" class="btn btn-success" id="sendBtn">Send</button>
+                    <input type="email" id="emailInput" class="form-control me-2" placeholder="Enter recipient email" name="test_mail">
+                    <!-- <button type="button" class="btn btn-success" id="sendBtn">Send</button> -->
                 </div>
             </div>
 

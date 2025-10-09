@@ -128,7 +128,7 @@ Route::post('other-invoice/send-email/{otherInvoice}', [HomeController::class, '
 Route::get('payment/pay-now/{otherInvoice}', [HomeController::class, 'payNow'])
     ->name('payment.pay_now');    
 
-Route::get('edit-other-invoice/{id}', [HomeController::class, 'edit_other_invoice'])->name('edit_other_invoice')->middleware(
+Route::get('edit-other-invoice', [HomeController::class, 'edit_other_invoice'])->name('edit_other_invoice')->middleware(
     [
         'XSS',
     ]
@@ -304,6 +304,11 @@ Route::group(
             'XSS',
         ]
     );
+    Route::post('managenotice-update/{id}', [SettingController::class, 'managenotice_update'])->name('managenotice-update')->middleware(
+        [
+            'XSS',
+        ]
+    );
 
 
     Route::get('manage-template', [SettingController::class, 'manage_template'])->name('manage_template')->middleware(
@@ -316,7 +321,17 @@ Route::group(
             'XSS',
         ]
     );
-    Route::get('edit-template', [SettingController::class, 'edit_template'])->name('edit_template')->middleware(
+    Route::post('managetemplate-store', [SettingController::class, 'managetemplate_store'])->name('managetemplate-store')->middleware(
+        [
+            'XSS',
+        ]
+    );
+    Route::get('edit-template/{id}', [SettingController::class, 'edit_template'])->name('edit_template')->middleware(
+        [
+            'XSS',
+        ]
+    );
+    Route::post('managetemp-update/{id}', [SettingController::class, 'managetemp_update'])->name('managetemp-update')->middleware(
         [
             'XSS',
         ]
@@ -433,7 +448,7 @@ Route::group(
         Route::post('addUtilities-update/{id}/{propertyid}', [PropertyController::class, 'addUtilities_update'])->name('addUtilities-update');
         
         Route::get('selectProperty', [PropertyController::class, 'selectProperty'])->name('property.selectProperty');
-        Route::post('/property/image/delete', [PropertyController::class, 'deleteImage'])->name('property.image.delete');
+		Route::post('/property/image/delete', [PropertyController::class, 'deleteImage'])->name('property.image.delete');
     }
 );
 

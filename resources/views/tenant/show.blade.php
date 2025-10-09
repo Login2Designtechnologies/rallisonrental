@@ -46,618 +46,625 @@
     <!-- [ Main Content ] start -->
     <div class="custom-card-box">
 
-        <div class="row">
-            <div class="col-lg-4 col-xxl-3 d-flex">
-                <div class="card box-card w-100">
+<div class="row">
+    <div class="col-lg-4 col-xxl-3 d-flex">
+        <div class="card box-card w-100">
 
-                    <div class="pb-0">
-                        <!-- <div class="list-group list-group-flush">
+            <div class="pb-0">
+                <!-- <div class="list-group list-group-flush">
 
-                                                    <ul class="nav flex-column nav-tabs account-tabs box-card custom-theme" id="myTab"
-                                                        role="tablist">
+                                            <ul class="nav flex-column nav-tabs account-tabs box-card custom-theme" id="myTab"
+                                                role="tablist">
 
-                                                        Profile Tab -->
-                        <ul class="nav flex-column nav-tabs account-tabs box-card custom-theme" id="myTab"
-                            role="tablist">
-                            <li class="nav-item" role="presentation">
-                                <a class="nav-link active" id="profile-tab" data-bs-toggle="tab" href="#profile_content"
-                                    role="tab" aria-selected="true">
-                                    <div class="d-flex align-items-center">
-                                        <div class="flex-shrink-0">
-                                            @if(empty($tenant->user) && !empty($tenant->user->profile) && Storage::exists('upload/profile/' . $tenant->user->profile))
-                                                <img class="img-fluid wid-70 me-2 tenant-img"
-                                                    src="{{ asset(Storage::url('upload/profile/' . $tenant->user->profile)) }}"
-                                                    alt="{{ $tenant->user->name }}">
-                                            @else
-                                                <div class="tenant-avatar d-flex align-items-center justify-content-center wid-70 me-2"
-                                                    style="width:50px; height:50px; border-radius:50%; background:#ddd; font-size:28px; font-weight:bold;">
-                                                    {{ strtoupper(substr($tenant->user->name ?? 'U', 0, 1)) }}
-                                                </div>
-                                            @endif
+                                                Profile Tab -->
+                <ul class="nav flex-column nav-tabs account-tabs box-card custom-theme" id="myTab"
+                    role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <a class="nav-link active" id="profile-tab" data-bs-toggle="tab" href="#profile_content"
+                            role="tab" aria-selected="true">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-shrink-0">
+                                    @if(empty($tenant->user) && !empty($tenant->user->profile) && Storage::exists('upload/profile/' . $tenant->user->profile))
+                                        <img class="img-fluid wid-70 me-2 tenant-img"
+                                            src="{{ asset(Storage::url('upload/profile/' . $tenant->user->profile)) }}"
+                                            alt="{{ $tenant->user->name }}">
+                                    @else
+                                        <div class="tenant-avatar d-flex align-items-center justify-content-center wid-70 me-2"
+                                            style="width:50px; height:50px; border-radius:50%; background:#ddd; font-size:28px; font-weight:bold;">
+                                            {{ strtoupper(substr($tenant->user->name ?? 'U', 0, 1)) }}
                                         </div>
-                                        <div class="flex-grow-1 mx-2 position-relative">
-                                            <h5 class="mb-1">
-                                                {{ $fullName }} <br>
-                                                <!-- <span>{{ $u->email }}</span> -->
-                                            </h5>
-                                            {{-- <a href="" class="text-white position-absolute top-0.5 right-0.5" >Edit</a> --}}
-
-                                        </div>
-                                    </div>
-                                </a>
-                            </li>
-
-                            <!-- Contract Tab -->
-                            <li class="nav-item" role="presentation">
-                                <a class="nav-link" id="contract-tab" data-bs-toggle="tab" href="#contract_content"
-                                    role="tab" aria-selected="false">
-                                    <div class="d-flex align-items-center">
-                                        <div class="flex-shrink-0">
-                                            <i class="ti ti-user-check me-2 f-20"></i>
-                                        </div>
-                                        <div class="flex-grow-1 ms-2">
-                                            <h5 class="mb-0">Contract Setup</h5>
-                                            <!-- <small class="text-muted">Contract Setup</small> -->
-                                        </div>
-                                    </div>
-                                </a>
-                            </li>
-
-                            <!-- Invoice Tab -->
-                            <li class="nav-item" role="presentation">
-                                <a class="nav-link" id="invoice-tab" data-bs-toggle="tab" href="#invoice_content"
-                                    role="tab" aria-selected="false">
-                                    <div class="d-flex align-items-center">
-                                        <div class="flex-shrink-0">
-                                            <i class="ti ti-calendar me-2 f-20"></i>
-                                        </div>
-                                        <div class="flex-grow-1 ms-2">
-                                            <h5 class="mb-0">Payment Schedule</h5>
-                                            <!-- <small class="text-muted">Invoice Setup</small> -->
-                                        </div>
-                                    </div>
-                                </a>
-                            </li>
-
-                            <!-- Invoice Tab -->
-                            <li class="nav-item" role="presentation">
-                                <a class="nav-link" id="utilities-tab" data-bs-toggle="tab" href="#utilities" role="tab"
-                                    aria-selected="false">
-                                    <div class="d-flex align-items-center">
-                                        <div class="flex-shrink-0">
-                                            <i class="ti ti-bulb me-2 f-20"></i>
-                                        </div>
-                                        <div class="flex-grow-1 ms-2">
-                                            <h5 class="mb-0">Utilities</h5>
-                                            <!-- <small class="text-muted">Invoice Setup</small> -->
-                                        </div>
-                                    </div>
-                                </a>
-                            </li>
-
-                            <!-- Invoice Tab -->
-                            <li class="nav-item" role="presentation">
-                                <a class="nav-link" id="other_invoice-tab" data-bs-toggle="tab" href="#other_invoice"
-                                    role="tab" aria-selected="false">
-                                    <div class="d-flex align-items-center">
-                                        <div class="flex-shrink-0">
-                                            <i class="ti ti-file-invoice me-2 f-20"></i>
-                                        </div>
-                                        <div class="flex-grow-1 ms-2">
-                                            <h5 class="mb-0">Other Invoice</h5>
-                                            <!-- <small class="text-muted">Invoice Setup</small> -->
-                                        </div>
-                                    </div>
-                                </a>
-                            </li>
-
-                            <!-- Notice Tab -->
-                            <li class="nav-item" role="presentation">
-                                <a class="nav-link" id="notice-tab" data-bs-toggle="tab" href="#notice_content"
-                                    role="tab" aria-selected="false">
-                                    <div class="d-flex align-items-center">
-                                        <div class="flex-shrink-0">
-                                            <i class="ti ti-notes me-2 f-20"></i>
-                                        </div>
-                                        <div class="flex-grow-1 ms-2">
-                                            <h5 class="mb-0">Generate Notice</h5>
-                                            <!-- <small class="text-muted">Exit Notice</small> -->
-                                        </div>
-                                    </div>
-                                </a>
-                            </li>
-
-                            <!-- Document Tab -->
-                            <li class="nav-item" role="presentation">
-                                <a class="nav-link" id="document-tab" data-bs-toggle="tab" href="#document_content"
-                                    role="tab" aria-selected="false">
-                                    <div class="d-flex align-items-center">
-                                        <div class="flex-shrink-0">
-                                            <i class="ti ti-file-upload me-2 f-20"></i>
-                                        </div>
-                                        <div class="flex-grow-1 ms-2">
-                                            <h5 class="mb-0">Send Document</h5>
-                                            <!-- <small class="text-muted">Send Document</small> -->
-                                        </div>
-                                    </div>
-                                </a>
-                            </li>
-
-                            <!-- Report Tab -->
-                            <li class="nav-item" role="presentation">
-                                <a class="nav-link" id="report-tab" data-bs-toggle="tab" href="#report_content"
-                                    role="tab" aria-selected="false">
-                                    <div class="d-flex align-items-center">
-                                        <div class="flex-shrink-0">
-                                            <i class="ti ti-report me-2 f-20"></i>
-                                        </div>
-                                        <div class="flex-grow-1 ms-2">
-                                            <h5 class="mb-0">Report</h5>
-                                            <!-- <small class="text-muted">Report</small> -->
-                                        </div>
-                                    </div>
-                                </a>
-                            </li>
-                            
-                            <!-- Emergency Contact Tab -->
-                            <li class="nav-item" role="presentation">
-                                <a class="nav-link" id="emergency-tab" data-bs-toggle="tab" href="#emergency_content"
-                                    role="tab" aria-selected="false">
-                                    <div class="d-flex align-items-center">
-                                        <div class="flex-shrink-0">
-                                            <i class="ti ti-phone me-2 f-20"></i>
-                                        </div>
-                                        <div class="flex-grow-1 ms-2">
-                                            <h5 class="mb-0">Emergency Contact</h5>
-                                            <!-- <small class="text-muted">Report</small> -->
-                                        </div>
-                                    </div>
-                                </a>
-                            </li>
-                            <li class="nav-item" role="presentation">
-                                <a class="nav-link" id="tenant-tab" data-bs-toggle="tab" href="#tenant_content"
-                                    role="tab" aria-selected="false">
-                                    <div class="d-flex align-items-center">
-                                        <div class="flex-shrink-0">
-                                            <i class="ti ti-user me-2 f-20"></i>
-                                        </div>
-                                        <div class="flex-grow-1 ms-2">
-                                            <h5 class="mb-0">Tenant Information</h5>
-                                            <!-- <small class="text-muted">Report</small> -->
-                                        </div>
-                                    </div>
-                                </a>
-                            </li>
-                            <li class="nav-item" role="presentation">
-                                <a class="nav-link" id="username-tab" data-bs-toggle="tab" href="#username_content"
-                                    role="tab" aria-selected="false">
-                                    <div class="d-flex align-items-center">
-                                        <div class="flex-shrink-0">
-                                            <i class="ti ti-lock me-2 f-20"></i>
-                                        </div>
-                                        <div class="flex-grow-1 ms-2">
-                                            <h5 class="mb-0">User Name & Password</h5>
-                                            <!-- <small class="text-muted">Report</small> -->
-                                        </div>
-                                    </div>
-                                </a>
-                            </li>
-
-                        </ul>
-
-                    </div>
-
-                </div>
-            </div>
-            <div class="col-lg-8 col-xxl-9">
-                <div class="tab-content" id="myTabContent">
-
-                    <div class="tab-pane fade show active" id="profile_content" role="tabpanel"
-                        aria-labelledby="profile-tab">
-                        <div class="card box-card w-100">
-                            <div class="card-header">
-                                <h5>Additional Information</h5>
-                            </div>
-                            <div class="card-body allwhite px-3">
-
-
-                                <div class="table-responsive">
-                                    <table class="table table-borderless">
-                                        <tbody>
-                                            <tr>
-                                                <td><b class="text-header">Emergency Contact No.</b></td>
-                                                <td>:</td>
-                                                <td>{{ $u?->emergency_phone_number ?: '-' }}</td>
-                                            </tr>
-                                            <tr>
-                                                <td><b class="text-header">Country</b></td>
-                                                <td>:</td>
-                                                <td>{{ $country }}</td>
-                                            </tr>
-                                            <tr>
-                                                <td><b class="text-header">State</b></td>
-                                                <td>:</td>
-                                                <td>{{ $tenant->state?->name ?? '-' }}</td>
-                                            </tr>
-                                            <tr>
-                                                <td><b class="text-header">City</b></td>
-                                                <td>:</td>
-                                                <td>{{ $tenant->city?->name ?? '-' }}</td>
-                                            </tr>
-                                            <tr>
-                                                <td><b class="text-header">Zip Code</b></td>
-                                                <td>:</td>
-                                                <td>{{ $tenant->zip_code ?: '-' }}</td>
-                                            </tr>
-                                            <tr>
-                                                <td><b class="text-header">Property</b></td>
-                                                <td>:</td>
-                                                <td>{{ $tenant->property?->title ?? ($tenant->property?->name ?? '-') }}
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td><b class="text-header">Unit</b></td>
-                                                <td>:</td>
-                                                <td>{{ $tenant->unit?->name ?? ($tenant->unit?->number ?? '-') }}</td>
-                                            </tr>
-                                            <tr>
-                                                <td><b class="text-header">Lease Start Date</b></td>
-                                                <td>:</td>
-                                                <td>{{ $leaseStart }}</td>
-                                            </tr>
-                                            <tr>
-                                                <td><b class="text-header">Lease End Date</b></td>
-                                                <td>:</td>
-                                                <td>{{ $leaseEnd }}</td>
-                                            </tr>
-                                            <tr>
-                                                <td><b class="text-header">Documents</b></td>
-                                                <td>:</td>
-                                                <td>
-                                                    @php $hasDocs = false; @endphp
-                                                    @if ($tenant->application_document)
-                                                        @php $hasDocs = true; @endphp
-                                                        <div><a href="{{ Storage::url($tenant->application_document) }}"
-                                                                target="_blank">Application Document</a></div>
-                                                    @endif
-                                                    @if ($tenant->driving_licence)
-                                                        @php $hasDocs = true; @endphp
-                                                        <div><a href="{{ Storage::url($tenant->driving_licence) }}"
-                                                                target="_blank">Driving Licence</a></div>
-                                                    @endif
-                                                    @if ($tenant->bank_statement)
-                                                        @php $hasDocs = true; @endphp
-                                                        <div><a href="{{ Storage::url($tenant->bank_statement) }}"
-                                                                target="_blank">Bank Statement</a></div>
-                                                    @endif
-                                                    @unless ($hasDocs)
-                                                        -
-                                                    @endunless
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td><b class="text-header">Address</b></td>
-                                                <td>:</td>
-                                                <td>{{ $tenant->address ?: '-' }}</td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
+                                    @endif
+                                </div>
+                                <div class="flex-grow-1 mx-2 position-relative">
+                                    <h5 class="mb-1">
+                                        {{ $fullName }} <br>
+                                        <!-- <span>{{ $u->email }}</span> -->
+                                    </h5>
+                                    {{-- <a href="" class="text-white position-absolute top-0.5 right-0.5" >Edit</a> --}}
 
                                 </div>
                             </div>
+                        </a>
+                    </li>
+
+                    <!-- Contract Tab -->
+                    <li class="nav-item" role="presentation">
+                        <a class="nav-link" id="contract-tab" data-bs-toggle="tab" href="#contract_content"
+                            role="tab" aria-selected="false">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-shrink-0">
+                                    <i class="ti ti-user-check me-2 f-20"></i>
+                                </div>
+                                <div class="flex-grow-1 ms-2">
+                                    <h5 class="mb-0">Contract Setup</h5>
+                                    <!-- <small class="text-muted">Contract Setup</small> -->
+                                </div>
+                            </div>
+                        </a>
+                    </li>
+
+                    <!-- Invoice Tab -->
+                    <li class="nav-item" role="presentation">
+                        <a class="nav-link" id="invoice-tab" data-bs-toggle="tab" href="#invoice_content"
+                            role="tab" aria-selected="false">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-shrink-0">
+                                    <i class="ti ti-calendar me-2 f-20"></i>
+                                </div>
+                                <div class="flex-grow-1 ms-2">
+                                    <h5 class="mb-0">Payment Schedule</h5>
+                                    <!-- <small class="text-muted">Invoice Setup</small> -->
+                                </div>
+                            </div>
+                        </a>
+                    </li>
+
+                    <!-- Invoice Tab -->
+                    <li class="nav-item" role="presentation">
+                        <a class="nav-link" id="utilities-tab" data-bs-toggle="tab" href="#utilities" role="tab"
+                            aria-selected="false">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-shrink-0">
+                                    <i class="ti ti-bulb me-2 f-20"></i>
+                                </div>
+                                <div class="flex-grow-1 ms-2">
+                                    <h5 class="mb-0">Utilities</h5>
+                                    <!-- <small class="text-muted">Invoice Setup</small> -->
+                                </div>
+                            </div>
+                        </a>
+                    </li>
+
+                    <!-- Invoice Tab -->
+                    <li class="nav-item" role="presentation">
+                        <a class="nav-link" id="other_invoice-tab" data-bs-toggle="tab" href="#other_invoice"
+                            role="tab" aria-selected="false">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-shrink-0">
+                                    <i class="ti ti-file-invoice me-2 f-20"></i>
+                                </div>
+                                <div class="flex-grow-1 ms-2">
+                                    <h5 class="mb-0">Other Invoice</h5>
+                                    <!-- <small class="text-muted">Invoice Setup</small> -->
+                                </div>
+                            </div>
+                        </a>
+                    </li>
+
+                    <!-- Notice Tab -->
+                    <li class="nav-item" role="presentation">
+                        <a class="nav-link" id="notice-tab" data-bs-toggle="tab" href="#notice_content"
+                            role="tab" aria-selected="false">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-shrink-0">
+                                    <i class="ti ti-notes me-2 f-20"></i>
+                                </div>
+                                <div class="flex-grow-1 ms-2">
+                                    <h5 class="mb-0">Generate Notice</h5>
+                                    <!-- <small class="text-muted">Exit Notice</small> -->
+                                </div>
+                            </div>
+                        </a>
+                    </li>
+
+                    <!-- Document Tab -->
+                    <li class="nav-item" role="presentation">
+                        <a class="nav-link" id="document-tab" data-bs-toggle="tab" href="#document_content"
+                            role="tab" aria-selected="false">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-shrink-0">
+                                    <i class="ti ti-file-upload me-2 f-20"></i>
+                                </div>
+                                <div class="flex-grow-1 ms-2">
+                                    <h5 class="mb-0">Send Document</h5>
+                                    <!-- <small class="text-muted">Send Document</small> -->
+                                </div>
+                            </div>
+                        </a>
+                    </li>
+
+                    <!-- Report Tab -->
+                    <li class="nav-item" role="presentation">
+                        <a class="nav-link" id="report-tab" data-bs-toggle="tab" href="#report_content"
+                            role="tab" aria-selected="false">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-shrink-0">
+                                    <i class="ti ti-report me-2 f-20"></i>
+                                </div>
+                                <div class="flex-grow-1 ms-2">
+                                    <h5 class="mb-0">Report</h5>
+                                    <!-- <small class="text-muted">Report</small> -->
+                                </div>
+                            </div>
+                        </a>
+                    </li>
+                    
+                    <!-- Emergency Contact Tab -->
+                    <li class="nav-item" role="presentation">
+                        <a class="nav-link" id="emergency-tab" data-bs-toggle="tab" href="#emergency_content"
+                            role="tab" aria-selected="false">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-shrink-0">
+                                    <i class="ti ti-phone me-2 f-20"></i>
+                                </div>
+                                <div class="flex-grow-1 ms-2">
+                                    <h5 class="mb-0">Emergency Contact</h5>
+                                    <!-- <small class="text-muted">Report</small> -->
+                                </div>
+                            </div>
+                        </a>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <a class="nav-link" id="tenant-tab" data-bs-toggle="tab" href="#tenant_content"
+                            role="tab" aria-selected="false">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-shrink-0">
+                                    <i class="ti ti-user me-2 f-20"></i>
+                                </div>
+                                <div class="flex-grow-1 ms-2">
+                                    <h5 class="mb-0">Tenant Information</h5>
+                                    <!-- <small class="text-muted">Report</small> -->
+                                </div>
+                            </div>
+                        </a>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <a class="nav-link" id="username-tab" data-bs-toggle="tab" href="#username_content"
+                            role="tab" aria-selected="false">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-shrink-0">
+                                    <i class="ti ti-lock me-2 f-20"></i>
+                                </div>
+                                <div class="flex-grow-1 ms-2">
+                                    <h5 class="mb-0">User Name & Password</h5>
+                                    <!-- <small class="text-muted">Report</small> -->
+                                </div>
+                            </div>
+                        </a>
+                    </li>
+
+                </ul>
+
+            </div>
+
+        </div>
+    </div>
+    <div class="col-lg-8 col-xxl-9">
+        <div class="tab-content" id="myTabContent">
+
+            <div class="tab-pane fade show active" id="profile_content" role="tabpanel"
+                aria-labelledby="profile-tab">
+                <div class="card box-card w-100">
+                    <div class="card-header">
+                        <h5>Additional Information</h5>
+                    </div>
+                    <div class="card-body allwhite px-3">
+
+
+                        <div class="table-responsive">
+                            <table class="table table-borderless">
+                                <tbody>
+                                    <tr>
+                                        <td><b class="text-header">Emergency Contact No.</b></td>
+                                        <td>:</td>
+                                        <td>{{ $u?->emergency_phone_number ?: '-' }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><b class="text-header">Country</b></td>
+                                        <td>:</td>
+                                        <td>{{ $country }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><b class="text-header">State</b></td>
+                                        <td>:</td>
+                                        <td>{{ $tenant->state?->name ?? '-' }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><b class="text-header">City</b></td>
+                                        <td>:</td>
+                                        <td>{{ $tenant->city?->name ?? '-' }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><b class="text-header">Zip Code</b></td>
+                                        <td>:</td>
+                                        <td>{{ $tenant->zip_code ?: '-' }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><b class="text-header">Property</b></td>
+                                        <td>:</td>
+                                        <td>{{ $tenant->property?->title ?? ($tenant->property?->name ?? '-') }}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td><b class="text-header">Unit</b></td>
+                                        <td>:</td>
+                                        <td>{{ $tenant->unit?->name ?? ($tenant->unit?->number ?? '-') }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><b class="text-header">Lease Start Date</b></td>
+                                        <td>:</td>
+                                        <td>{{ $leaseStart }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><b class="text-header">Lease End Date</b></td>
+                                        <td>:</td>
+                                        <td>{{ $leaseEnd }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><b class="text-header">Documents</b></td>
+                                        <td>:</td>
+                                        <td>
+                                            @php $hasDocs = false; @endphp
+                                            @if ($tenant->application_document)
+                                                @php $hasDocs = true; @endphp
+                                                <div><a href="{{ Storage::url($tenant->application_document) }}"
+                                                        target="_blank">Application Document</a></div>
+                                            @endif
+                                            @if ($tenant->driving_licence)
+                                                @php $hasDocs = true; @endphp
+                                                <div><a href="{{ Storage::url($tenant->driving_licence) }}"
+                                                        target="_blank">Driving Licence</a></div>
+                                            @endif
+                                            @if ($tenant->bank_statement)
+                                                @php $hasDocs = true; @endphp
+                                                <div><a href="{{ Storage::url($tenant->bank_statement) }}"
+                                                        target="_blank">Bank Statement</a></div>
+                                            @endif
+                                            @unless ($hasDocs)
+                                                -
+                                            @endunless
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td><b class="text-header">Address</b></td>
+                                        <td>:</td>
+                                        <td>{{ $tenant->address ?: '-' }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
                         </div>
                     </div>
+                </div>
+            </div>
 
-                        <div class="tab-pane fade" id="contract_content" role="tabpanel" aria-labelledby="contract-tab">
-                            <div class="card box-card w-100">
-                                <div class="card-header">
-                                    <h5>Contract Setup</h5>
-                                </div>
-                                <div class="allwhite pt-0">
-                                    <div class="card-body theme-card">
-                                        @php
-                                            $isEdit = isset($contract) && $contract?->exists;
-                                            $action = route('tenant-contractsupdate', $contract ?? null);
+                <div class="tab-pane fade" id="contract_content" role="tabpanel" aria-labelledby="contract-tab">
+                    <div class="card box-card w-100">
+                        <div class="card-header">
+                            <h5>Contract Setup</h5>
+                        </div>
+                        <div class="allwhite pt-0">
+                            <div class="card-body theme-card">
+                                @php
+                                    $isEdit = isset($contract) && $contract?->exists;
+                                    $action = route('tenant-contractsupdate', $contract ?? null);
 
-                                            $stdRent = old('standard_rent', $tenantcontracts->standard_rent ?? '');
-                                            $lateFee = old('late_fee', $tenantcontracts->late_fee ?? '');
-                                            $secDep = old('security_deposit', $tenantcontracts->security_deposit ?? '');
-                                            $notice = old('notice_period_months', $tenantcontracts->notice_period_months ?? '3');
-                                            $renewMon = old('contract_renewal_month', $tenantcontracts->contract_renewal_month ?? '12');
-                                            $renewAmt = old('contract_renewal_amount', $tenantcontracts->contract_renewal_amount ?? '');
-                                            $tenantId = $tenant->id;
-                                            $propertyId = old('property_id', $tenantcontracts->property_id ?? $tenant->property_id);
-                                            $ownerId = old('owner_id', $tenantcontracts->owner_id ?? ($tenant->owner_id ?? (auth()->user()->id ?? '')));
-                                        @endphp
+                                    $stdRent = old('standard_rent', $tenantcontracts->standard_rent ?? '');
+                                    $lateFee = old('late_fee', $tenantcontracts->late_fee ?? '');
+                                    $secDep = old('security_deposit', $tenantcontracts->security_deposit ?? '');
+                                    $notice = old('notice_period_months', $tenantcontracts->notice_period_months ?? '3');
+                                    $renewMon = old('contract_renewal_month', $tenantcontracts->contract_renewal_month ?? '12');
+                                    $renewAmt = old('contract_renewal_amount', $tenantcontracts->contract_renewal_amount ?? '');
+                                    $tenantId = $tenant->id;
+                                    $propertyId = old('property_id', $tenantcontracts->property_id ?? $tenant->property_id);
+                                    $ownerId = old('owner_id', $tenantcontracts->owner_id ?? ($tenant->owner_id ?? (auth()->user()->id ?? '')));
+                                @endphp
 
-                                        <form id="setupContractForm" method="POST" action="{{ $action }}" enctype="multipart/form-data">
-                                            @csrf
+                                <form id="setupContractForm" method="POST" action="{{ $action }}" enctype="multipart/form-data">
+                                    @csrf
 
-                                            {{-- Hidden inputs --}}
-                                            <input type="hidden" name="tenant_id" value="{{ $tenantId }}">
-                                            <input type="hidden" name="property_id" value="{{ $tenantcontracts->property_id ?? $tenant->property_id ?? '' }}">
-                                            <small class="text-muted">Property ID: {{ $tenantcontracts->property_id ?? $tenant->property_id ?? 'N/A' }}</small>
-                                            <input type="hidden" name="owner_id" value="{{ $contract->user_id ?? '' }}">
+                                    {{-- Hidden inputs --}}
+                                    <input type="hidden" name="tenant_id" value="{{ $tenantId }}">
+                                    <input type="hidden" name="property_id" value="{{ $tenantcontracts->property_id ?? $tenant->property_id ?? '' }}">
+                                    <small class="text-muted">Property ID: {{ $tenantcontracts->property_id ?? $tenant->property_id ?? 'N/A' }}</small>
+                                    <input type="hidden" name="owner_id" value="{{ $contract->user_id ?? '' }}">
 
-                                            {{-- Top error summary --}}
-                                            @if ($errors->any())
-                                                <div class="alert alert-danger">
-                                                    <strong>Please fix the errors below:</strong>
-                                                    <ul class="mb-0">
-                                                        @foreach ($errors->all() as $msg)
-                                                            <li>{{ $msg }}</li>
-                                                        @endforeach
-                                                    </ul>
-                                                </div>
-                                            @endif
+                                    {{-- Top error summary --}}
+                                    @if ($errors->any())
+                                        <div class="alert alert-danger">
+                                            <strong>Please fix the errors below:</strong>
+                                            <ul class="mb-0">
+                                                @foreach ($errors->all() as $msg)
+                                                    <li>{{ $msg }}</li>
+                                                @endforeach
+                                            </ul>
+                                        </div>
+                                    @endif
 
-                                            {{-- Dates --}}
-                                            <div class="row g-3 mb-3">
-                                                <div class="col-md-4">
-                                                    <label class="form-label">Start Date</label>
-                                                    <input
-                                                        type="date"
-                                                        id="start_date"
-                                                        name="start_date"
-                                                        class="form-control @error('start_date') is-invalid @enderror"
-                                                        value="{{ old('start_date', $tenantcontracts->start_date ?? '') }}"
-                                                        {{ !empty($tenantcontracts->start_date) ? 'readonly' : '' }}>
-                                                    @error('start_date')
-                                                        <div class="invalid-feedback d-block">{{ $message }}</div>
-                                                    @enderror
-                                                </div>
+                                    {{-- Dates --}}
+                                    <div class="row g-3 mb-3">
+                                        <div class="col-md-4">
+                                            <label class="form-label">Start Date</label>
+                                            <input
+                                                type="date"
+                                                id="start_date"
+                                                name="start_date"
+                                                class="form-control @error('start_date') is-invalid @enderror"
+                                                value="{{ old('start_date', $tenantcontracts->start_date ?? '') }}"
+                                                {{ !empty($tenantcontracts->start_date) ? 'readonly' : '' }}>
+                                            @error('start_date')
+                                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                                            @enderror
+                                        </div>
 
-                                                <div class="col-md-4">
-                                                    <label class="form-label">End Date</label>
-                                                    <input
-                                                        type="date"
-                                                        id="end_date"
-                                                        name="end_date"
-                                                        class="form-control @error('end_date') is-invalid @enderror"
-                                                        value="{{ old('end_date', $tenantcontracts->end_date ?? '') }}"
-                                                        {{ !empty($tenantcontracts->end_date) ? 'readonly' : '' }}>
-                                                    @error('end_date')
-                                                        <div class="invalid-feedback d-block">{{ $message }}</div>
-                                                    @enderror
-                                                </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label">End Date</label>
+                                            <input
+                                                type="date"
+                                                id="end_date"
+                                                name="end_date"
+                                                class="form-control @error('end_date') is-invalid @enderror"
+                                                value="{{ old('end_date', $tenantcontracts->end_date ?? '') }}"
+                                                {{ !empty($tenantcontracts->end_date) ? 'readonly' : '' }}>
+                                            @error('end_date')
+                                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                                            @enderror
+                                        </div>
 
-                                                <div class="col-md-4">
-                                                    <label class="form-label">Lease Term (Months)</label>
-                                                    <input type="number" id="lease_term" name="lease_term" class="form-control" readonly>
-                                                </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label">Lease Term (Months)</label>
+                                            <input type="number" id="lease_term" name="lease_term" class="form-control" readonly>
+                                        </div>
+                                    </div>
+
+                                    {{-- Standard Rent / Fees / Security Deposit --}}
+                                    <div class="row g-3 mb-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label">Standard Rent (USD)</label>
+                                            <div class="input-group">
+                                                <span class="input-group-text">$</span>
+                                                <input type="number" step="0.01" placeholder="e.g. 1200"
+                                                    class="form-control @error('standard_rent') is-invalid @enderror"
+                                                    name="standard_rent" value="{{ $stdRent }}">
                                             </div>
+                                            @error('standard_rent')
+                                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                                            @enderror
+                                        </div>
 
-                                            {{-- Standard Rent / Fees / Security Deposit --}}
-                                            <div class="row g-3 mb-3">
-                                                <div class="col-md-6">
-                                                    <label class="form-label">Standard Rent (USD)</label>
-                                                    <div class="input-group">
-                                                        <span class="input-group-text">$</span>
-                                                        <input type="number" step="0.01" placeholder="e.g. 1200"
-                                                            class="form-control @error('standard_rent') is-invalid @enderror"
-                                                            name="standard_rent" value="{{ $stdRent }}">
-                                                    </div>
-                                                    @error('standard_rent')
-                                                        <div class="invalid-feedback d-block">{{ $message }}</div>
-                                                    @enderror
-                                                </div>
-
-                                                <!-- <div class="col-md-6">
-                                                    <label class="form-label">Standard Late Fee (USD)</label>
-                                                    <div class="input-group">
-                                                        <span class="input-group-text">$</span>
-                                                        <input type="number" step="0.01" placeholder="e.g. 50"
-                                                            class="form-control @error('late_fee') is-invalid @enderror"
-                                                            name="late_fee" value="{{ $lateFee }}">
-                                                    </div>
-                                                    @error('late_fee')
-                                                        <div class="invalid-feedback d-block">{{ $message }}</div>
-                                                    @enderror
-                                                </div> -->
-
-                                                <div class="col-md-6">
-                                                    <label class="form-label">Security Deposit (USD)</label>
-                                                    <div class="input-group">
-                                                        <span class="input-group-text">$</span>
-                                                        <input type="number" step="0.01" placeholder="e.g. 500"
-                                                            class="form-control @error('security_deposit') is-invalid @enderror"
-                                                            name="security_deposit" value="{{ $secDep }}">
-                                                    </div>
-                                                    @error('security_deposit')
-                                                        <div class="invalid-feedback d-block">{{ $message }}</div>
-                                                    @enderror
-                                                </div>
-
-                                                {{-- Notice Period --}}
-                                                <div class="col-md-6 mb-3">
-                                                    <label class="form-label">Notice Period</label>
-                                                    <select name="notice_period_months"
-                                                            class="form-control form-select @error('notice_period_months') is-invalid @enderror">
-                                                        <option value="1" {{ $notice == '1' ? 'selected' : '' }}>1 month</option>
-                                                        <option value="2" {{ $notice == '2' ? 'selected' : '' }}>2 months</option>
-                                                        <option value="3" {{ $notice == '3' ? 'selected' : '' }}>3 months</option>
-                                                    </select>
-                                                    @error('notice_period_months')
-                                                        <div class="invalid-feedback d-block">{{ $message }}</div>
-                                                    @enderror
-                                                </div>
-
-                                                {{-- File Upload --}}
-                                                <div class="col-md-6">
-                                                    <label class="form-label">Upload Contract</label>
-                                                    <input type="file" name="contract_doc" id="contractFile"
-                                                        class="form-control @error('contract_doc') is-invalid @enderror" accept=".pdf,image/*">
-                                                    @error('contract_doc')
-                                                        <div class="invalid-feedback d-block">{{ $message }}</div>
-                                                    @enderror
-
-                                                    @if (!empty($tenantcontracts->contract_doc))
-                                                        <div class="mt-2">
-                                                            <a href="{{ asset('storage/upload/contracts/' . $tenantcontracts->contract_doc) }}" target="_blank" class="btn btn-outline-primary btn-sm">
-                                                                👁 Preview Contract
-                                                            </a>
-                                                        </div>
-                                                    @endif
-                                                </div>
+                                        <!-- <div class="col-md-6">
+                                            <label class="form-label">Standard Late Fee (USD)</label>
+                                            <div class="input-group">
+                                                <span class="input-group-text">$</span>
+                                                <input type="number" step="0.01" placeholder="e.g. 50"
+                                                    class="form-control @error('late_fee') is-invalid @enderror"
+                                                    name="late_fee" value="{{ $lateFee }}">
                                             </div>
-                                            {{-- Contract Renewal --}}
-                                            <div class="col-lg-12 mb-2">
-                                                <h3 class="mb-0 mt-3">Contract Renewal Setup</h3>
-                                            </div>
-
-                                            <!-- <div class="col-md-6">
-                                                <label class="form-label">Contract Renewal Month</label>
-                                                <select name="contract_renewal_month" id="contract_renewal_month"
-                                                        class="form-control form-select @error('contract_renewal_month') is-invalid @enderror">
-                                                    <option value="3" {{ $renewMon == '3' ? 'selected' : '' }}>3 months</option>
-                                                    <option value="6" {{ $renewMon == '6' ? 'selected' : '' }}>6 months</option>
-                                                    <option value="9" {{ $renewMon == '9' ? 'selected' : '' }}>9 months</option>
-                                                    <option value="12" {{ $renewMon == '12' ? 'selected' : '' }}>12 months</option>
-                                                </select>
-                                                @error('contract_renewal_month')
-                                                    <div class="invalid-feedback d-block">{{ $message }}</div>
-                                                @enderror
-                                                <div class="form-text">Tip: End Date will auto-suggest based on Start Date + Renewal Months.</div>
-                                            </div> -->
-
-                                        <!-- <div class="row">
-                                            <div class="col-md-4">
-                                                <label class="form-label">Contract Renewal Amount Increase (USD)</label>
-                                                <div class="input-group">
-                                                    <span class="input-group-text">$</span>                                                    
-                                                </div>
-                                                @error('contract_renewal_amount')
-                                                    <div class="invalid-feedback d-block">{{ $message }}</div>
-                                                @enderror
-                                            </div>
-                                            <div class="col-md-4">
-                                                <label class="form-label">Start Months</label>
-                                                <input type="text" class="form-control">
-                                            </div>
-
-                                            <div class="col-md-4">
-                                                <label class="form-label">End Months</label>  
-                                                   <input type="text" class="form-control">                                         
-                                            </div>
+                                            @error('late_fee')
+                                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                                            @enderror
                                         </div> -->
 
-                                        <div id="renewal-container">
-                                            <!-- Default Row -->
-                                            <div class="row g-3 renewal-row align-items-end">
-                                                <div class="col-md-4">
-                                                    <label class="form-label">Contract Renewal Amount Increase (USD)</label>
-                                                    <div class="input-group">
+                                        <div class="col-md-6">
+                                            <label class="form-label">Security Deposit (USD)</label>
+                                            <div class="input-group">
+                                                <span class="input-group-text">$</span>
+                                                <input type="number" step="0.01" placeholder="e.g. 500"
+                                                    class="form-control @error('security_deposit') is-invalid @enderror"
+                                                    name="security_deposit" value="{{ $secDep }}">
+                                            </div>
+                                            @error('security_deposit')
+                                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                                            @enderror
+                                        </div>
+
+                                        {{-- Notice Period --}}
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label">Notice Period</label>
+                                            <select name="notice_period_months"
+                                                    class="form-control form-select @error('notice_period_months') is-invalid @enderror">
+                                                <option value="1" {{ $notice == '1' ? 'selected' : '' }}>1 month</option>
+                                                <option value="2" {{ $notice == '2' ? 'selected' : '' }}>2 months</option>
+                                                <option value="3" {{ $notice == '3' ? 'selected' : '' }}>3 months</option>
+                                            </select>
+                                            @error('notice_period_months')
+                                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                                            @enderror
+                                        </div>
+
+                   {{-- File Upload --}}
+                    <div class="col-md-6">
+                        <label class="form-label">Upload Contract</label>
+                        <div class="input-group">
+                            <input type="file" name="contract_doc" id="contractFile"
+                                class="form-control @error('contract_doc') is-invalid @enderror" accept=".pdf,image/*">
+                            <button type="button" id="previewBtn" class="btn btn-outline-primary" style="display:none;" target="_blank">
+                                👁
+                            </button>
+                        </div>
+                        @error('contract_doc')
+                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                        @enderror
+
+                        @if (!empty($tenantcontracts->contract_doc))
+                            <div class="mt-2">
+                                <a href="{{ asset('storage/upload/contracts/' . $tenantcontracts->contract_doc) }}" target="_blank" class="btn btn-outline-primary btn-sm">
+                                    👁 Preview Contract
+                                </a>
+                            </div>
+                        @endif
+                    </div>
+
+
+
+                                    {{-- Contract Renewal --}}
+                                    <div class="col-lg-12 mb-2">
+                                        <h3 class="mb-0 mt-3">Contract Renewal Setup</h3>
+                                    </div>
+
+                                    <!-- <div class="col-md-6">
+                                        <label class="form-label">Contract Renewal Month</label>
+                                        <select name="contract_renewal_month" id="contract_renewal_month"
+                                                class="form-control form-select @error('contract_renewal_month') is-invalid @enderror">
+                                            <option value="3" {{ $renewMon == '3' ? 'selected' : '' }}>3 months</option>
+                                            <option value="6" {{ $renewMon == '6' ? 'selected' : '' }}>6 months</option>
+                                            <option value="9" {{ $renewMon == '9' ? 'selected' : '' }}>9 months</option>
+                                            <option value="12" {{ $renewMon == '12' ? 'selected' : '' }}>12 months</option>
+                                        </select>
+                                        @error('contract_renewal_month')
+                                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                                        @enderror
+                                        <div class="form-text">Tip: End Date will auto-suggest based on Start Date + Renewal Months.</div>
+                                    </div> -->
+
+                                <!-- <div class="row">
+                                    <div class="col-md-4">
+                                        <label class="form-label">Contract Renewal Amount Increase (USD)</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text">$</span>                                                    
+                                        </div>
+                                        @error('contract_renewal_amount')
+                                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label">Start Months</label>
+                                        <input type="text" class="form-control">
+                                    </div>
+
+                                    <div class="col-md-4">
+                                        <label class="form-label">End Months</label>  
+                                           <input type="text" class="form-control">                                         
+                                    </div>
+                                </div> -->
+
+                                <div id="renewal-container">
+                                    <!-- Default Row -->
+                                    <div class="row g-3 renewal-row align-items-end">
+                                        <div class="col-md-4">
+                                            <label class="form-label">Contract Renewal Amount Increase (USD)</label>
+                                            <div class="input-group">
+                                            <span class="input-group-text">$</span>
+                                            <input type="number" step="0.01" placeholder="e.g. 100"
+                                                    class="form-control" name="contract_renewal_amount[]">
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-4">
+                                            <label class="form-label">Start Months</label>
+                                            <input type="text" class="form-control" name="start_months[]" placeholder="e.g. January">
+                                        </div>
+
+                                        <div class="col-md-4">
+                                            <label class="form-label">End Months</label>
+                                            <input type="text" class="form-control" name="end_months[]" placeholder="e.g. June">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex justify-content-end mt-3">
+                                    <button type="button" id="add-more" class="btn btn-sm btn-primary">+ Add More</button>
+                                </div>
+
+
+            
+                                <script>
+                                    document.getElementById('add-more').addEventListener('click', function() {
+                                    const container = document.getElementById('renewal-container');
+                                    const firstRow = container.querySelector('.renewal-row');
+                                    const newRow = firstRow.cloneNode(true);
+
+                                    // Reset input values
+                                    newRow.querySelectorAll('input').forEach(input => input.value = '');
+
+                                    // If remove button already exists (from previous clone), remove it first to prevent duplication
+                                    const oldRemove = newRow.querySelector('.remove-row');
+                                    if (oldRemove) oldRemove.remove();
+
+                                    // Create remove button
+                                    const removeBtn = document.createElement('button');
+                                    removeBtn.type = 'button';
+                                    removeBtn.className = 'remove-row ms-2';
+                                    removeBtn.innerHTML = '×';
+                                    removeBtn.title = 'Remove this row';
+                                    removeBtn.onclick = function() {
+                                    newRow.remove();
+                                    };
+
+                                    // Add remove button next to End Month input
+                                    const lastCol = newRow.lastElementChild;
+                                    const endInput = lastCol.querySelector('input');
+                                    const wrapper = document.createElement('div');
+                                    wrapper.className = 'd-flex align-items-center gap-2';
+                                    wrapper.appendChild(endInput);
+                                    wrapper.appendChild(removeBtn);
+
+                                    // Replace content in last column
+                                    lastCol.innerHTML = '';
+                                    lastCol.appendChild(wrapper);
+
+                                    // Append new row to container
+                                    container.appendChild(newRow);
+                                });
+                                </script>
+                                <div class="late-payment">
+                                    <div id="late-rows">
+                                    <!-- Default Row -->
+                                    <div class="row g-3 late-row">
+                                        <div class="col-lg-12 mb-0">
+                                        <h3 class="mb-0 mt-3">Late Payment Setup</h3>
+                                        </div>
+
+                                        <div class="col-md-3">
+                                        <label class="form-label">Select Tier</label>
+                                        <select class="form-select" name="tier[]">
+                                            <option value="">Select</option>
+                                            <option value="1">1</option>
+                                            <option value="2">2</option>
+                                            <option value="3">3</option>
+                                            <option value="4">4</option>
+                                            <option value="5">5</option>
+                                            <option value="6">6</option>
+                                            <option value="7">7</option>
+                                        </select>
+                                        </div>
+
+                                        <div class="col-md-3">
+                                        <label class="form-label">How many days grace</label>
+                                        <input type="text" class="form-control" name="grace_days[]" placeholder="e.g. 5">
+                                        </div>
+
+                                        <div class="col-md-3">
+                                        <label class="form-label">Time</label>
+                                        <input type="time" class="form-control" name="time[]">
+                                        </div>
+
+                                        <div class="col-md-3">
+                                            <div>
+                                                <label class="form-label">Amount</label>
+                                                <div class="input-group">
                                                     <span class="input-group-text">$</span>
-                                                    <input type="number" step="0.01" placeholder="e.g. 100"
-                                                            class="form-control" name="contract_renewal_amount[]">
-                                                    </div>
-                                                </div>
-
-                                                <div class="col-md-4">
-                                                    <label class="form-label">Start Months</label>
-                                                    <input type="text" class="form-control" name="start_months[]" placeholder="e.g. January">
-                                                </div>
-
-                                                <div class="col-md-4">
-                                                    <label class="form-label">End Months</label>
-                                                    <input type="text" class="form-control" name="end_months[]" placeholder="e.g. June">
+                                                    <input type="number" placeholder="e.g. 1200" class="form-control" name="amount[]">
                                                 </div>
                                             </div>
                                         </div>
+                                    </div>
+                                    </div>
 
-                                        <div class="d-flex justify-content-end mt-3">
-                                            <button type="button" id="add-more" class="btn btn-sm btn-primary">+ Add More</button>
-                                        </div>
-
-
-                    
-                                        <script>
-                                            document.getElementById('add-more').addEventListener('click', function() {
-                                            const container = document.getElementById('renewal-container');
-                                            const firstRow = container.querySelector('.renewal-row');
-                                            const newRow = firstRow.cloneNode(true);
-
-                                            // Reset input values
-                                            newRow.querySelectorAll('input').forEach(input => input.value = '');
-
-                                            // If remove button already exists (from previous clone), remove it first to prevent duplication
-                                            const oldRemove = newRow.querySelector('.remove-row');
-                                            if (oldRemove) oldRemove.remove();
-
-                                            // Create remove button
-                                            const removeBtn = document.createElement('button');
-                                            removeBtn.type = 'button';
-                                            removeBtn.className = 'remove-row ms-2';
-                                            removeBtn.innerHTML = '×';
-                                            removeBtn.title = 'Remove this row';
-                                            removeBtn.onclick = function() {
-                                            newRow.remove();
-                                            };
-
-                                            // Add remove button next to End Month input
-                                            const lastCol = newRow.lastElementChild;
-                                            const endInput = lastCol.querySelector('input');
-                                            const wrapper = document.createElement('div');
-                                            wrapper.className = 'd-flex align-items-center gap-2';
-                                            wrapper.appendChild(endInput);
-                                            wrapper.appendChild(removeBtn);
-
-                                            // Replace content in last column
-                                            lastCol.innerHTML = '';
-                                            lastCol.appendChild(wrapper);
-
-                                            // Append new row to container
-                                            container.appendChild(newRow);
-                                        });
-                                        </script>
-                                        <div class="late-payment">
-                                            <div id="late-rows">
-                                            <!-- Default Row -->
-                                            <div class="row g-3 late-row">
-                                                <div class="col-lg-12 mb-0">
-                                                <h3 class="mb-0 mt-3">Late Payment Setup</h3>
-                                                </div>
-
-                                                <div class="col-md-3">
-                                                <label class="form-label">Select Tier</label>
-                                                <select class="form-select" name="tier[]">
-                                                    <option value="">Select</option>
-                                                    <option value="1">1</option>
-                                                    <option value="2">2</option>
-                                                    <option value="3">3</option>
-                                                    <option value="4">4</option>
-                                                    <option value="5">5</option>
-                                                    <option value="6">6</option>
-                                                    <option value="7">7</option>
-                                                </select>
-                                                </div>
-
-                                                <div class="col-md-3">
-                                                <label class="form-label">How many days grace</label>
-                                                <input type="text" class="form-control" name="grace_days[]" placeholder="e.g. 5">
-                                                </div>
-
-                                                <div class="col-md-3">
-                                                <label class="form-label">Time</label>
-                                                <input type="time" class="form-control" name="time[]">
-                                                </div>
-
-                                                <div class="col-md-3">
-                                                    <div>
-                                                        <label class="form-label">Amount</label>
-                                                        <div class="input-group">
-                                                            <span class="input-group-text">$</span>
-                                                            <input type="number" placeholder="e.g. 1200" class="form-control" name="amount[]">
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            </div>
-
-                                            <div class="d-flex justify-content-end mt-3">
-                                            <button type="button" id="late-add-more" class="btn btn-sm btn-primary">+ Add More</button>
-                                            </div>
-                                        </div>
+                                    <div class="d-flex justify-content-end mt-3">
+                                    <button type="button" id="late-add-more" class="btn btn-sm btn-primary">+ Add More</button>
+                                    </div>
+                                </div>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
   const addMoreBtn = document.getElementById('late-add-more');
@@ -1464,5 +1471,22 @@ document.addEventListener('DOMContentLoaded', function() {
         calculateLeaseTerm();
     }
 });
+</script>
+
+<script>
+    const fileInput = document.getElementById('contractFile');
+    const previewBtn = document.getElementById('previewBtn');
+
+    fileInput.addEventListener('change', function() {
+        const file = this.files[0];
+        if (!file) {
+            previewBtn.style.display = 'none';
+            return;
+        }
+
+        const fileURL = URL.createObjectURL(file);
+        previewBtn.style.display = 'inline-block';
+        previewBtn.onclick = () => window.open(fileURL, '_blank');
+    });
 </script>
 @endpush

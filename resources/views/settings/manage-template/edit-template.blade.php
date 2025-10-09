@@ -11,22 +11,23 @@
 @section('content')
 <div class="card border bg-custom w-100">
     <div class="card-body">
-        <form>
+        <form action="{{url('managetemp-update/'.$templateedit->id)}}" method="post">
+        @csrf
             <!-- Template Name -->
             <div class="mb-3">
             <label for="template" class="form-label">Template Name <span class="text-danger">*</span></label>
-            <input type="text" class="form-control" id="template" placeholder="Enter Template name" >
+            <input type="text" class="form-control" id="template" placeholder="Enter Template name" name="name" value="{{$templateedit->name}}" required>
             </div>
 
             <!-- Subject -->
             <div class="mb-3">
             <label for="subject" class="form-label">Subject <span class="text-danger">*</span></label>
-            <input type="text" class="form-control" id="subject" placeholder="Enter subject">
+            <input type="text" class="form-control" id="subject" placeholder="Enter subject" name="subject" value="{{$templateedit->subject}}" required>
             </div>
 
             <!-- Send Email Status -->
             <div class="form-check mb-3">
-            <input class="form-check-input" type="checkbox" id="sendStatus" checked>
+            <input class="form-check-input" type="checkbox" id="sendStatus" name="status" value="1" {{ $templateedit->status == 1 ? 'checked' : '' }}>
             <label class="form-check-label" for="sendStatus">
                 Send Email Status
             </label>
@@ -35,8 +36,8 @@
             <!-- Message (CKEditor) -->
             <div class="mb-3">
             <label for="message" class="form-label">Message <span class="text-danger">*</span></label>
-            <textarea id="editor">
-                Message
+            <textarea id="editor" name="body" required>
+              {{$templateedit->body}}
             </textarea>
             </div>
 
@@ -44,7 +45,7 @@
             <!-- Preview -->
             <div class="mb-3">
             <label for="template" class="form-label">Template Test Email</label>
-            <input type="text" class="form-control" id="template" placeholder="Template Test Email">
+            <input type="email" class="form-control" id="template" placeholder="Template Test Email" name="test_mail">
             </div>
 
 
