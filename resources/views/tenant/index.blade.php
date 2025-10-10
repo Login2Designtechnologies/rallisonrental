@@ -60,7 +60,7 @@
                                             $color = $colors[($tenant->user->id ?? rand(1,1000)) % count($colors)];
                                         @endphp
 
-                                        <div class="tenant-avatar2" style="background-color: {{ $color }}">
+                                        <div class="tenant-avatar2 me-2" style="background-color: {{ $color }}">
                                             {{ strtoupper(substr(($tenant->user->first_name ?? ''), 0, 1) . substr(($tenant->user->last_name ?? ''), 0, 1)) }}
                                         </div>
 

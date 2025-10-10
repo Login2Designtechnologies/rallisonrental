@@ -186,10 +186,10 @@ div.dt-container div.dt-search{margin-bottom: 10px;}
 .pc-sidebar .pc-caption label{color:#fff}
 .card form .card.box-card.w-100{border: 1px solid #ddd;}
 .card.follower-card .img-fluid.wid-70.me-2.tenant-img {
-  width: 100px;
-  height: 100px;
+  width: 70px;
+  height: 70px;
   border: 1px solid #ddd;
-  min-width: 100px;
+  min-width: 70px;
   object-fit: cover;
 }
 .card.product-card{box-shadow: 0 0 10px rgba(222, 215, 215, 0.5);}
@@ -246,6 +246,10 @@ div.dt-container div.dt-search{margin-bottom: 10px;}
   font-size: 20px;
   min-width: 40px;
 }
+
+.dt-paging.paging_full_numbers .pagination li:first-child,
+.dt-paging.paging_full_numbers .pagination li:last-child {display: none;}
+
 @media (min-width: 992px) {
 /* #property_form .col-md-3{width: 20%;}
 #property_form .col-md-9{width: 80%;} */
