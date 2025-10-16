@@ -162,6 +162,8 @@ Route::middleware(['auth', 'XSS'])->group(function () {
     Route::get('add-tenant-ticket', [HomeController::class, 'add_tenant_ticket'])
         ->name('add_tenant_ticket');
 
+    Route::post('/tickets', [HomeController::class, 'store'])->name('tickets.store');
+
     Route::get('tenant-notices', [HomeController::class, 'tenant_notices'])
         ->name('tenant_notices');
 

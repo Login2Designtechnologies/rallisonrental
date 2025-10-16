@@ -589,7 +589,8 @@ class HomeController extends Controller
     } 
     
     public function tenant_ticket_support() {
-        return View('tenant_dashboard.tenant-ticket-support');
+        $tickets = Ticket::where('tenant_id', Auth::user()->tenants->id)->get();
+        return View('tenant_dashboard.tenant-ticket-support', compact('tickets'));
     } 
     public function tenant_view_ticket() {
         return View('tenant_dashboard.tenant-view-ticket');
@@ -597,6 +598,48 @@ class HomeController extends Controller
     public function add_tenant_ticket() {
         return View('tenant_dashboard.add-tenant-ticket');
     } 
+
+     public function store(Request $request)
+    {
+        // Validation
+        $request->validate([
+            'subject' => 'required|string|max:200',
+            'description' => 'nullable|string',
+            'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'category' => 'required|string|in:' . implode(',', \App\Enums\TicketCategory::ALL),
+        ]);
+
+        // Handle file upload
+        $photoPath = null;
+        if ($request->hasFile('photo')) {
+            $file = $request->file('photo');
+            $fileName = time().'_'.$file->getClientOriginalName();
+
+            $destinationPath = storage_path('upload/tickets');
+            if (!file_exists($destinationPath)) {
+                mkdir($destinationPath, 0777, true);
+            }
+
+            $file->move($destinationPath, $fileName);
+
+            // Save relative path in DB
+            $photoPath = $fileName;
+        }      
+
+        // Create ticket
+        $ticket = Ticket::create([
+            'subject' => $request->subject,
+            'description' => $request->description,
+            'category' => $request->category,
+            'status' => \App\Enums\TicketStatus::OPEN, 
+            'photo' => $photoPath,
+            'tenant_id' => Auth::user()->tenants->id, 
+            'property_id' => Auth::user()->tenants->property_id ?? null,
+        ]);
+
+        return redirect()->route('tenant_ticket_support')->with('success', 'Ticket submitted successfully!');
+    }
+
     public function tenant_notices() {
         return View('tenant_dashboard.tenant-notices');
     } 
