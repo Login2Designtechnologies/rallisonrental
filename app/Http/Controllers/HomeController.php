@@ -32,6 +32,7 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 use App\Models\Ticket;
 use App\Models\TenantContract;
+use Barryvdh\DomPDF\Facade\Pdf;
 use DB;
 
 class HomeController extends Controller
@@ -423,6 +424,23 @@ class HomeController extends Controller
         return View('dashbaordpage.make-payment');
     } 
 
+    public function downloadInvoice(OtherInvoice $otherInvoice)
+    {
+        // Load related data
+        $otherInvoice->load(['tenant', 'owner', 'property', 'items']);
+
+        // Generate the PDF using the same Blade view
+        $pdf = Pdf::loadView('email.other_invoice', [
+            'otherInvoice' => $otherInvoice,
+            'isPreview' => false // Hide buttons when downloading
+        ]);
+
+        // Define file name
+        $fileName = 'Invoice_' . $otherInvoice->id . '.pdf';
+
+        // Return the PDF as a download
+        return $pdf->download($fileName);
+    }
 
     // Tenant Dashbaord
     public function tenant_profile() {
@@ -544,7 +562,7 @@ class HomeController extends Controller
         while ($current <= $endDate) {
             $months[] = [
                 'month_number' => $monthCounter,
-                'month' => $current->format('Y-m'),
+                'month' => $current->format('F-Y'),
                 'rent' => $contract->standard_rent,
                 'security' => $contract->security_deposit,
                 'last_month_rent' => $contract->standard_rent,
@@ -570,7 +588,7 @@ class HomeController extends Controller
             while ($renewalCurrent <= $renewalEndDate) {
                 $months[] = [
                     'month_number' => $counter,
-                    'month' => $renewalCurrent->format('Y-m'),
+                    'month' => $renewalCurrent->format('F-Y'),
                     'rent' => $contract->standard_rent + $renewal->amount_increase,
                     'security' => $contract->security_deposit,
                     'last_month_rent' => $contract->standard_rent + $renewal->amount_increase,

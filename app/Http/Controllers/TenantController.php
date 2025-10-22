@@ -10,6 +10,7 @@ use App\Models\Property;
 use App\Models\Subscription;
 use App\Models\Tenant;
 use App\Models\TenantDocument;
+use App\Models\TenantPaymentStatus;
 use App\Models\User;
 use App\Models\UtilityInvoice;
 use Illuminate\Http\Request;
@@ -18,6 +19,7 @@ use Spatie\Permission\Models\Role;
 use DB;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
+use Illuminate\Support\Facades\Mail;
 
 class TenantController extends Controller
 {
@@ -511,105 +513,132 @@ class TenantController extends Controller
             }
         }
 
-$contractStart = null;
-$contractEnd = null;
-if (!empty($tenantcontracts->start_date)) {
-    try {
-        $contractStart = Carbon::parse($tenantcontracts->start_date)->startOfMonth();
-    } catch (\Exception $e) {
         $contractStart = null;
-    }
-}
-if (!empty($tenantcontracts->end_date)) {
-    try {
-        $contractEnd = Carbon::parse($tenantcontracts->end_date)->startOfMonth();
-    } catch (\Exception $e) {
         $contractEnd = null;
-    }
-}
-
-// Determine base contract month count (1-based). If base dates exist:
-$baseMonthsCount = 0;
-if ($contractStart && $contractEnd) {
-    $baseMonthsCount = $contractStart->diffInMonths($contractEnd) + 1; // e.g. 12 for 12 months
-}
-
-foreach ($contractRenewals as $renewal) {
-    // parse offsets as integers
-    $startIdx = (int) ($renewal->start_month ?: 0);
-    $endIdx   = (int) ($renewal->end_month ?: 0);
-
-    // skip invalid offsets
-    if ($startIdx <= 0 || $endIdx <= 0 || $endIdx < $startIdx) {
-        // invalid, skip this renewal
-        continue;
-    }
-
-    // If we have a valid contractStart, compute absolute months from that
-    if ($contractStart) {
-        // startIdx = 1 means contractStart, so addMonths(startIdx - 1)
-        $startDate = $contractStart->copy()->addMonths($startIdx - 1)->startOfMonth();
-        $endDate   = $contractStart->copy()->addMonths($endIdx - 1)->startOfMonth();
-    } else {
-        // fallback: if no contractStart use contractEnd if present, else now()
-        $anchor = $contractEnd ?? Carbon::now()->startOfMonth();
-        // Here we treat startIdx as offset from the anchor; you can tweak this behavior
-        $startDate = $anchor->copy()->addMonths($startIdx - 1)->startOfMonth();
-        $endDate   = $anchor->copy()->addMonths($endIdx - 1)->startOfMonth();
-    }
-
-    // Ensure endDate is not before startDate
-    if ($endDate->lessThan($startDate)) {
-        $endDate = $startDate->copy();
-    }
-
-    // If renewal starts within base months (overlap), optionally shift it to begin after base end:
-    // (comment out if you want overlapping behavior)
-    if ($baseMonthsCount > 0 && $startIdx <= $baseMonthsCount) {
-        // move start to first month after base contract if that's what you want:
-        $startDate = $contractStart->copy()->addMonths($baseMonthsCount)->startOfMonth();
-        // adjust endDate to maintain same length (optional), or use provided endIdx:
-        $endDate = $contractStart->copy()->addMonths($endIdx - 1)->startOfMonth();
-        if ($endDate->lessThan($startDate)) {
-            $endDate = $startDate->copy();
+        if (!empty($tenantcontracts->start_date)) {
+            try {
+                $contractStart = Carbon::parse($tenantcontracts->start_date)->startOfMonth();
+            } catch (\Exception $e) {
+                $contractStart = null;
+            }
         }
-    }
-
-    // Now add each month in the renewal period
-    try {
-        $renewalPeriod = CarbonPeriod::create($startDate, '1 month', $endDate);
-
-        foreach ($renewalPeriod as $m) {
-            $periods->push([
-                'month_label' => $m->format('F Y'),
-                'ym' => $m->format('Y-m'),
-                'rent' => (float) (($tenantcontracts->standard_rent ?? 0) + ($renewal->amount_increase ?? 0)),
-                'security' => 0.0,
-                'type' => 'renewal',
-                'source' => [
-                    'renewal_id' => $renewal->id,
-                    'amount_increase' => (float) ($renewal->amount_increase ?? 0),
-                    'start_idx' => $startIdx,
-                    'end_idx' => $endIdx,
-                ],
-            ]);
+        if (!empty($tenantcontracts->end_date)) {
+            try {
+                $contractEnd = Carbon::parse($tenantcontracts->end_date)->startOfMonth();
+            } catch (\Exception $e) {
+                $contractEnd = null;
+            }
         }
 
-        // shift contractEnd forward so subsequent renewals treat the anchor correctly
-        $contractEnd = $endDate->copy();
-    } catch (\Exception $e) {
-        // skip invalid periods silently (or log)
-    }
+        // Determine base contract month count (1-based). If base dates exist:
+        $baseMonthsCount = 0;
+        if ($contractStart && $contractEnd) {
+            $baseMonthsCount = $contractStart->diffInMonths($contractEnd) + 1; // e.g. 12 for 12 months
+        }
 
-}
+        foreach ($contractRenewals as $renewal) {
+            // parse offsets as integers
+            $startIdx = (int) ($renewal->start_month ?: 0);
+            $endIdx   = (int) ($renewal->end_month ?: 0);
 
-// Optionally remove duplicate months (keep first occurrence)
-$periods = $periods->unique('ym')->values();
+            // skip invalid offsets
+            if ($startIdx <= 0 || $endIdx <= 0 || $endIdx < $startIdx) {
+                // invalid, skip this renewal
+                continue;
+            }
+
+            // If we have a valid contractStart, compute absolute months from that
+            if ($contractStart) {
+                // startIdx = 1 means contractStart, so addMonths(startIdx - 1)
+                $startDate = $contractStart->copy()->addMonths($startIdx - 1)->startOfMonth();
+                $endDate   = $contractStart->copy()->addMonths($endIdx - 1)->startOfMonth();
+            } else {
+                // fallback: if no contractStart use contractEnd if present, else now()
+                $anchor = $contractEnd ?? Carbon::now()->startOfMonth();
+                // Here we treat startIdx as offset from the anchor; you can tweak this behavior
+                $startDate = $anchor->copy()->addMonths($startIdx - 1)->startOfMonth();
+                $endDate   = $anchor->copy()->addMonths($endIdx - 1)->startOfMonth();
+            }
+
+            // Ensure endDate is not before startDate
+            if ($endDate->lessThan($startDate)) {
+                $endDate = $startDate->copy();
+            }
+
+            // If renewal starts within base months (overlap), optionally shift it to begin after base end:
+            // (comment out if you want overlapping behavior)
+            if ($baseMonthsCount > 0 && $startIdx <= $baseMonthsCount) {
+                // move start to first month after base contract if that's what you want:
+                $startDate = $contractStart->copy()->addMonths($baseMonthsCount)->startOfMonth();
+                // adjust endDate to maintain same length (optional), or use provided endIdx:
+                $endDate = $contractStart->copy()->addMonths($endIdx - 1)->startOfMonth();
+                if ($endDate->lessThan($startDate)) {
+                    $endDate = $startDate->copy();
+                }
+            }
+
+            // Now add each month in the renewal period
+            try {
+                $renewalPeriod = CarbonPeriod::create($startDate, '1 month', $endDate);
+
+                foreach ($renewalPeriod as $m) {
+                    $periods->push([
+                        'month_label' => $m->format('F Y'),
+                        'ym' => $m->format('Y-m'),
+                        'rent' => (float) (($tenantcontracts->standard_rent ?? 0) + ($renewal->amount_increase ?? 0)),
+                        'security' => 0.0,
+                        'type' => 'renewal',
+                        'source' => [
+                            'renewal_id' => $renewal->id,
+                            'amount_increase' => (float) ($renewal->amount_increase ?? 0),
+                            'start_idx' => $startIdx,
+                            'end_idx' => $endIdx,
+                        ],
+                    ]);
+                }
+
+                // shift contractEnd forward so subsequent renewals treat the anchor correctly
+                $contractEnd = $endDate->copy();
+            } catch (\Exception $e) {
+                // skip invalid periods silently (or log)
+            }
+
+        }
+
+        $paymentStatuses = DB::table('tenant_payment_statuses')
+            ->where('tenant_id', $tenant->id)
+            ->where('property_id', $tenantcontracts->property_id ?? 0)
+            ->pluck('status', 'month');
+
+        // Optionally remove duplicate months (keep first occurrence)
+        $periods = $periods->map(function ($period) use ($paymentStatuses) {
+            $period['status'] = $paymentStatuses[$period['ym']] ?? 'pending';
+            return $period;
+        });
 
         return view('tenant.show', compact('tenant', 'contract', 'periods', 'contractRenewals', 'propertyAmenitiesTotal','tenantcontracts'));
     }
 
+    public function updatePaymentStatus(Request $request)
+    {
+        $validated = $request->validate([
+            'tenant_id' => 'required|integer',
+            'property_id' => 'required|integer',
+            'month' => 'required|string',
+            'status' => 'required|string|in:pending,paid',
+        ]);
 
+        TenantPaymentStatus::updateOrCreate(
+            [
+                'tenant_id' => $validated['tenant_id'],
+                'property_id' => $validated['property_id'],
+                'month' => $validated['month'],
+            ],
+            ['status' => $validated['status']]
+        );
+
+        return response()->json(['success' => true]);
+    }
     public function resendInvoice($id)
     {
         $tenant = Tenant::findOrFail($id);
@@ -649,7 +678,7 @@ $periods = $periods->unique('ym')->values();
             'tenant_id' => 'required|exists:tenants,id',
             'property_id' => 'required|integer',
             'owner_id' => 'required|integer',
-            'start_date' => 'nullable|string',  // We'll store as m-d-Y
+            'start_date' => 'nullable|string',
             'end_date' => 'nullable|string',
             'standard_rent' => 'required|numeric',
             'late_fee' => 'nullable|numeric',
@@ -658,17 +687,22 @@ $periods = $periods->unique('ym')->values();
             'contract_renewal_month' => 'nullable|integer',
             'contract_renewal_amount' => 'nullable|array',
             'contract_renewal_amount.*' => 'nullable|numeric',
+            'invoice_due_date' => 'nullable|integer|min:1|max:31',
         ]);
-
-        // 🔹 Fill default end_date if empty using start_date + contract_renewal_month
-        if (empty($request->end_date) && !empty($validated['contract_renewal_month'])) {
+        
+        if (!empty($validated['start_date'])) {
             try {
-                $endDate = Carbon::createFromFormat('m-d-Y', $validated['start_date'])
-                    ->addMonths((int) $validated['contract_renewal_month'])
-                    ->format('m-d-Y');
-                $validated['end_date'] = $endDate;
+                $validated['start_date'] = Carbon::parse($validated['start_date'])->format('Y-m-d');
             } catch (\Exception $e) {
-                // return back()->withErrors(['start_date' => 'Invalid start date'])->withInput();
+                $validated['start_date'] = null;
+            }
+        }
+
+        if (!empty($validated['end_date'])) {
+            try {
+                $validated['end_date'] = Carbon::parse($validated['end_date'])->format('Y-m-d');
+            } catch (\Exception $e) {
+                $validated['end_date'] = null;
             }
         }
 
@@ -683,7 +717,19 @@ $periods = $periods->unique('ym')->values();
         if ($contract) {
             DB::table('tenant_contracts')
                 ->where('id', $contract->id)
-                ->update(array_merge($validated, ['updated_at' => now()]));
+                ->update([
+                    'tenant_id'             => $validated['tenant_id'],
+                    'property_id'           => $validated['property_id'],
+                    'owner_id'              => $validated['owner_id'],
+                    'start_date'            => $validated['start_date'] ?? null,
+                    'end_date'              => $validated['end_date'] ?? null,
+                    'standard_rent'         => $validated['standard_rent'] ?? 0,
+                    'late_fee'              => $validated['late_fee'] ?? null,
+                    'security_deposit'      => $validated['security_deposit'] ?? null,
+                    'notice_period_months'  => $validated['notice_period_months'] ?? null,                        
+                    'invoice_due_date'      => $validated['invoice_due_date'] ?? null,
+                    'updated_at'            => now(),
+                ]);
             $contractId = $contract->id;
         } else {
             if (isset($validated['contract_renewal_amount']) && is_array($validated['contract_renewal_amount'])) {
@@ -972,5 +1018,23 @@ $periods = $periods->unique('ym')->values();
         } else {
             return redirect()->back()->with('error', __('Permission Denied!'));
         }
+    }
+
+    public function sendNoticeMail(Request $request)
+    {
+        $tenant = DB::table('tenants')->where('id', $request->tenant_id)->first();
+        $template = DB::table('manage-template')->where('id', $request->template_id)->first();
+
+        if (!$tenant || !$template) {
+            return back()->with('error', 'Invalid tenant or template.');
+        }
+
+        Mail::send([], [], function ($message) use ($tenant, $template) {
+            $message->to($tenant->email)
+                ->subject($template->subject)
+                ->setBody($template->body, 'text/html');
+        });
+
+        return back()->with('success', 'Notice email sent successfully.');
     }
 }

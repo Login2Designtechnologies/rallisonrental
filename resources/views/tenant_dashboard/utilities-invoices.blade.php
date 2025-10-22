@@ -39,15 +39,15 @@
                       <td>{{ \Carbon\Carbon::parse($utilityInvoice->invoice_month)->format('Y m') }}</td>
                       <td>{{ $utilityInvoice->amount }}</td>
                       <td>
-                          @php
-                            $status = strtolower($utilityInvoice->status);
-                            $badgeClass = match ($status) {
-                                'paid'     => 'bg-success',
-                                'pending'  => 'bg-warning',
-                                'overdue'  => 'bg-danger',
-                                'cancelled'=> 'bg-secondary',
-                                default    => 'bg-info',
-                            };
+                        @php
+                          $status = strtolower($utilityInvoice->status);
+                          $badgeClass = match ($status) {
+                              'paid'     => 'bg-success',
+                              'pending'  => 'bg-warning',
+                              'overdue'  => 'bg-danger',
+                              'cancelled'=> 'bg-secondary',
+                              default    => 'bg-info',
+                          };
                         @endphp
 
                         <span class="badge {{ $badgeClass }}">

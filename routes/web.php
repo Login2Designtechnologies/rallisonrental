@@ -128,11 +128,15 @@ Route::post('other-invoice/send-email/{otherInvoice}', [HomeController::class, '
 Route::get('payment/pay-now/{otherInvoice}', [HomeController::class, 'payNow'])
     ->name('payment.pay_now');    
 
-Route::get('edit-other-invoice', [HomeController::class, 'edit_other_invoice'])->name('edit_other_invoice')->middleware(
+Route::get('edit-other-invoice/{id}', [HomeController::class, 'edit_other_invoice'])->name('edit_other_invoice')->middleware(
     [
         'XSS',
     ]
 );
+
+Route::get('/other-invoice/{otherInvoice}/download', [HomeController::class, 'downloadInvoice'])
+    ->name('otherInvoice.download');
+
 
 Route::post('/update-other-invoice/{id}', [HomeController::class, 'update_other_invoice'])
     ->name('update_other_invoice')
@@ -427,7 +431,10 @@ Route::group(
         Route::get('units', [PropertyController::class, 'units'])->name('unit.index');
         Route::get('all_invoices', [PropertyController::class, 'all_invoices'])->name('utility-invoices.all');
         Route::get('all_invoicescreate', [PropertyController::class, 'all_invoicescreate'])->name('utility-invoices.create');
-        Route::get('utility_invoicesgenerate', [PropertyController::class, 'utility_invoicesgenerate'])->name('utility-invoices.generate');
+        Route::post('utility_invoicesgenerate', [PropertyController::class, 'utility_invoicesgenerate'])->name('utility-invoices.generate');
+        Route::post('/utility-invoices/save-shares', [PropertyController::class, 'saveUtilityShares'])->name('utility-invoices.save-shares');
+        Route::post('/utility-invoices/upload-bill', [PropertyController::class, 'uploadBill'])->name('utility-invoices.upload-bill');
+        Route::post('/get-invoice-preview', [PropertyController::class, 'getInvoicePreview']);
         Route::get('get_cities/{state_id}', [PropertyController::class, 'get_cities'])->name('get_cities');
         Route::put('property/{pid}/unit/{id}/update', [PropertyController::class, 'unitUpdate'])->name('unit.update');
         Route::delete('property/{pid}/unit/{id}/destroy', [PropertyController::class, 'unitDestroy'])->name('unit.destroy');
@@ -463,6 +470,10 @@ Route::resource('tenant', TenantController::class)->middleware(
         'XSS',
     ]
 );
+
+Route::middleware(['auth', 'XSS'])->group(function () {
+    Route::post('/tenant/payment-status/update', [TenantController::class, 'updatePaymentStatus'])->name('tenant.payment.update');
+});
 
 
 Route::post('tenant-contractsupdate/{tenant?}', [TenantController::class, 'tenant_contractsupdate'])->name('tenant-contractsupdate');
