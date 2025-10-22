@@ -657,7 +657,23 @@ class HomeController extends Controller
         // Sort months by month_number
         usort($months, fn($a, $b) => $a['month_number'] <=> $b['month_number']);
 
-        return view('tenant_dashboard.payment-section', ['payments' => $months]);
+        // For Next Payment Due Block
+        $dueDay = $contract->invoice_due_date;
+        $dueDate = Carbon::now()->day($dueDay);        
+        if ($dueDate->isPast()) {
+            $dueDate->addMonth();
+        }
+        $daysRemaining = Carbon::now()->diffInDays($dueDate, false);
+
+        // For Next Payment
+        $rentAmount = $contract->standard_rent;
+
+        return view('tenant_dashboard.payment-section', [
+            'payments' => $months, 
+            'dueDate' => $dueDate, 
+            'daysRemaining' => $daysRemaining,
+            'rentAmount' => $rentAmount,
+        ]);
     } 
     
     public function tenant_ticket_support() {
@@ -819,9 +835,16 @@ class HomeController extends Controller
     public function tenant_late_fees() {
         return View('tenant_dashboard.tenant-late-fees');
     }
-    public function tenant_other_invoice() {
-        return View('tenant_dashboard.tenant-other-invoice');
+    
+    public function tenant_other_invoice() {        
+        $otherInvoices = OtherInvoice::with(['property', 'tenant', 'tenant.user'])
+            ->where('tenant_id', auth()->user()->tenants->id)
+            ->orderBy('invoice_date', 'desc')
+            ->get();
+
+        return view('tenant_dashboard.tenant-other-invoice', compact('otherInvoices'));
     }
+
      public function view_invoice() {
         return View('tenant_dashboard.view-invoice');
     }

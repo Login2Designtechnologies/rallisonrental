@@ -1168,10 +1168,9 @@ $country = $tenant->state?->country?->name ?? 'Usa';
                                             <th>Status</th>
                                             <th>Action</th>
                                         </tr>
-                                    </thead>        
+                                    </thead>         
                                     @php
-                                    $tenantotherinvoicesall =
-                                    DB::table('other_invoices')->where('tenant_id',$u->id)->where('property_id',$tenant->property_id)->get();
+                                    $tenantotherinvoicesall = DB::table('other_invoices')->where('tenant_id',$tenant->id)->where('property_id',$tenant->property_id)->get();
                                     @endphp
                                     <tbody class="text-center">
                                         @forelse($tenantotherinvoicesall as $i)
