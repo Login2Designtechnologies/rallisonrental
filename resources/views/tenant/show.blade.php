@@ -34,15 +34,18 @@ return '-';
 
 // Lease dates
 $leaseStart = formatTenantDate($tenant->lease_start_date);
-$leaseEnd = formatTenantDate($tenant->lease_end_date);
+$leaseEnd = formatTenantDate($tenant->lease_end_date); 
 
 // Country (via state -> country)
-$country = $tenant->state?->country?->name ?? '-';
+$country = $tenant->state?->country?->name ?? 'Usa';
 @endphp
 
 
-
-
+<style>
+    p.doc-name a {
+        color: blue !important;
+    }
+</style>
 <!-- [ Main Content ] start -->
 <div class="custom-card-box">
 
@@ -184,7 +187,7 @@ $country = $tenant->state?->country?->name ?? '-';
                         </li>
 
                         <!-- Report Tab -->
-                        <li class="nav-item" role="presentation">
+                        <!-- <li class="nav-item" role="presentation">
                             <a class="nav-link" id="report-tab" data-bs-toggle="tab" href="#report_content" role="tab"
                                 aria-selected="false">
                                 <div class="d-flex align-items-center">
@@ -193,11 +196,11 @@ $country = $tenant->state?->country?->name ?? '-';
                                     </div>
                                     <div class="flex-grow-1 ms-2">
                                         <h5 class="mb-0">Report</h5>
-                                        <!-- <small class="text-muted">Report</small> -->
+                                         <small class="text-muted">Report</small> 
                                     </div>
                                 </div>
                             </a>
-                        </li>
+                        </li> -->
 
                         <!-- Emergency Contact Tab -->
                         <li class="nav-item" role="presentation">
@@ -277,12 +280,12 @@ $country = $tenant->state?->country?->name ?? '-';
                                         <tr>
                                             <td><b class="text-header">State</b></td>
                                             <td>:</td>
-                                            <td>{{ $tenant->state?->name ?? '-' }}</td>
+                                            <td>{{ $statesdata?->name ?? '-' }}</td>
                                         </tr>
                                         <tr>
                                             <td><b class="text-header">City</b></td>
                                             <td>:</td>
-                                            <td>{{ $tenant->city?->name ?? '-' }}</td>
+                                            <td>{{ $citiesdata?->name ?? '-' }}</td>
                                         </tr>
                                         <tr>
                                             <td><b class="text-header">Zip Code</b></td>
@@ -292,13 +295,14 @@ $country = $tenant->state?->country?->name ?? '-';
                                         <tr>
                                             <td><b class="text-header">Property</b></td>
                                             <td>:</td>
-                                            <td>{{ $tenant->property?->title ?? ($tenant->property?->name ?? '-') }}
+                                            <td>{{ $propertyname?->name ?? '-' }}
                                             </td>
                                         </tr>
                                         <tr>
                                             <td><b class="text-header">Unit</b></td>
                                             <td>:</td>
-                                            <td>{{ $tenant->unit?->name ?? ($tenant->unit?->number ?? '-') }}</td>
+                                            <td>{{ $propertyunit?->name ?? '-' }}
+                                            </td>
                                         </tr>
                                         <tr>
                                             <td><b class="text-header">Lease Start Date</b></td>
@@ -315,19 +319,19 @@ $country = $tenant->state?->country?->name ?? '-';
                                             <td>:</td>
                                             <td>
                                                 @php $hasDocs = false; @endphp
-                                                @if ($tenant->application_document)
+                                                @if ($tenant->user->personal_document)
                                                 @php $hasDocs = true; @endphp
-                                                <div><a href="{{ Storage::url($tenant->application_document) }}"
+                                                <div><a href="{{ asset('storage/upload/tenantdocument/' . $tenant->user->personal_document) }}"
                                                         target="_blank">Application Document</a></div>
                                                 @endif
-                                                @if ($tenant->driving_licence)
+                                                @if ($tenant->user->ic_document)
                                                 @php $hasDocs = true; @endphp
-                                                <div><a href="{{ Storage::url($tenant->driving_licence) }}"
+                                                <div><a href="{{ asset('storage/upload/tenantdocument/' . $tenant->user->ic_document) }}"
                                                         target="_blank">Driving Licence</a></div>
                                                 @endif
-                                                @if ($tenant->bank_statement)
+                                                @if ($tenant->user->miscellaneous)
                                                 @php $hasDocs = true; @endphp
-                                                <div><a href="{{ Storage::url($tenant->bank_statement) }}"
+                                                <div><a href="{{ asset('storage/upload/tenantdocument/' . $tenant->user->miscellaneous) }}"
                                                         target="_blank">Bank Statement</a></div>
                                                 @endif
                                                 @unless ($hasDocs)
@@ -994,11 +998,11 @@ $country = $tenant->state?->country?->name ?? '-';
                                                 'pending';
                                                 @endphp
                                                 <td>
-                                                    <select class="form-select form-select-sm status-select" data-ym="{{ $ym }}">
-                                                        <option value="pending" {{ $month['status'] === 'pending' ? 'selected' : '' }}>Pending</option>
-                                                        <option value="paid" {{ $month['status'] === 'paid' ? 'selected' : '' }}>Paid</option>
-                                                    </select>
-                                                </td>
+													<select class="form-select form-select-sm status-select" data-ym="{{ $ym }}">
+														<option value="pending" {{ $month['status'] === 'pending' ? 'selected' : '' }}>Pending</option>
+														<option value="paid" {{ $month['status'] === 'paid' ? 'selected' : '' }}>Paid</option>
+													</select>
+												</td>
 
                                                 {{-- Actions --}}
                                                 <td> ... </td>
@@ -1164,8 +1168,7 @@ $country = $tenant->state?->country?->name ?? '-';
                                             <th>Status</th>
                                             <th>Action</th>
                                         </tr>
-                                    </thead>
-                                    
+                                    </thead>        
                                     @php
                                     $tenantotherinvoicesall =
                                     DB::table('other_invoices')->where('tenant_id',$u->id)->where('property_id',$tenant->property_id)->get();
@@ -1173,25 +1176,28 @@ $country = $tenant->state?->country?->name ?? '-';
                                     <tbody class="text-center">
                                         @forelse($tenantotherinvoicesall as $i)
                                         <tr>
-                                            <td>{{ $i->id }}</td>
+                                            <td>{{ $i->invoice_no }}</td>
                                             <td>${{ $i->amount }}</td>
                                             <td>
                                                 <span class="badge bg-success">{{ $i->status }}</span>
                                                 <!-- <span class="badge bg-warning">Pending</span> -->
                                             </td>
                                             <td>
-                                                <a target="_blank" href=""><i
+                                                {{--<a target="_blank" href=""><i
                                                         class="ti ti-eye mx-1" data-bs-toggle="tooltip"
                                                         data-bs-title="View"></i></a>
                                                 <a target="_blank" href="{{ route('otherInvoice.download', $i->id) }}"><i
                                                         class="ti ti-download mx-1" data-bs-toggle="tooltip"
-                                                        data-bs-title="Download"></i></a>
+                                                        data-bs-title="Download"></i></a>--}}
                                                 <a target="_blank" href="{{ route('other_invoices.email_preview', $i->id) }}"><i 
                                                         class="ti ti-refresh mx-1" data-bs-toggle="tooltip"
                                                         data-bs-title="Resend Invoice"></i></a>
                                             </td>
                                         </tr>
                                         @empty
+                                           <tr>
+                                                <td colspan="6" class="text-center">No invoices found.</td>
+                                            </tr>
                                         @endforelse
 
 
@@ -1203,98 +1209,111 @@ $country = $tenant->state?->country?->name ?? '-';
                     </div>
                 </div>
 
-                <div class="tab-pane fade" id="notice_content" role="tabpanel" aria-labelledby="notice-tab">
-                    <div class="card box-card w-100">
-                        <div class="card-header">
-                            <h5>Generate Notice</h5>
+<div class="tab-pane fade" id="notice_content" role="tabpanel" aria-labelledby="notice-tab">
+    <div class="card box-card w-100">
+        <div class="card-header">
+            <h5>Generate Notice</h5>
+        </div>
+        @php
+            $noticesall = DB::table('managen-notice')->where('created_by',\Auth::user()->id)->where('status','1')->get();
+            $templates = DB::table('manage-template')->where('created_by', \Auth::user()->id)->orderBy('created_at', 'desc')->get();
+        @endphp
+        <div class="card-body allwhite">
+            <div class=" ">
+                <div class="">
+                <div class="row g-3">
+                  @if(!empty($noticesall))
+                    @foreach($noticesall as $index => $notice)
+                       <div class="col-md-4">
+                            <a href="{{url('owner-generate-notice/'.$notice->id.'/'.$tenant->id)}}" class="btn btn-secondary w-100" data-size="lg" data-url="{{url('owner-generate-notice/'.$notice->id.'/'.$tenant->id)}}" data-title="Generate notice">{{ $notice->name }}</a>
                         </div>
-                        @php
-                            $noticesall = DB::table('managen-notice')->where('created_by',\Auth::user()->id)->get();
-                            $templates = DB::table('manage-template')->where('created_by', \Auth::user()->id)->orderBy('created_at', 'desc')->get();
-                        @endphp
-                        <div class="card-body allwhite">
-                            <div class="card-body allwhite">
-                                <div class="table-responsive">
-                                    <table class="table table-bordered align-middle">
-                                        <thead class="table-light">
-                                            <tr class="text-center">
-                                                <th>#</th>
-                                                <th>Notice Name</th>
-                                                <th>Status</th>
-                                                <th>Created At</th>
-                                                <th>Template</th>
-                                                <th>Action</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            @forelse($noticesall as $index => $notice)
-                                            <tr class="text-center">
-                                                <td>{{ $index + 1 }}</td>
-                                                <td>{{ $notice->name }}</td>
-                                                <td>{{ ucfirst($notice->status ?? 'N/A') }}</td>
-                                                <td>{{ \Carbon\Carbon::parse($notice->created_at)->format('Y-m-d') }}</td>
-                                                <td>
-                                                    <select class="form-select templateSelect" data-notice="{{ $notice->id }}">
-                                                        <option value="">-- Select Template --</option>
-                                                        @foreach($templates as $template)
-                                                            <option value="{{ $template->id }}"
-                                                                data-subject="{{ $template->subject }}"
-                                                                data-body="{{ $template->body }}">
-                                                                {{ $template->name }}
-                                                            </option>
-                                                        @endforeach
-                                                    </select>
-                                                </td>
-                                                <td>
-                                                    <button type="button"
-                                                        class="btn btn-primary btn-sm previewBtn"
-                                                        data-notice="{{ $notice->id }}"
-                                                        style="display:none;"
-                                                        data-bs-toggle="modal"
-                                                        data-bs-target="#previewModal">
-                                                        Preview
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                            @empty
-                                            <tr>
-                                                <td colspan="6" class="text-center text-muted">No notices found.</td>
-                                            </tr>
-                                            @endforelse
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
+                    @endforeach
+                  @else
+                    <div class="col-md-12 mt-3">
+                        <div class="text-center text-muted">No notices found.</div>
+                    </div>
+                  @endif
+                    </div>
+                    {{--<!-- <table class="table table-bordered align-middle">
+                        <thead class="table-light">
+                            <tr class="text-center">
+                                <th>#</th>
+                                <th>Notice Name</th>
+                                <th>Status</th>
+                                <th>Created At</th>
+                                <th>Template</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($noticesall as $index => $notice)
+                            <tr class="text-center">
+                                <td>{{ $index + 1 }}</td>
+                                <td>{{ $notice->name }}</td>
+                                <td>{{ ucfirst($notice->status ?? 'N/A') }}</td>
+                                <td>{{ \Carbon\Carbon::parse($notice->created_at)->format('Y-m-d') }}</td>
+                                <td>
+                                    <select class="form-select templateSelect" data-notice="{{ $notice->id }}">
+                                        <option value="">-- Select Template --</option>
+                                        @foreach($templates as $template)
+                                            <option value="{{ $template->id }}"
+                                                data-subject="{{ $template->subject }}"
+                                                data-body="{{ $template->body }}">
+                                                {{ $template->name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </td>
+                                <td>
+                                    <button type="button"
+                                        class="btn btn-primary btn-sm previewBtn"
+                                        data-notice="{{ $notice->id }}"
+                                        style="display:none;"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#previewModal">
+                                        Preview
+                                    </button>
+                                </td>
+                            </tr>
+                            @empty
+                            <tr>
+                                <td colspan="6" class="text-center text-muted">No notices found.</td>
+                            </tr>
+                            @endforelse
+                        </tbody>
+                    </table> -->--}}
+                </div>
+            </div>
 
-                        </div>
+        </div>
 
-                        {{-- Preview Modal --}}
-                        <div class="modal fade" id="previewModal" tabindex="-1" aria-hidden="true">
-                            <div class="modal-dialog modal-lg modal-dialog-centered">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h5 class="modal-title">Preview Email</h5>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                    </div>
-                                    <div class="modal-body">
-                                        <h6 id="previewSubject" class="fw-bold"></h6>
-                                        <hr>
-                                        <div id="previewBody" style="white-space: pre-wrap;"></div>
-                                    </div>
-                                    <div class="modal-footer">
-                                        <form id="sendMailForm" method="POST" action="">
-                                            @csrf
-                                            <input type="hidden" name="tenant_id" value="{{ $tenant->id }}">
-                                            <input type="hidden" name="template_id" id="template_id">
-                                            <input type="hidden" name="notice_id" id="notice_id">
-                                            <button type="submit" class="btn btn-success">Send Mail</button>
-                                        </form>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+        {{-- Preview Modal --}}
+        <div class="modal fade" id="previewModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Preview Email</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <h6 id="previewSubject" class="fw-bold"></h6>
+                        <hr>
+                        <div id="previewBody" style="white-space: pre-wrap;"></div>
+                    </div>
+                    <div class="modal-footer">
+                        <form id="sendMailForm" method="POST" action="">
+                            @csrf
+                            <input type="hidden" name="tenant_id" value="{{ $tenant->id }}">
+                            <input type="hidden" name="template_id" id="template_id">
+                            <input type="hidden" name="notice_id" id="notice_id">
+                            <button type="submit" class="btn btn-success">Send Mail</button>
+                        </form>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
 
                 <div class="tab-pane fade" id="document_content" role="tabpanel" aria-labelledby="document-tab">
                     <!-- List Document -->
@@ -1317,21 +1336,42 @@ $country = $tenant->state?->country?->name ?? '-';
                                             </tr>
                                         </thead>
                                         <tbody class="text-center">
-                                            <tr>
-                                                <td>Document 1</td>
+                                    @foreach($senddocdata as $senddocval)
+
+                                      @php
+                                        $usersdoc = DB::table('users')->where('id',$senddocval->user_id)->first();
+                                      @endphp
+                                            <tr data-id="{{ $senddocval->id }}"
+                                            data-docname2="@if($senddocval->document == '1') Application Document
+                                                            @elseif($senddocval->document == '2') Driving Licence
+                                                            @else Bank Statement @endif"
+                                            data-link="@if($senddocval->document == '1') {{ asset('storage/upload/tenantdocument/' . $usersdoc->personal_document) }}
+                                                       @elseif($senddocval->document == '2') {{ asset('storage/upload/tenantdocument/' . $usersdoc->ic_document) }}
+                                                       @else {{ asset('storage/upload/tenantdocument/' . $usersdoc->miscellaneous) }} @endif"
+                                            data-subject2="{{ $senddocval->subject ?? 'N/A' }}"
+                                            data-comment2="{{ $senddocval->description ?? 'No comment' }}">
+                                            @if($senddocval->document == '1')
+                                                <td>Application Document</td>
+                                            @elseif($senddocval->document == '2')
+                                                <td>Driving Licence</td>
+                                            @else
+                                                <td>Bank Statement</td>
+                                            @endif
                                                 <td><span class="badge bg-success">Delivered</span></td>
                                                 <td>
-                                                    <a href="#" class="view-btn"><i class="ti ti-eye mx-1"></i></a>
+                                                    <a href="#" class="view-btn show-doc"><i class="ti ti-eye mx-1"></i></a>
+                                                    <a href="#" class=""><i class="ti ti-send mx-1"></i></a>
                                                 </td>
                                             </tr>
-                                            <tr>
+                                    @endforeach
+                                            <!-- <tr>
                                                 <td>Document 2</td>
                                                 <td><span class="badge bg-warning text-dark">Pending</span>
                                                 </td>
                                                 <td>
                                                     <a href="#" class="view-btn"><i class="ti ti-eye mx-1"></i></a>
                                                 </td>
-                                            </tr>
+                                            </tr> -->
                                         </tbody>
                                     </table>
                                 </div>
@@ -1347,26 +1387,27 @@ $country = $tenant->state?->country?->name ?? '-';
                         </div>
                         <div class="card-body allwhite mb-0">
                             <div class="card theme-card">
-                                <form id="sendDocForm" enctype="multipart/form-data">
+                                <form action="{{url('owner-send-doc/'.$tenant->user->id.'/'.$tenant->id)}}" method="post" id="sendDocForm" enctype="multipart/form-data">
+                                    @csrf
                                     <div class="mb-3">
                                         <label for="toEmail" class="form-label">Select Document</label>
-                                        <select name="" id="" class="form-control">
+                                        <select name="document" id="" required class="form-control">
                                             <option value="">-- Select --</option>
-                                            <option value="">Document 1</option>
-                                            <option value="">Document 2</option>
-                                            <option value="">Document 3</option>
+                                            <option value="1">Application Document</option>
+                                            <option value="2">Driving Licence</option>
+                                            <option value="3">Bank Statement</option>
                                         </select>
                                     </div>
 
                                     <div class="mb-3">
                                         <label for="subject" class="form-label">Subject</label>
-                                        <input type="text" class="form-control" id="subject" name="subject"
+                                        <input type="text" class="form-control" id="subject" name="subject" required 
                                             placeholder="Document subject..." required="">
                                     </div>
 
                                     <div class="mb-3">
                                         <label for="description" class="form-label">Comment</label>
-                                        <textarea class="form-control" id="description" name="description" rows="4"
+                                        <textarea class="form-control" id="description" name="description" required rows="4"
                                             placeholder="Enter details..."></textarea>
                                     </div>
 
@@ -1379,7 +1420,7 @@ $country = $tenant->state?->country?->name ?? '-';
                     </div>
 
                     <!-- View Document -->
-                    <div class="card box-card w-100 view-document document-card d-none">
+                    <div class="card box-card w-100 view-document view-document2  document-card d-none">
                         <div class="card-header d-flex justify-content-between align-items-center">
                             <h5>View Document</h5>
                             <span class="btn btn-outline-secondary back-btn">Back</span>
@@ -1395,28 +1436,28 @@ $country = $tenant->state?->country?->name ?? '-';
                                         <!-- Document -->
                                         <div class="mb-3">
                                             <label class="form-label fw-bold">Selected Document</label>
-                                            <p class="form-control-plaintext">Document 1</p>
+                                            <p class="doc-name">Document 1</p>
                                         </div>
 
                                         <!-- Subject -->
                                         <div class="mb-3">
                                             <label class="form-label fw-bold">Subject</label>
-                                            <p class="form-control-plaintext">Sample Subject for Document
+                                            <p class="doc-subject">Sample Subject for Document
                                             </p>
                                         </div>
 
                                         <!-- Comment -->
                                         <div class="mb-3">
                                             <label class="form-label fw-bold">Comment</label>
-                                            <p class="form-control-plaintext">
+                                            <p class="doc-comment">
                                                 This is the comment text entered by the user.
                                                 It shows the details about the document.
                                             </p>
                                         </div>
 
-                                        <div class="text-end">
+                                        <!-- <div class="text-end">
                                             <a href="#" class="btn btn-secondary back-btn">Back</a>
-                                        </div>
+                                        </div> -->
 
                                     </div>
                                 </div>
@@ -1426,7 +1467,8 @@ $country = $tenant->state?->country?->name ?? '-';
                     </div>
                 </div>
 
-                <div class="tab-pane fade" id="report_content" role="tabpanel" aria-labelledby="report-tab">
+
+                <!-- <div class="tab-pane fade" id="report_content" role="tabpanel" aria-labelledby="report-tab">
                     <div class="card box-card w-100">
                         <div class="card-header">
                             <h5>Report</h5>
@@ -1444,21 +1486,18 @@ $country = $tenant->state?->country?->name ?? '-';
                                         </select>
                                     </div>
 
-                                    <!-- Subject -->
                                     <div class="mb-3">
                                         <label for="subject" class="form-label">Subject</label>
                                         <input type="text" class="form-control" id="subject" name="subject"
                                             placeholder="Document subject..." required="">
                                     </div>
 
-                                    <!-- Description -->
                                     <div class="mb-3">
                                         <label for="description" class="form-label">Comment</label>
                                         <textarea class="form-control" id="description" name="description" rows="4"
                                             placeholder="Enter details..."></textarea>
                                     </div>
 
-                                    <!-- Send Button -->
                                     <div class="text-end">
                                         <button type="submit" class="btn btn-secondary">Send</button>
                                     </div>
@@ -1467,7 +1506,7 @@ $country = $tenant->state?->country?->name ?? '-';
                             </div>
                         </div>
                     </div>
-                </div>
+                </div> -->
 
                 <!-- a -->
                 <div class="tab-pane fade" id="emergency_content" role="tabpanel" aria-labelledby="emergency-tab">
@@ -1519,12 +1558,12 @@ $country = $tenant->state?->country?->name ?? '-';
                                         <tr>
                                             <td><b class="text-header">State</b></td>
                                             <td>:</td>
-                                            <td>{{ $tenant->state?->name ?? '-' }}</td>
+                                            <td>{{ $statesdata?->name ?? '-' }}</td>
                                         </tr>
                                         <tr>
                                             <td><b class="text-header">City</b></td>
                                             <td>:</td>
-                                            <td>{{ $tenant->city?->name ?? '-' }}</td>
+                                            <td>{{ $citiesdata?->name ?? '-' }}</td>
                                         </tr>
                                         <tr>
                                             <td><b class="text-header">Zip Code</b></td>
@@ -1534,13 +1573,13 @@ $country = $tenant->state?->country?->name ?? '-';
                                         <tr>
                                             <td><b class="text-header">Property</b></td>
                                             <td>:</td>
-                                            <td>{{ $tenant->property?->title ?? ($tenant->property?->name ?? '-') }}
+                                            <td>{{ $propertyname?->name ?? '-' }}
                                             </td>
                                         </tr>
                                         <tr>
                                             <td><b class="text-header">Unit</b></td>
                                             <td>:</td>
-                                            <td>{{ $tenant->unit?->name ?? ($tenant->unit?->number ?? '-') }}</td>
+                                            <td>{{ $propertyunit?->name ?? '-' }}</td>
                                         </tr>
                                         <tr>
                                             <td><b class="text-header">Lease Start Date</b></td>
@@ -1557,19 +1596,19 @@ $country = $tenant->state?->country?->name ?? '-';
                                             <td>:</td>
                                             <td>
                                                 @php $hasDocs = false; @endphp
-                                                @if ($tenant->application_document)
+                                                @if ($tenant->user->personal_document)
                                                 @php $hasDocs = true; @endphp
-                                                <div><a href="{{ Storage::url($tenant->application_document) }}"
+                                                <div><a href="{{ asset('storage/upload/tenantdocument/' . $tenant->user->personal_document) }}"
                                                         target="_blank">Application Document</a></div>
                                                 @endif
-                                                @if ($tenant->driving_licence)
+                                                @if ($tenant->user->ic_document)
                                                 @php $hasDocs = true; @endphp
-                                                <div><a href="{{ Storage::url($tenant->driving_licence) }}"
+                                                <div><a href="{{ asset('storage/upload/tenantdocument/' . $tenant->user->ic_document) }}"
                                                         target="_blank">Driving Licence</a></div>
                                                 @endif
-                                                @if ($tenant->bank_statement)
+                                                @if ($tenant->user->miscellaneous)
                                                 @php $hasDocs = true; @endphp
-                                                <div><a href="{{ Storage::url($tenant->bank_statement) }}"
+                                                <div><a href="{{ asset('storage/upload/tenantdocument/' . $tenant->user->miscellaneous) }}"
                                                         target="_blank">Bank Statement</a></div>
                                                 @endif
                                                 @unless ($hasDocs)
@@ -1678,6 +1717,76 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('notice_id').value = this.dataset.notice;
         });
     });
+});
+</script>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+$(document).ready(function() {
+    // Send New button click
+    $('.add-new-btn').on('click', function() {
+        $('.list-document').addClass('d-none'); // hide list
+        $('.send-document').removeClass('d-none'); // show form
+    });
+
+    // Back button click inside Send Document
+    $('.send-document .back-btn').on('click', function() {
+        $('.send-document').addClass('d-none'); // hide form
+        $('.list-document').removeClass('d-none'); // show list
+    });
+
+    // Back button inside View Document
+    $('.view-document .back-btn').on('click', function() {
+        $('.view-document').addClass('d-none'); // hide view
+        $('.list-document').removeClass('d-none'); // show list
+    });
+
+    // Optional: View button click to show View Document
+    $('.view-btn').on('click', function() {
+        var row = $(this).closest('tr');
+        var docName = row.find('td:first').text();
+        var status = row.find('td:nth-child(2)').text();
+
+        // Fill details in view-document
+        $('.view-document p.form-control-plaintext').eq(0).text(docName); // Selected Document
+        $('.view-document p.form-control-plaintext').eq(1).text('Subject for ' + docName); // Subject
+        $('.view-document p.form-control-plaintext').eq(2).text('Comment for ' + docName); // Comment
+
+        $('.list-document').addClass('d-none'); // hide list
+        $('.view-document').removeClass('d-none'); // show view
+    });
+});
+</script>
+
+
+<script>
+$(document).ready(function() {
+
+    // View button click
+    $('.show-doc').on('click', function() {
+        var row = $(this).closest('tr');
+
+        var docName = row.data('docname2');   // Text only
+        var fileUrl = row.data('link');       // Actual file link
+        var subject = row.data('subject2');
+        var comment = row.data('comment2');
+
+        // Populate view-document div
+        $('.view-document2 .doc-name')
+            .html('<a href="'+fileUrl+'" target="_blank">'+docName+'</a>'); // clickable text
+        $('.view-document2 .doc-subject').text(subject);
+        $('.view-document2 .doc-comment').text(comment);
+
+        $('.list-document').addClass('d-none');
+        $('.view-document2').removeClass('d-none');
+    });
+
+    // Back button click
+    $('.view-document2 .back-btn').on('click', function() {
+        $('.view-document2').addClass('d-none');
+        $('.list-document').removeClass('d-none');
+    });
+
 });
 </script>
 <script>

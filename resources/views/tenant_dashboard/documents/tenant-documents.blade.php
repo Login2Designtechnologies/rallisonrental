@@ -51,6 +51,10 @@
                   @endif
                   <td>
                   @if($tenantDocument->document == '1')
+                      <a href="{{url('tenant-documents-detail/'.$tenantDocument->id)}}" 
+                        target="_blank">
+                        <i class="ti ti-eye mx-1" data-bs-toggle="tooltip" data-bs-title="View Document Details"></i>
+                      </a>
                       <a href="{{ asset('storage/upload/tenantdocument/' . $usersdoc->personal_document) }}" 
                         target="_blank">
                         <i class="ti ti-eye mx-1" data-bs-toggle="tooltip" data-bs-title="View"></i>
@@ -59,6 +63,10 @@
                         <i class="ti ti-download mx-1" data-bs-toggle="tooltip" data-bs-title="Download"></i>
                       </a>
                   @elseif($tenantDocument->document == '2')
+                      <a href="{{url('tenant-documents-detail/'.$tenantDocument->id)}}" 
+                        target="_blank">
+                        <i class="ti ti-eye mx-1" data-bs-toggle="tooltip" data-bs-title="View Document Details"></i>
+                      </a>
                       <a href="{{ asset('storage/upload/tenantdocument/' . $usersdoc->ic_document) }}" 
                         target="_blank">
                         <i class="ti ti-eye mx-1" data-bs-toggle="tooltip" data-bs-title="View"></i>

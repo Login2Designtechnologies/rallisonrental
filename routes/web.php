@@ -74,6 +74,12 @@ Route::get('payments', [HomeController::class, 'payments'])->name('payments')->m
     ]
 );
 
+Route::get('payments-search', [HomeController::class, 'payments_search'])->name('payments-search')->middleware(
+    [
+        'XSS',
+    ]
+);
+
 
 
 Route::get('ticket-support', [HomeController::class, 'ticket_support'])->name('ticket_support')->middleware(
@@ -86,7 +92,12 @@ Route::get('add-ticket', [HomeController::class, 'add_ticket'])->name('add_ticke
         'XSS',
     ]
 );
-Route::get('view-ticket', [HomeController::class, 'view_ticket'])->name('view_ticket')->middleware(
+Route::get('view-ticket/{id}', [HomeController::class, 'view_ticket'])->name('view_ticket')->middleware(
+    [
+        'XSS',
+    ]
+);
+Route::post('ownerviewticket-store', [HomeController::class, 'ownerviewticket_store'])->name('ownerviewticket-store')->middleware(
     [
         'XSS',
     ]
@@ -160,19 +171,28 @@ Route::middleware(['auth', 'XSS'])->group(function () {
     Route::get('tenant-ticket-support', [HomeController::class, 'tenant_ticket_support'])
         ->name('tenant_ticket_support');
 
-    Route::get('tenant-view-ticket', [HomeController::class, 'tenant_view_ticket'])
+    Route::get('tenant-view-ticket/{id}', [HomeController::class, 'tenant_view_ticket'])
         ->name('tenant_view_ticket');
+
+    Route::post('viewticket-store', [HomeController::class, 'viewticket_store'])
+        ->name('viewticket-store');
 
     Route::get('add-tenant-ticket', [HomeController::class, 'add_tenant_ticket'])
         ->name('add_tenant_ticket');
-
-    Route::post('/tickets', [HomeController::class, 'store'])->name('tickets.store');
+		
+	Route::post('/tickets', [HomeController::class, 'store'])->name('tickets.store');
 
     Route::get('tenant-notices', [HomeController::class, 'tenant_notices'])
         ->name('tenant_notices');
 
+    Route::get('tenant-notices-detail/{id}', [HomeController::class, 'tenantnotices_detail'])
+        ->name('tenant-notices-detail');
+
     Route::get('tenant-documents', [HomeController::class, 'tenant_documents'])
         ->name('tenant_documents');
+
+    Route::get('tenant-documents-detail/{id}', [HomeController::class, 'tenant_documents_detail'])
+        ->name('tenant-documents-detail');
 
     Route::get('tenant/document/{id}/download', [HomeController::class, 'download'])
         ->name('tenant.document.download');
@@ -475,8 +495,12 @@ Route::middleware(['auth', 'XSS'])->group(function () {
     Route::post('/tenant/payment-status/update', [TenantController::class, 'updatePaymentStatus'])->name('tenant.payment.update');
 });
 
-
 Route::post('tenant-contractsupdate/{tenant?}', [TenantController::class, 'tenant_contractsupdate'])->name('tenant-contractsupdate');
+
+
+Route::get('owner-generate-notice/{id?}/{tenantid?}', [TenantController::class, 'owner_generate_notice'])->name('owner-generate-notice');
+
+Route::post('/owner-send-doc/{userid?}/{tenantid?}', [TenantController::class, 'owner_send_doc'])->name('owner-send-doc');
 
 Route::post('/tenants/{tenant}/resend', [TenantController::class, 'resendInvoice'])
     ->name('tenants.resend');

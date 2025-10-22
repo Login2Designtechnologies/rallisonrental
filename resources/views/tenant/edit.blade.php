@@ -289,7 +289,7 @@
                                 {{ Form::label('property', __('Property'), ['class' => 'form-label']) }}
                                 <span class="text-danger">*</span>
                                 {{ Form::select(
-                                    'property',
+                                    'property_id',
                                     $property,     // array or collection: [id => name]
                                     null,
                                     [
@@ -302,7 +302,7 @@
                             </div>
 
                             @php
-                               $propertyunit = DB::table('property_units')->where('property_id',$tenantsedit->property)->where('status','1')->get();
+                               $propertyunit = DB::table('property_units')->where('property_id',$tenantsedit->property_id)->where('status','1')->get();
                             @endphp
                             <div class="form-group col-lg-6 col-md-6">
                                 {{ Form::label('unit', __('Unit'), ['class' => 'form-label']) }}
@@ -311,7 +311,7 @@
                                         <option value="">{{ __('Select Unit') }}</option>
                                         @foreach($propertyunit as $propertyval)
                                             <option value="{{ $propertyval->id }}" 
-                                                {{ old('unit', $tenantsedit->unit ?? '') == $propertyval->id ? 'selected' : '' }}>
+                                                {{ old('unit', $tenantsedit->property_unit_id ?? '') == $propertyval->id ? 'selected' : '' }}>
                                                 {{ $propertyval->name ?? '' }}
                                             </option>
                                         @endforeach

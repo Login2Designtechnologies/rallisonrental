@@ -10,7 +10,6 @@ use App\Models\Property;
 use App\Models\Subscription;
 use App\Models\Tenant;
 use App\Models\TenantDocument;
-use App\Models\TenantPaymentStatus;
 use App\Models\User;
 use App\Models\UtilityInvoice;
 use Illuminate\Http\Request;
@@ -20,6 +19,8 @@ use DB;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Auth;
+use App\Models\TenantPaymentStatus;
 
 class TenantController extends Controller
 {
@@ -604,22 +605,31 @@ class TenantController extends Controller
             }
 
         }
-
-        $paymentStatuses = DB::table('tenant_payment_statuses')
+		
+		$paymentStatuses = DB::table('tenant_payment_statuses')
             ->where('tenant_id', $tenant->id)
             ->where('property_id', $tenantcontracts->property_id ?? 0)
             ->pluck('status', 'month');
 
         // Optionally remove duplicate months (keep first occurrence)
-        $periods = $periods->map(function ($period) use ($paymentStatuses) {
+		$periods = $periods->map(function ($period) use ($paymentStatuses) {
             $period['status'] = $paymentStatuses[$period['ym']] ?? 'pending';
             return $period;
         });
+       
+        $citiesdata = DB::table('cities')->where('id',$tenant->city)->first();
+        $statesdata = DB::table('states')->where('id',$tenant->state)->first();
 
-        return view('tenant.show', compact('tenant', 'contract', 'periods', 'contractRenewals', 'propertyAmenitiesTotal','tenantcontracts'));
+        $propertyname = DB::table('properties')->where('id',$tenant->property_id)->first();
+
+        $propertyunit = DB::table('property_units')->where('property_id',$tenant->property_id)->first();
+
+        $senddocdata = DB::table('owner-send-doc')->where('tenant_id',$tenant->id)->where('created_by',Auth::user()->id)->get();
+
+        return view('tenant.show', compact('tenant', 'contract', 'periods', 'contractRenewals', 'propertyAmenitiesTotal','tenantcontracts','citiesdata','statesdata','propertyunit','propertyname','senddocdata'));
     }
-
-    public function updatePaymentStatus(Request $request)
+	
+	public function updatePaymentStatus(Request $request)
     {
         $validated = $request->validate([
             'tenant_id' => 'required|integer',
@@ -639,6 +649,8 @@ class TenantController extends Controller
 
         return response()->json(['success' => true]);
     }
+
+
     public function resendInvoice($id)
     {
         $tenant = Tenant::findOrFail($id);
@@ -823,7 +835,7 @@ class TenantController extends Controller
                 'city'    => 'required',
                 'zip_code'=> 'required',
                 'address' => 'required',
-                'property'=> 'required',
+                'property_id'=> 'required',
             ]
         );
 
@@ -881,8 +893,8 @@ class TenantController extends Controller
         $tenant->city    = $request->city;
         $tenant->zip_code= $request->zip_code;
         $tenant->address = $request->address;
-        $tenant->property= $request->property;
-        $tenant->unit    = $request->unit;
+        $tenant->property_id= $request->property_id;
+        $tenant->property_unit_id    = $request->unit;
         $tenant->lease_start_date = $request->lease_start_date;
         $tenant->lease_end_date   = $request->lease_end_date;
         $tenant->save();
@@ -1037,4 +1049,52 @@ class TenantController extends Controller
 
         return back()->with('success', 'Notice email sent successfully.');
     }
+
+
+
+     public function owner_generate_notice(Request $request,$id,$tenantid)
+    {
+        
+        $checknotice = DB::table('managen-notice')->where('id',$id)->first();
+
+        if(!empty($checknotice)){
+          
+          $noticedatainsert = [
+            'notice_id' => $id,
+            'tenant_id' => $tenantid,
+            'name' => $checknotice->name,
+            'subject' => $checknotice->subject,
+            'body' => $checknotice->body,
+            'created_by' => Auth::user()->id,
+          ];
+
+          DB::table('owner-generatenotice')->insert($noticedatainsert);
+          return redirect('tenant/'.$tenantid)->with('success', __('Generate Notice successfully.'));
+        }else{
+           return redirect('tenant/'.$tenantid)->with('error', __('Generate Notice Id Not Match.'));
+        }
+
+    }
+   
+
+
+     public function owner_send_doc(Request $request,$userid,$tenantid)
+    {
+          $senddocinsert = [
+            'user_id' => $userid,
+            'tenant_id' => $tenantid,
+            'document' => $request->document,
+            'subject' => $request->subject,
+            'description' => $request->description,
+            'created_by' => Auth::user()->id,
+          ];
+
+          DB::table('owner-send-doc')->insert($senddocinsert);
+          return redirect('tenant/'.$tenantid)->with('success', __('Send Document successfully.'));
+
+    }
+
+
+
+
 }

@@ -34,6 +34,7 @@ use App\Models\Ticket;
 use App\Models\TenantContract;
 use Barryvdh\DomPDF\Facade\Pdf;
 use DB;
+use Illuminate\Support\Str;
 
 class HomeController extends Controller
 {
@@ -86,8 +87,8 @@ class HomeController extends Controller
                 $result['recentTenant'] = Tenant::where('parent_id', parentId())->orderby('id', 'desc')->limit(5)->get();
                 $result['incomeExpenseByMonth'] = $this->incomeByMonth();
                 $result['settings'] = settings();
-
-                $ownerId = auth()->id();
+				
+				$ownerId = auth()->id();
                 $today = Carbon::today();
 
                 // Fetch all invoices for this owner (excluding draft/cancelled)
@@ -126,7 +127,6 @@ class HomeController extends Controller
                     ->whereIn('status', ['delivered', 'overdue']) // unpaid or marked overdue
                     ->whereDate('due_date', '<', $today)
                     ->sum('amount');
-
 
 
                 return view('dashboard.index', compact('result'));
@@ -213,41 +213,94 @@ class HomeController extends Controller
 
 
     public function payments() {
-        // dd("Hello");
-        return View('dashbaordpage.payments');
-    } 
-    public function manage_notice() {
-        // dd("Hello");
-        return View('dashbaordpage.manage-notice');
-    } 
-    public function add_notice() {
-        // dd("Hello");
-        return View('dashbaordpage.add-notice');
-    } 
-    public function edit_notice() {
-        // dd("Hello");
-        return View('dashbaordpage.edit-notice');
+        $propertiesdata = DB::table('properties')->where('is_active','1')->where('parent_id',Auth::user()->id)->get();
+        $data = [
+           'propertiesdata' => $propertiesdata,
+        ];
+        return View('payments.index',$data);
     } 
 
-    public function manage_template() {
-        return View('dashbaordpage.manage-template');
+    public function payments_search(Request $request) {
+
+        $propertiesdata = DB::table('properties')->where('is_active','1')->where('parent_id',Auth::user()->id)->get();
+        $propertiesearch = DB::table('properties')->where('id',$request->property)->where('parent_id',Auth::user()->id)->first();
+        $tenantssearch = DB::table('tenants')->where('property_id',$request->property)->where('parent_id',Auth::user()->id)->get();
+
+        $data = [
+           'propertiesdata' => $propertiesdata,
+           'propertiesearch' => $propertiesearch,
+           'tenantssearch' => $tenantssearch,
+        ];
+
+        return View('payments.index',$data);
     } 
-    public function add_template() {
-        return View('dashbaordpage.add-template');
-    } 
-    public function edit_template() {
-        return View('dashbaordpage.edit-template');
-    } 
+    
 
     public function ticket_support() {
-        return View('dashbaordpage.ticket-support');
+        $userscheck = DB::table('users')->where('id', Auth::user()->id)->first();
+        $tenantscheck = DB::table('tenants')->where('parent_id', $userscheck->id)->first();
+        $ticketsall = DB::table('tickets')->where('tenant_id',$tenantscheck->user_id)->get();
+        return View('owner_ticket_support.index',compact('ticketsall'));
     } 
-     public function add_ticket() {
+
+    public function view_ticket($id) {
+        $ticketalldata = DB::table('tickets')->where('id',$id)->first();
+        $useralldata = DB::table('users')->where('id',$ticketalldata->tenant_id)->first();
+        $ticketsupportall = DB::table('ticket_support')->where('ticket_id',$id)->get();
+        return View('owner_ticket_support.view-ticket',compact('ticketalldata','useralldata','ticketsupportall'));
+    } 
+
+    public function ownerviewticket_store(Request $request)
+    {
+        $request->validate([
+            'photo'=> 'required',
+            'description'=> 'required',
+        ]);
+
+        $photoPath = null;
+        if ($request->hasFile('photo')) {
+            $file = $request->file('photo');
+            $fileName = time().'_'.$file->getClientOriginalName();
+
+            $destinationPath = storage_path('upload/tickets');
+            if (!file_exists($destinationPath)) {
+                mkdir($destinationPath, 0777, true);
+            }
+
+            $file->move($destinationPath, $fileName);
+
+            // Save relative path in DB
+            $photoPath = $fileName;
+        }
+    
+        $randomticketId3 = '#' . time() . rand(1000, 9999);
+
+        DB::table('ticket_support')->insert([
+            'random_id' => $randomticketId3,
+            'ticket_id' => $request->ticket_id,
+            'subject' => $request->subject,
+            'description' => $request->description,
+            'category' => $request->category,
+            'status' => $request->status, 
+            'photo' => $photoPath,
+            'tenant_id' => Auth::user()->id, 
+            'owner_id' => Auth::user()->id, 
+            'property_id' => $request->property_id ?? null,
+        ]);
+
+        $ticketupdate = [
+           'status' => $request->status,
+        ];
+
+        DB::table('tickets')->where('tenant_id',$request->tenant_id)->where('id',$request->id)->update($ticketupdate);
+
+        return redirect('view-ticket/'.$request->id)->with('success', 'Ticket submitted successfully!');
+    }
+
+    public function add_ticket() {
         return View('dashbaordpage.add-ticket');
     } 
-     public function view_ticket() {
-        return View('dashbaordpage.view-ticket');
-    } 
+    
     public function late_fees() {
         return View('dashbaordpage.late-fees');
     } 
@@ -350,6 +403,7 @@ class HomeController extends Controller
 
     public function sendEmail(OtherInvoice $otherInvoice)
     {
+        // Mail::to($invoice->tenant->email)->send(new \App\Mail\OtherInvoiceMail($invoice));
         try {
             $otherInvoice->load(['tenant', 'owner', 'property', 'items']);
 
@@ -415,7 +469,6 @@ class HomeController extends Controller
 
         return redirect()->route('other')->with('success', 'Invoice updated successfully.');
     }
-
 
     public function view_payment() {
         return View('dashbaordpage.view-payment');
@@ -541,7 +594,8 @@ class HomeController extends Controller
 
         return View('tenant_dashboard.property-details', compact('property'));
     } 
-    public function payment_section() {
+	
+	public function payment_section() {
         // Fetch the tenant contract
         $contract = TenantContract::where('tenant_id', Auth::user()->tenants->id)
             ->with('renewals')
@@ -562,7 +616,7 @@ class HomeController extends Controller
         while ($current <= $endDate) {
             $months[] = [
                 'month_number' => $monthCounter,
-                'month' => $current->format('F-Y'),
+				'month' => $current->format('F-Y'),
                 'rent' => $contract->standard_rent,
                 'security' => $contract->security_deposit,
                 'last_month_rent' => $contract->standard_rent,
@@ -588,7 +642,7 @@ class HomeController extends Controller
             while ($renewalCurrent <= $renewalEndDate) {
                 $months[] = [
                     'month_number' => $counter,
-                    'month' => $renewalCurrent->format('F-Y'),
+					'month' => $renewalCurrent->format('F-Y'),					
                     'rent' => $contract->standard_rent + $renewal->amount_increase,
                     'security' => $contract->security_deposit,
                     'last_month_rent' => $contract->standard_rent + $renewal->amount_increase,
@@ -607,17 +661,24 @@ class HomeController extends Controller
     } 
     
     public function tenant_ticket_support() {
-        $tickets = Ticket::where('tenant_id', Auth::user()->tenants->id)->get();
-        return View('tenant_dashboard.tenant-ticket-support', compact('tickets'));
-    } 
-    public function tenant_view_ticket() {
-        return View('tenant_dashboard.tenant-view-ticket');
-    } 
-    public function add_tenant_ticket() {
-        return View('tenant_dashboard.add-tenant-ticket');
+        $tickets = Ticket::where('tenant_id', Auth::user()->id)->get();
+        return View('tenant_dashboard.tickets_upport.index', compact('tickets'));
     } 
 
-     public function store(Request $request)
+    public function tenant_view_ticket($id) {
+
+        $ticketsdata = DB::table('tickets')->where('id',$id)->where('tenant_id', Auth::user()->id)->first();
+        $userdata = DB::table('users')->where('id',$ticketsdata->tenant_id)->first();
+        $ticketsupportdata = DB::table('ticket_support')->where('ticket_id',$id)->get();
+
+        return View('tenant_dashboard.tickets_upport.view-ticket',compact('ticketsdata','ticketsupportdata','userdata'));
+    } 
+
+    public function add_tenant_ticket() {
+        return View('tenant_dashboard.tickets_upport.add-ticket');
+    } 
+	
+	public function store(Request $request)
     {
         // Validation
         $request->validate([
@@ -642,28 +703,100 @@ class HomeController extends Controller
 
             // Save relative path in DB
             $photoPath = $fileName;
-        }      
-
+        }
+    
+        $randomticketId = '#' . time() . rand(1000, 9999);
+        $randomticketId2 = '#' . time() . rand(1000, 9999);
         // Create ticket
         $ticket = Ticket::create([
+            'random_id' => $randomticketId,
             'subject' => $request->subject,
             'description' => $request->description,
             'category' => $request->category,
-            'status' => \App\Enums\TicketStatus::OPEN, 
+            /*'status' => \App\Enums\TicketStatus::OPEN,*/ 
+            'status' => '1', 
             'photo' => $photoPath,
-            'tenant_id' => Auth::user()->tenants->id, 
+            'tenant_id' => Auth::user()->id, 
+            'property_id' => Auth::user()->tenants->property_id ?? null,
+        ]);
+
+        DB::table('ticket_support')->insert([
+            'random_id' => $randomticketId2,
+            'ticket_id' => $ticket->id,
+            'subject' => $request->subject,
+            'description' => $request->description,
+            'category' => $request->category,
+            'status' => '1', 
+            'photo' => $photoPath,
+            'tenant_id' => Auth::user()->id, 
             'property_id' => Auth::user()->tenants->property_id ?? null,
         ]);
 
         return redirect()->route('tenant_ticket_support')->with('success', 'Ticket submitted successfully!');
     }
 
+
+
+    public function viewticket_store(Request $request)
+    {
+        $request->validate([
+            'photo'=> 'required',
+            'description'=> 'required',
+        ]);
+
+        $photoPath = null;
+        if ($request->hasFile('photo')) {
+            $file = $request->file('photo');
+            $fileName = time().'_'.$file->getClientOriginalName();
+
+            $destinationPath = storage_path('upload/tickets');
+            if (!file_exists($destinationPath)) {
+                mkdir($destinationPath, 0777, true);
+            }
+
+            $file->move($destinationPath, $fileName);
+
+            // Save relative path in DB
+            $photoPath = $fileName;
+        }
+    
+        $randomticketId3 = '#' . time() . rand(1000, 9999);
+
+        DB::table('ticket_support')->insert([
+            'random_id' => $randomticketId3,
+            'ticket_id' => $request->ticket_id,
+            'subject' => $request->subject,
+            'description' => $request->description,
+            'category' => $request->category,
+            'status' => $request->status, 
+            'photo' => $photoPath,
+            'tenant_id' => Auth::user()->id, 
+            'property_id' => Auth::user()->tenants->property_id ?? null,
+        ]);
+
+        return redirect('tenant-view-ticket/'.$request->id)->with('success', 'Ticket submitted successfully!');
+    }
+
+	
     public function tenant_notices() {
-        return View('tenant_dashboard.tenant-notices');
+        $generatenotice = DB::table('owner-generatenotice')->where('tenant_id', Auth::user()->tenants->id)->get();
+        return View('tenant_dashboard.notices.index',compact('generatenotice'));
     } 
+
+    public function tenantnotices_detail($id) {
+        $generatenoticedetail = DB::table('owner-generatenotice')->where('tenant_id', Auth::user()->tenants->id)->first();
+        $managennotice = DB::table('managen-notice')->where('id',$generatenoticedetail->notice_id)->first();
+        return View('tenant_dashboard.notices.detail', compact('generatenoticedetail','managennotice'));
+    } 
+
     public function tenant_documents() {
-		$tenantDocuments = TenantDocument::where('tenant_id', Auth::user()->tenants->id)->get();
-        return View('tenant_dashboard.tenant-documents', compact('tenantDocuments'));
+		/*$tenantDocuments = TenantDocument::where('tenant_id', Auth::user()->tenants->id)->get();*/
+        $tenantDocuments = DB::table('owner-send-doc')->where('tenant_id', Auth::user()->tenants->id)->get();
+        return View('tenant_dashboard.documents.tenant-documents', compact('tenantDocuments'));
+    }  
+    public function tenant_documents_detail($id) {
+        $tenantdocdetail = DB::table('owner-send-doc')->where('tenant_id', Auth::user()->tenants->id)->where('id', $id)->first();
+        return View('tenant_dashboard.documents.tenant-doc-detail', compact('tenantdocdetail'));
     } 
 	
 	public function download($id)
