@@ -87,11 +87,13 @@
                     }
                 }
 
+                // ✅ Dropzone Files
                 var files = $('#demo-upload').get(0).dropzone.getAcceptedFiles();
                 $.each(files, function (key, file) {
                     fd.append('property_images[' + key + ']', file);
                 });
 
+                // ✅ Serialize all form fields (includes costs)
                 var other_data = $('#property_form').serializeArray();
                 $.each(other_data, function (key, input) {
                     fd.append(input.name, input.value);
@@ -118,18 +120,20 @@
                 });
                 fd.append('utilities', JSON.stringify(utilities));
 
+                // ✅ Detect correct URL and method
                 let ajaxUrl = '';
                 let ajaxType = '';
 
                 if (formMode === 'edit') {
                     ajaxUrl = "{{ isset($property) ? route('property.update', $property->id) : '' }}";
-                    ajaxType = 'POST'; 
+                    ajaxType = 'POST'; // Laravel needs POST with _method=PUT
                     fd.append('_method', 'PUT');
                 } else {
                     ajaxUrl = "{{ route('property.store') }}";
                     ajaxType = 'POST';
                 }
-                
+
+                // ✅ AJAX call
                 $.ajax({
                     url: ajaxUrl,
                     headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') },
@@ -141,6 +145,7 @@
                         if (data.status === "success") {
                             toastrs(data.status, data.msg, data.status);
 
+                            // ✅ Redirect to property show
                             const url = '{{ route('property.index', ':id') }}'.replace(':id', data.id);
                             setTimeout(() => window.location.href = url, 1000);
                         } else {
@@ -155,6 +160,9 @@
                 });
             });
         });
+
+
+
     </script>
 
     <script>
@@ -179,11 +187,13 @@
                 const $address = $('textarea[name="address"]');
                 const addressVal = $address.val();
                 if (addressVal && addressVal.trim() !== '') {
+                    // Simulate typing once full DOM is ready and all form values are bound
                     $address.trigger('input');
                 }
                 updateNextButton();
             });
 
+            // Check all required fields inside the active tab
             function checkTabFields($tab) {
                 let allFilled = true;
                 $tab.find('.required-field').each(function() {
@@ -272,6 +282,8 @@
                 updateNextButton();
             });
 
+            // Important fix:
+            // On EDIT mode, trigger a check for all prefilled required fields once
             if (formMode === 'edit') {
                 setTimeout(() => {
                     $('.required-field').each(function() {
@@ -280,9 +292,10 @@
                             $(this).trigger('input');
                         }
                     });
-                    updateNextButton();
+                    updateNextButton(); // final validation after preload
                 }, 800);
             } else {
+                // On CREATE mode, keep disabled until filled
                 $('.nextButton').prop('disabled', true);
             }
         });
@@ -291,12 +304,14 @@
 
     <script>
         $(document).ready(function() {
+            // Add new unit
             $(document).on('click', '.add-unit', function() {
                 const newUnit = $('.unit_template').clone().removeClass('unit_template d-none').addClass('unit_list new');
                 $('.unit_list_results').append(newUnit);
                 $('.add-container').hide(); // Hide "Add" button until saved
             });
 
+            // Save unit
             $(document).on('click', '.save-unit', function() {
                 const unitBlock = $(this).closest('.unit_list');
                 const name = unitBlock.find('.unit-name').val().trim();
@@ -308,6 +323,7 @@
                     return;
                 }
 
+                // (Optional) Perform AJAX save here
                 // $.post('/save/unit', {name, status, notes, _token: '{{ csrf_token() }}'}, function(response){ ... });
 
                 // Simulate save success
@@ -324,6 +340,7 @@
                 toastrs('success', 'Unit saved successfully.', 'Success');
             });
 
+            // Remove unit
             $(document).on('click', '.remove-unit', function() {
                 $(this).closest('.unit_list').next('hr').remove();
                 $(this).closest('.unit_list').remove();
@@ -347,6 +364,7 @@
                 },
                 success: function (response) {
                     if (response.success) {
+                        // Remove image div
                         button.closest('div.position-relative').remove();
                         toastrs('success', response.message || 'Image deleted successfully.', 'Success');
                     } else {
@@ -443,6 +461,7 @@
                                 <span class="step-status"></span>
                             </a>
                         </li>
+
                     </ul>
                 </div>
             </div>
@@ -492,6 +511,8 @@
                                                         {{ Form::label('thumbnail', __('Thumbnail Image'), ['class' => 'form-label']) }} 
                                                         <span class="text-danger">*</span>
                                                         <!-- {{ Form::file('thumbnail', ['class' => 'form-control required-field', 'required' => 'required', 'id' => 'thumbnailInput', 'accept' => 'image/*']) }} -->
+                                                        
+                                                        
                                                         @if(isset($propertyimages) && $propertyimages->image)
                                                             <div class="mb-2 text-center">
                                                                 <img src="{{ asset('storage/upload/thumbnail/'.$propertyimages->image) }}" 
@@ -509,7 +530,31 @@
 
                                                         @else
                                                             {{ Form::file('thumbnail', ['class' => 'form-control required-field', 'required' => 'required', 'id' => 'thumbnailInput', 'accept' => 'image/*']) }}
-                                                        @endif                                                        
+                                                        @endif
+                                                        
+                                                        
+                                                        <!-- @if(isset($propertyimages) && $propertyimages->image)
+                                                            {{-- Existing thumbnail (Edit mode) --}}
+                                                            <div class="mb-2 text-center">
+                                                                <img src="{{ asset('storage/upload/thumbnail/'.$propertyimages->image) }}" 
+                                                                    alt="Current Thumbnail" 
+                                                                    style="max-width: 100%; border-radius: 6px; border:1px solid #ccc;">
+                                                            </div>
+
+                                                            {{-- Hidden flag for existing image --}}
+                                                            <input type="hidden" id="existing_thumbnail" name="existing_thumbnail" value="1">
+
+                                                            {{-- Optional input on Edit --}}
+                                                            {{ Form::file('thumbnail', [
+                                                                'class' => 'form-control', // NOT required-field on edit
+                                                                'id' => 'thumbnailInput',
+                                                                'accept' => 'image/*'
+                                                            ]) }}
+                                                        @else
+                                                            {{-- Required input on Create --}}
+                                                            {{ Form::file('thumbnail', ['class' => 'form-control required-field', 'required' => 'required', 'id' => 'thumbnailInput', 'accept' => 'image/*']) }}
+                                                        @endif -->
+
                                                     </div>
                                                     
                                                     <!-- Preview & Crop Area -->
@@ -696,8 +741,11 @@
                         </div>
                         
                         <div class="d-flex justify-content-between">
-                             <a href="#" style="opacity:0"></a>
-                            <button type="button" class="btn btn-secondary btn-rounded nextButton" data-next-tab="#profile-2">
+                             <a href="#" style="opacity:0">
+                               
+                                                            </a>
+                            <button type="button" class="btn btn-secondary btn-rounded nextButton"
+                                data-next-tab="#profile-2">
                                 {{ __('Next') }}
                             </button>
                         </div>
@@ -723,7 +771,8 @@
                                                     <div class="d-flex flex-wrap gap-2">
                                                         @foreach($propertyextraimages as $propertyval)
                                                             <div class="position-relative">
-                                                                <a href="{{ asset(Storage::url('upload/property')) . '/' . $propertyval->image }}" target="_blank">
+                                                                <a href="{{ asset(Storage::url('upload/property')) . '/' . $propertyval->image }}" 
+                                                                target="_blank">
                                                                     <img src="{{ asset(Storage::url('upload/property')) . '/' . $propertyval->image }}"
                                                                         alt="{{ $property->name }}"
                                                                         class="img-thumbnail"
@@ -756,6 +805,7 @@
                                                             aria-hidden="true"></i></div>
                                                 </div>
                                             </div>
+
                                         </div>
                                     </div>
                                 </div>
@@ -776,6 +826,7 @@
                     <div class="tab-pane" id="profile-3" role="tabpanel" aria-labelledby="profile-tab-3">
                         <div class="card border bg-custom bg-white mb-3">
                             <div class="card-body w-100">
+
                                 {{-- Hidden Template --}}
                                 <div class="row unit_template d-none">
                                     <div class="form-group col-md-6">
@@ -799,7 +850,7 @@
                                     <hr class="mt-4 mb-4 border-dark">
                                 </div>
 
-                                {{-- Existing Units --}}
+                                {{-- ✅ Existing Units --}}
                                 <div class="unit_list_results">
                                     @if(isset($units) && $units->isNotEmpty())
                                         @foreach($units as $unit)
@@ -845,6 +896,8 @@
                             </button>
                         </div>
                     </div>
+
+
                     <div class="tab-pane" id="profile-4" role="tabpanel" aria-labelledby="profile-tab-4">
                         <div class="card border bg-custom bg-white mb-3">
                             <div class="card-body w-100">
@@ -854,13 +907,18 @@
                                         @php
                                             $hasAmenities = isset($amenities) && $amenities instanceof \Illuminate\Support\Collection && $amenities->count() > 0;
                                         @endphp
+
                                         <div>
                                             <label class="me-3">
-                                                <input type="radio" name="is_billed" value="yes" class="form-check-input is-billed" {{ $hasAmenities ? 'checked' : '' }}> Yes
+                                                <input type="radio" name="is_billed" value="yes" 
+                                                    class="form-check-input is-billed"
+                                                    {{ $hasAmenities ? 'checked' : '' }}> Yes
                                             </label>
 
                                             <label>
-                                                <input type="radio" name="is_billed" value="no" class="form-check-input is-billed" {{ !$hasAmenities ? 'checked' : '' }}> No
+                                                <input type="radio" name="is_billed" value="no" 
+                                                    class="form-check-input is-billed"
+                                                    {{ !$hasAmenities ? 'checked' : '' }}> No
                                             </label>
                                         </div>
                                     </div>
@@ -927,6 +985,7 @@
                     <div class="tab-pane" id="profile-5" role="tabpanel" aria-labelledby="profile-tab-5">
                         <div class="card border bg-custom bg-white mb-3">
                             @php
+                                // Check if any utilities exist
                                 $hasUtilities = isset($utilities) && $utilities instanceof \Illuminate\Support\Collection && $utilities->count() > 0;
                             @endphp
                             <div class="card-body w-100">
@@ -1046,46 +1105,46 @@
                                                 <span class="remove-row d-none">&times;</span>
 
                                                 <div class="col-sm-4">
-                                                    <div class="mb-3">
-                                                        <div class="form-group">
-                                                        <label class="form-label">Mortgage Amount</label> 
-                                                            <div class="input-group">
-                                                                <span class="input-group-text">$</span>
-                                                                <input type="number" step="0.01" placeholder="e.g. 1000" class="form-control" name="mortgage_amount" value="{{ old('mortgage_amount', $property->mortgage_amount ?? '') }}">
-                                                            </div>
-                                                        </div>
+                                                <div class="mb-3">
+                                                    <div class="form-group">
+                                                    <label class="form-label">Mortgage Amount</label> 
+                                                    <div class="input-group">
+                                                        <span class="input-group-text">$</span>
+                                                        <input type="number" step="0.01" placeholder="e.g. 1000" class="form-control" name="mortgage_amount" value="{{ old('mortgage_amount', $property->mortgage_amount ?? '') }}">
                                                     </div>
+                                                    </div>
+                                                </div>
                                                 </div>
 
                                                 <div class="col-sm-4">
                                                 <div class="mb-3">
                                                     <div class="form-group">
-                                                        <label class="form-label">Insurance Amount</label> 
-                                                        <div class="input-group">
-                                                            <span class="input-group-text">$</span>
-                                                            <input type="number" step="0.01" placeholder="e.g. 1000" class="form-control" name="insurance_amount" value="{{ old('insurance_amount', $property->insurance_amount ?? '') }}">
-                                                        </div>
+                                                    <label class="form-label">Insurance Amount</label> 
+                                                    <div class="input-group">
+                                                        <span class="input-group-text">$</span>
+                                                        <input type="number" step="0.01" placeholder="e.g. 1000" class="form-control" name="insurance_amount" value="{{ old('insurance_amount', $property->insurance_amount ?? '') }}">
+                                                    </div>
                                                     </div>
                                                 </div>
                                                 </div>
 
                                                 <div class="col-sm-4">
-                                                    <div class="mb-3">
-                                                        <div class="form-group">
-                                                            <label class="form-label">Amenities Amount</label> 
-                                                            <div class="input-group">
-                                                                <span class="input-group-text">$</span>                                                        
-                                                                <input type="number" step="0.01" placeholder="e.g. 1000" class="form-control" name="amenities_amount" value="{{ old('amenities_amount', $property->amenities_amount ?? '') }}">
-                                                            </div>
-                                                        </div>
+                                                <div class="mb-3">
+                                                    <div class="form-group">
+                                                    <label class="form-label">Amenities Amount</label> 
+                                                    <div class="input-group">
+                                                        <span class="input-group-text">$</span>                                                        
+                                                        <input type="number" step="0.01" placeholder="e.g. 1000" class="form-control" name="amenities_amount" value="{{ old('amenities_amount', $property->amenities_amount ?? '') }}">
                                                     </div>
+                                                    </div>
+                                                </div>
                                                 </div>   
                                             </div>
                                             <!-- ===== Row End ===== -->
-                                        </div>
+                                            </div>
 
-                                        <!-- Add More Button -->
-                                        <div class="text-end">
+                                            <!-- Add More Button -->
+                                            <div class="text-end">
                                             <!-- <button id="addMoreBtn" class="btn btn-sm btn-success">
                                                 <i class="bi bi-plus-lg"></i> Add More
                                             </button> -->
@@ -1094,15 +1153,18 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-lg-12 mb-2">
-                            <div class="d-flex justify-content-between">
-                                <button type="button" class="btn btn-primary btn-rounded prevButton">
-                                    {{ __('Back') }}
-                                </button>
-                                {{ Form::submit(__('Finish'), ['class' => 'btn btn-secondary btn-rounded nextButton text-white', 'id' => 'property-submit']) }}
+                            <div class="col-lg-12 mb-2">
+                                <div class="d-flex justify-content-between">
+                                    <button type="button" class="btn btn-primary btn-rounded prevButton">
+                                        {{ __('Back') }}
+                                    </button>
+                                    {{ Form::submit(__('Finish'), ['class' => 'btn btn-secondary btn-rounded nextButton text-white', 'id' => 'property-submit']) }}
+                                </div>
                             </div>
-                        </div>
+
                     </div>
+
+
                 </div>
             </div>
         </div>
@@ -1115,18 +1177,13 @@
     const container = document.getElementById('rowsContainer');
     const addMoreBtn = document.getElementById('addMoreBtn');
 
-    if (addMoreBtn && container) {
-        addMoreBtn.addEventListener('click', function () {
-            // Clone first row
-            const firstRow = container.querySelector('.input-row');
-            if (!firstRow) return;
-            const clone = firstRow.cloneNode(true);
-            clone.querySelectorAll('input').forEach(input => input.value = '');
-            const removeSpan = clone.querySelector('.remove-row');
-            if (removeSpan) removeSpan.classList.remove('d-none');
-            container.appendChild(clone);
-        });
-    }
+    addMoreBtn.addEventListener('click', function () {
+      // Clone first row
+      const clone = container.querySelector('.input-row').cloneNode(true);
+      clone.querySelectorAll('input').forEach(input => input.value = ''); // clear inputs
+      clone.querySelector('.remove-row').classList.remove('d-none');
+      container.appendChild(clone);
+    });
 
     // Remove button event
     container.addEventListener('click', function (e) {
@@ -1152,7 +1209,7 @@
                             $('#company_city').append('<option value="'+ city.id +'">'+ city.name +'</option>');
                         });
 
-                        // Pre-select city in edit mode
+                        // ✅ Pre-select city in edit mode
                         if (selectedCity) {
                             $('#company_city').val(selectedCity);
                         }
@@ -1163,14 +1220,17 @@
             }
         }
 
+        // Trigger city load when state changes
         $('#company_state').on('change', function() {
             var state_id = $(this).val();
             loadCities(state_id);
         });
 
+        // ✅ Detect edit mode (when property exists)
         var selectedState = "{{ $property->state_id ?? '' }}";
         var selectedCity  = "{{ $property->city_id ?? '' }}";
 
+        // ✅ If editing, pre-select state and city
         if (selectedState) {
             $('#company_state').val(selectedState);
             loadCities(selectedState, selectedCity);
@@ -1180,12 +1240,12 @@
 
 <script>
     $(document).ready(function () {
-        // Default check (अगर Yes पहले से selected है तो div दिखेगा)
+        // ✅ Default check (अगर Yes पहले से selected है तो div दिखेगा)
         if ($('input[name="utilities"]:checked').val() === 'yes') {
             $('#utilitiesdata').show();
         }
 
-        // Radio change event
+        // ✅ Radio change event
         $(document).on('change', 'input[name="utilities"]', function () {
             if ($(this).val() === 'yes') {
                 $('#utilitiesdata').show();
@@ -1199,18 +1259,18 @@
 <script>
 $(document).ready(function () {
 
-    // Default: Show utilities section on edit if already has records
+    // ✅ Default: Show utilities section on edit if already has records
     if ($('input[name="utilities"]:checked').val() === 'yes') {
         $('#utilitiesdata').show();
     }
 
-    // Toggle section on Yes/No
+    // ✅ Toggle section on Yes/No
     $(document).on('change', 'input[name="utilities"]', function () {
         if ($(this).val() === 'yes') $('#utilitiesdata').slideDown();
         else $('#utilitiesdata').slideUp();
     });
 
-    // Show/Hide Subcategory fields
+    // ✅ Show/Hide Subcategory fields
     function refreshSubCategorySection() {
         let val = $('#addUtilitiesModal select[name="sub_category"]').val();
         if (val === '1') $('#subCategorySection').show();
@@ -1220,16 +1280,23 @@ $(document).ready(function () {
     $('#addUtilitiesModal').on('shown.bs.modal', refreshSubCategorySection);
     $(document).on('change', '#addUtilitiesModal select[name="sub_category"]', refreshSubCategorySection);
 
-    $(document).off('click', '#saveUtilities').on('click', '#saveUtilities', function (e) {
+    // ✅ Add More sub-category input
+    $(document).on('click', '#addMoreSubCategory', function (e) {
+        e.preventDefault();
+        $('#subCategoryWrapper').append('<input type="text" name="sub_category_name[]" class="form-control mb-2">');
+    });
+
+    // ✅ CLICK HANDLER — Run AJAX only when Save is clicked
+    $(document).on('click', '#saveUtilities', function (e) {
         e.preventDefault();
 
-        const formMode = $('#form_mode').val();
+        const formMode = $('#form_mode').val(); // create or edit
         const propertyId = $('#property_id').val();
 
         const name = $('#addUtilitiesModal input[name="name"]').val().trim();
         const sub_category = $('#addUtilitiesModal select[name="sub_category"]').val();
-        const sub_category_name = $('#addUtilitiesModal input[name="sub_category_name[]"]').map(function () {
-            return $(this).val().trim();
+        const sub_category_name = $('#addUtilitiesModal input[name="sub_category_name[]"]').map(function(){ 
+            return $(this).val().trim(); 
         }).get().filter(Boolean);
         const status = $('#addUtilitiesModal select[name="status"]').val();
 
@@ -1238,13 +1305,10 @@ $(document).ready(function () {
             return;
         }
 
-        $('#saveUtilities').prop('disabled', true);
-
         const table = $('#UtilitiesTable tbody');
         const existingRow = table.find(`tr:contains(${name})`);
         const subCatText = sub_category == 1 ? 'Yes' : 'No';
         const statusText = status == 1 ? 'Active' : 'Inactive';
-        const sub_category_names_str = Array.isArray(sub_category_name) ? sub_category_name.join(', ') : (sub_category_name || '');        
 
         if (formMode === 'edit' && propertyId) {
             $.ajax({
@@ -1264,7 +1328,7 @@ $(document).ready(function () {
                     if (existingRow.length) {
                         existingRow.find('td:nth-child(2)').text(name);
                         existingRow.find('td:nth-child(3)').text(subCatText);
-                        existingRow.find('td:nth-child(4)').text(sub_category_names_str);
+                        existingRow.find('td:nth-child(4)').text(sub_category_names);
                         existingRow.find('td:nth-child(5)').text(statusText);
                     } else {
                         const index = table.find('tr').length + 1;
@@ -1273,13 +1337,13 @@ $(document).ready(function () {
                                 <td class="text-center">${index}</td>
                                 <td>${name}</td>
                                 <td>${subCatText}</td>
-                                <td>${sub_category_names_str}</td>
+                                <td>${sub_category_names}</td>
                                 <td>${statusText}</td>
                                 <td class="text-center">
                                     <button type="button" class="btn btn-sm btn-warning editUtilitiesBtn"
                                         data-name="${name}"
                                         data-sub_category="${sub_category}"
-                                        data-sub_category_name="${sub_category_names_str}"
+                                        data-sub_category_name="${sub_category_names}"
                                         data-status="${status}">
                                         <i class="ti ti-edit"></i>
                                     </button>
@@ -1290,12 +1354,7 @@ $(document).ready(function () {
 
                     $('#addUtilitiesModal').modal('hide');
                     $('#UtilitiesForm')[0].reset();
-                    $('#subCategoryWrapper').html('<input type="text" name="sub_category_name[]" class="form-control mb-2">');
                     $('#utilitiesWrapper').show();
-
-                    if ($('input[name="utilities"]:checked').val() === 'yes') {
-                        $('#utilitiesdata').slideDown();
-                    }
                 },
                 error: function (xhr) {
                     toastrs('error', xhr.responseJSON?.message || 'Failed to save utility.', 'Error');
@@ -1314,14 +1373,14 @@ $(document).ready(function () {
                         <td class="text-center">${index}</td>
                         <td>${name}</td>
                         <td>${subCatText}</td>
-                         <td>${sub_category_names_str}</td>
+                        <td>${sub_category_names}</td>
                         <td>${statusText}</td>
                         <td class="text-center">
                             <button type="button" 
                                     class="btn btn-sm btn-warning editUtilitiesBtn"
                                     data-name="${name}"
                                     data-sub_category="${sub_category}"
-                                    data-sub_category_name="${sub_category_names_str}"
+                                    data-sub_category_name="${sub_category_names}"
                                     data-status="${status}">
                                 <i class="ti ti-edit"></i>
                             </button>
@@ -1329,18 +1388,119 @@ $(document).ready(function () {
                     </tr>
                 `);
 
+
                 $('#addUtilitiesModal').modal('hide');
                 $('#UtilitiesForm')[0].reset();
                 $('#utilitiesWrapper').show();
             }
         }
+        // $('input[name="utilities"][value="yes"]').prop('checked', true);
+        // $('#utilitiesdata').slideDown();
+
+        // --- AJAX POST call ---
+        // $.ajax({
+        //     url: "{{ url('property-utilities-store') }}",
+        //     type: "POST",
+        //     data: payload,
+        //     success: function (response) {
+        //         if (response.success) {
+        //             $('#addUtilitiesModal').modal('hide');
+        //             $('#UtilitiesForm')[0].reset();
+        //             $('#utilitiesTitle').show();
+        //             $('#utilitiesWrapper').show();
+        //             alert(response.message);
+
+        //             // ✅ Group incoming JSON by company name
+        //             let grouped = {};
+        //             response.data.forEach(function (item) {
+        //                 if (!grouped[item.name]) {
+        //                     grouped[item.name] = {
+        //                         id: item.id,
+        //                         name: item.name,
+        //                         sub_category: item.sub_category,
+        //                         status: item.status,
+        //                         sub_names: []
+        //                     };
+        //                 }
+        //                 if (item.sub_category_name) {
+        //                     grouped[item.name].sub_names.push(item.sub_category_name);
+        //                 }
+        //             });
+
+        //             // ✅ Update DOM table
+        //             Object.values(grouped).forEach(function (companyData) {
+        //                 let existingRow = $("#UtilitiesTable tbody tr").filter(function () {
+        //                     return $(this).find("td:nth-child(2)").text().trim() === companyData.name;
+        //                 });
+
+        //                 let subCatText = companyData.sub_category == 1 ? 'Yes' : 'No';
+        //                 let statusText = companyData.status == 1 ? 'Active' : 'Inactive';
+        //                 let subCatNames = companyData.sub_names.join(', ');
+
+        //                 if (existingRow.length > 0) {
+        //                     let existingSubNames = existingRow.find("td:nth-child(4)").text().split(/\s*,\s*/);
+        //                     companyData.sub_names.forEach(function (sn) {
+        //                         if (sn && !existingSubNames.includes(sn)) existingSubNames.push(sn);
+        //                     });
+        //                     existingRow.find("td:nth-child(4)").text(existingSubNames.join(', '));
+        //                 } else {
+        //                     let rowCount = $("#UtilitiesTable tbody tr").length + 1;
+        //                     $('#UtilitiesTable tbody').append(`
+        //                         <tr id="row2-${companyData.id}">
+        //                             <td class="text-center">${rowCount}</td>
+        //                             <td>${companyData.name}</td>
+        //                             <td>${subCatText}</td>
+        //                             <td>${subCatNames}</td>
+        //                             <td>${statusText}</td>
+        //                             <td class="text-center">
+        //                                 <button type="button" class="btn btn-sm btn-warning editUtilitiesBtn"
+        //                                     data-id="${companyData.id}"
+        //                                     data-name="${companyData.name}"
+        //                                     data-status="${companyData.status}"
+        //                                     data-sub_category="${companyData.sub_category}"
+        //                                     data-sub_category_name="${subCatNames}">
+        //                                     <i class="ti ti-edit"></i>
+        //                                 </button>
+        //                             </td>
+        //                         </tr>
+        //                     `);
+        //                 }
+        //             });
+
+        //             $("#UtilitiesTable tbody tr").each(function (index) {
+        //                 $(this).find("td:first").text(index + 1);
+        //             });
+
+        //             $('input[name="utilities"][value="yes"]').prop('checked', true);
+        //             $('#utilitiesdata').slideDown();
+
+        //         } else {
+        //             alert(response.message ?? "Something went wrong!");
+        //         }
+        //     },
+        //     error: function (xhr) {
+        //         console.error(xhr);
+        //         alert("Error: " + xhr.responseText);
+        //     }
+        // });
     });
+
+    // ✅ Prefill modal for edit
+    // $(document).on('click', '.editUtilitiesBtn', function () {
+    //     $('#utilities_id').val($(this).data('id'));
+    //     $('#utilities_name').val($(this).data('name'));
+    //     $('#utilities_status').val($(this).data('status'));
+    //     $('#utilities_sub_category').val($(this).data('sub_category'));
+    //     $('#utilities_sub_category_name').val($(this).data('sub_category_name'));
+    //     $('#addUtilitiesModal').modal('show');
+    // });
 });
 </script>
 
 <script>
     $(document).ready(function () {
 
+        // ✅ Function: Toggle amenities section smoothly
         function toggleAmenitiesSection(show) {
             if (show) {
                 $('#isbilleddata').slideDown();
@@ -1349,13 +1509,16 @@ $(document).ready(function () {
             }
         }
 
+        // ✅ Check default (on page load)
         const isCheckedYes = $('input[name="is_billed"]:checked').val() === 'yes';
         toggleAmenitiesSection(isCheckedYes);
 
+        // ✅ When radio value changes
         $(document).on('change', 'input[name="is_billed"]', function () {
             toggleAmenitiesSection($(this).val() === 'yes');
         });
 
+        // ✅ Add/Edit Amenity Form submission
         $(document).on('submit', '#amenityForm', function (e) {
             e.preventDefault();
 
@@ -1413,6 +1576,7 @@ $(document).ready(function () {
                                 </tr>
                             `);
                         }
+
                         $('#addAmenityModal').modal('hide');
                         $('#amenityForm')[0].reset();
                         $('#amenitiesWrapper').show();
@@ -1423,10 +1587,12 @@ $(document).ready(function () {
                 });
             }else{
                 if (existingRow.length) {
+                    // ✅ Update existing row
                     existingRow.find('td:nth-child(2)').text(name);
                     existingRow.find('td:nth-child(3)').text(`$ ${price}`);
                     existingRow.find('td:nth-child(4)').text(statusText);
                 } else {
+                    // ✅ Append new row
                     const index = table.find('tr').length + 1;
                     table.append(`
                         <tr>
@@ -1446,6 +1612,8 @@ $(document).ready(function () {
                         </tr>
                     `);
                 }
+
+                // ✅ Reset form + close modal
                 $('#addAmenityModal').modal('hide');
                 $('#amenityForm')[0].reset();
                 $('#amenitiesWrapper').show();
@@ -1466,6 +1634,7 @@ $(document).ready(function () {
         $('#editAmenityStatus').val(status);
         $('#editAmenityModal').modal('show');
 
+        // store ref to the row for inline update
         $('#editAmenityModal').data('row', $(this).closest('tr'));
     });
 
@@ -1522,7 +1691,66 @@ $(document).ready(function () {
 
             $('#editAmenityModal').modal('hide');
         }
+
+        // row.find('td:nth-child(2)').text(name);
+        // row.find('td:nth-child(3)').text(`$ ${price}`);
+        // row.find('td:nth-child(4)').text(statusText);
+
+        // const editBtn = row.find('.editAmenityBtn');
+        // editBtn.data('name', name);
+        // editBtn.data('price', price);
+        // editBtn.data('status', status);
+
+        // $('#editAmenityModal').modal('hide');
+        // toastr.success('Amenity updated successfully.');
     });
+
+    // $(document).on('click', '.editAmenityBtn', function () {
+    //     let id = $(this).data('id');
+    //     let name = $(this).data('name');
+    //     let price = $(this).data('price');
+    //     let status = $(this).data('status');
+
+    //     // Modal fill
+    //     $('#editAmenityId').val(id);
+    //     $('#editAmenityName').val(name);
+    //     $('#amenitydataAmount').val(price);
+    //     $('#editAmenityStatus').val(status);
+
+    //     $('#editAmenityModal').modal('show');
+    // });
+
+    // $(document).on('click', '#updateAmenity', function (e) {
+    //     e.preventDefault();
+
+    //     $.ajax({
+    //         url: "{{ url('property-amenities-update') }}",
+    //         type: "POST",
+    //         data: $('#editAmenityForm').serialize(),
+    //         success: function (response) {
+    //             if (response.success) {
+    //                 $('#editAmenityModal').modal('hide');
+    //                 alert(response.message);
+
+    //                 // ✅ Update row in table
+    //                 let row = $('#row-' + response.data.id);
+    //                 row.find('td:eq(1)').text(response.data.name); // Amenity Name
+    //                 row.find('td:eq(2)').text(response.data.price); // Amenity price
+    //                 row.find('td:eq(3)').text(response.data.status == 1 ? 'Active' : 'Inactive'); // Status
+
+    //                 // ✅ Update button attributes
+    //                 row.find('.editAmenityBtn').data('name', response.data.name);
+    //                 row.find('.editAmenityBtn').data('price', response.data.price);
+    //                 row.find('.editAmenityBtn').data('status', response.data.status);
+    //             } else {
+    //                 alert(response.message ?? "Something went wrong!");
+    //             }
+    //         },
+    //         error: function (xhr) {
+    //             alert("Error: " + xhr.responseText);
+    //         }
+    //     });
+    // });
 </script>
 
 <!-- jQuery Script -->
@@ -1537,58 +1765,45 @@ $(document).ready(function () {
                 $('#subCategoryWrapper').html('<input type="text" name="sub_category_name[]" class="form-control mb-2">');
             }
         });
+
+        // Add More Sub Categories
+        $(document).on('click','#addMoreSubCategory', function(){
+            $('#subCategoryWrapper').append('<input type="text" name="sub_category_name[]" class="form-control mb-2">');
+        });
     });
 </script>
 
 <script>
-    $(document).ready(function () {
-        $(document).on('click', '.editUtilitiesBtn', function () {
+$(document).ready(function () {
 
-        // Open Modal and Prefill Data
-        const data = $(this).data();
+    // Open Modal and Prefill Data
+    $(document).on('click', '.editUtilitiesBtn', function () {
+        let data = $(this).data();
 
-        // Clear previous content
-        $('#editSubCategoryWrapper').empty();
-        $('#editSubCategorySection').hide();
-
-        // Fill base fields
         $('#editUtilitiesName').val(data.name);
         $('#editUtilitiesSubCategory').val(data.sub_category);
         $('#editUtilitiesStatus').val(data.status);
         $('#editUtilitiesId').val(data.id);
         $('#editUtilitiesPropertyId').val($('#property_id').val());
 
-        // Handle subcategories cleanly
-        if (parseInt(data.sub_category) === 1) {
+        if (data.sub_category == 1) {
             $('#editSubCategorySection').show();
+            $('#editSubCategoryWrapper').html('');
 
-            const subs = (data.sub_category_name || '')
-                .split(',')
-                .map(s => s.trim())
-                .filter(Boolean);
-
-            if (subs.length > 0) {
-                subs.forEach(sub => {
-                    $('#editSubCategoryWrapper').append(`
-                        <div class="d-flex mb-2 align-items-center subcat-row">
-                            <input type="text" name="sub_category_name[]" class="form-control me-2" value="${sub}" placeholder="Enter Sub Category" required>
-                            <button type="button" class="btn btn-danger btn-sm removeEditSubCategory">&times;</button>
-                        </div>
-                    `);
-                });
-            } else {
-                $('#editSubCategoryWrapper').append(`
-                    <div class="d-flex mb-2 align-items-center subcat-row">
-                        <input type="text" name="sub_category_name[]" class="form-control me-2" placeholder="Enter Sub Category" required>
-                        <button type="button" class="btn btn-danger btn-sm removeEditSubCategory">&times;</button>
-                    </div>
-                `);
-            }
+            const subs = data.sub_category_name ? data.sub_category_name.split(',').map(s => s.trim()) : [];
+            subs.forEach(sub => {
+                $('#editSubCategoryWrapper').append(`<input type="text" name="sub_category_name[]" class="form-control mb-2" value="${sub}">`);
+            });
+        } else {
+            $('#editSubCategorySection').hide();
+            $('#editSubCategoryWrapper').html('');
         }
+
         $('#editUtilitiesModal').modal('show');
         $('#editUtilitiesModal').data('row', $(this).closest('tr'));
     });
 
+    // 🟢 Add More Subcategory Input
     $(document).on('click', '#addMoreEditSubCategory', function () {
         $('#editSubCategoryWrapper').append(`
             <div class="d-flex mb-2 align-items-center subcat-row">
@@ -1598,10 +1813,12 @@ $(document).ready(function () {
         `);
     });
 
+    // 🟢 Remove a subcategory input
     $(document).on('click', '.removeEditSubCategory', function () {
         $(this).closest('.subcat-row').remove();
     });
 
+    // 🟢 Show/Hide subcategory section when main select changes
     $(document).on('change', '#editUtilitiesSubCategory', function () {
         if ($(this).val() == 1) {
             $('#editSubCategorySection').slideDown();
@@ -1619,6 +1836,7 @@ $(document).ready(function () {
         }
     });
 
+    // 🟢 Update AJAX
     $(document).on('click', '#updateUtilities', function (e) {
         e.preventDefault();
 
@@ -1634,6 +1852,7 @@ $(document).ready(function () {
             }
         });
 
+        // ✅ Convert array to comma-separated string
         if (payload.sub_category_name) {
             payload.sub_category_name = payload.sub_category_name.join(', ');
         }
@@ -1646,22 +1865,27 @@ $(document).ready(function () {
                 if (response.success) {
                     const item = response.data;
 
+                    // ✅ Close modal
                     $('#editUtilitiesModal').modal('hide');
 
+                    // ✅ Success toast
                     toastrs(response.status, response.message, response.status);
 
                     const companyName = item.name.trim().toLowerCase();
                     let updated = false;
 
+                    // ✅ Try to find matching row by company name
                     $("#UtilitiesTable tbody tr").each(function () {
                         const rowCompanyName = $(this).find("td:nth-child(2)").text().trim().toLowerCase();
 
                         if (rowCompanyName === companyName) {
+                            // ✅ Update existing row values inline
                             $(this).find("td:nth-child(2)").text(item.name);
                             $(this).find("td:nth-child(3)").text(item.sub_category == 1 ? 'Yes' : 'No');
                             $(this).find("td:nth-child(4)").text(item.sub_category_names || '');
                             $(this).find("td:nth-child(5)").text(item.status == 1 ? 'Active' : 'Inactive');
 
+                            // ✅ Update edit button data attributes
                             const editBtn = $(this).find(".editUtilitiesBtn");
                             editBtn.data('id', item.id);
                             editBtn.data('name', item.name);
@@ -1669,6 +1893,7 @@ $(document).ready(function () {
                             editBtn.data('sub_category', item.sub_category);
                             editBtn.data('sub_category_name', item.sub_category_names || '');
 
+                            // ✅ Highlight row for feedback
                             $(this).css('background-color', '#d4edda');
                             setTimeout(() => $(this).css('background-color', ''), 1000);
 
@@ -1677,6 +1902,7 @@ $(document).ready(function () {
                         }
                     });
 
+                    // ✅ If company not found (renamed or new), append a new row
                     if (!updated) {
                         const subCatText = item.sub_category == 1 ? 'Yes' : 'No';
                         const statusText = item.status == 1 ? 'Active' : 'Inactive';
@@ -1716,31 +1942,6 @@ $(document).ready(function () {
     });
 });
 </script>
-<script>
-$(document).ready(function () {
-    $('#addUtilitiesModal').on('shown.bs.modal', function () {
-        $(document).off('click', '#addMoreSubCategory');
-
-        $(document).on('click', '#addMoreSubCategory', function (e) {
-            e.preventDefault();
-            $('#subCategoryWrapper').append(
-                '<input type="text" name="sub_category_name[]" class="form-control mb-2">'
-            );
-        });
-
-        const subCatSelect = $('#addUtilitiesModal select[name="sub_category"]');
-        if (subCatSelect.val() === '1') {
-            $('#subCategorySection').slideDown();
-        } else {
-            $('#subCategorySection').slideUp();
-        }
-    });
-
-    $('#addUtilitiesModal').on('hidden.bs.modal', function () {
-        $(document).off('click', '#addMoreSubCategory');
-    });
-});
-</script>
 @endsection
 <!-- Add Amenities Modal -->
 <div class="modal fade" id="addAmenityModal" tabindex="-1" aria-labelledby="addAmenitiesModalLabel" aria-hidden="true">
@@ -1773,6 +1974,7 @@ $(document).ready(function () {
                         </select>
                     </div>
 
+                    <!-- ✅ Proper submit button -->
                     <div class="modal-footer">
                         <button type="submit" class="btn btn-primary">Save</button>
                     </div>
@@ -1873,7 +2075,7 @@ $(document).ready(function () {
   </div>
 </div>
 
-<!-- Edit Utilities Modal -->
+<!-- ✅ Edit Utilities Modal -->
 <div class="modal fade" id="editUtilitiesModal" tabindex="-1" aria-labelledby="editUtilitiesLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
@@ -1902,7 +2104,7 @@ $(document).ready(function () {
             </select>
           </div>
 
-          <!-- Subcategory section -->
+          <!-- ✅ Subcategory section -->
           <div class="mb-3" id="editSubCategorySection" style="display:none;">
             <label class="form-label">Sub Category Name <span class="text-danger">*</span></label>
             <div id="editSubCategoryWrapper"></div>

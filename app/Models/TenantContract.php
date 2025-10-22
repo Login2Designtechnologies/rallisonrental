@@ -21,6 +21,7 @@ class TenantContract extends Model
         'late_fee',
         'security_deposit',
         'notice_period_months',
+        'invoice_due_date',
     ];
 
     protected $casts = [
