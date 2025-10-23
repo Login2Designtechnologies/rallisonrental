@@ -24,10 +24,10 @@
                         <div class="card border-primary border-opacity-25 position-relative overflow-hidden fw-100 mb-0">
                             <div class="position-absolute top-0 start-0 w-100 h-100 bg-primary bg-opacity-10"></div>
                             <div class="card-header bg-transparent border-0 position-relative d-flex justify-content-between align-items-center py-2">
+                                <h5 class="card-title fw-medium mb-0">Next Payment Due</h5>
                                 <i class="bi bi-calendar text-primary fs-3"></i>
                             </div>
                             <div class="card-body position-relative pt-0 pb-3">
-                                <div class="fs-3 fw-bold">Sep 10, 2025</div>
                                 <div class="fs-3 fw-bold">{{ $dueDate->format('M d, Y') }}</div>
                                 <p class="text-muted small mb-2">{{ $daysRemaining > 0 ? "$daysRemaining days remaining" : "Due today" }}</p>
                                 <!-- <span class="badge bg-warning text-dark">Due Soon</span> -->

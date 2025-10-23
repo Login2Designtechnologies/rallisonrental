@@ -31,12 +31,10 @@ $settings=settings();
                         <div class="flex-grow-1 ms-3">
                             <p class="mb-1">Next Rent Payment</p>
                             <div class="d-flex align-items-center justify-content-between">
-                                <h4 class="mb-0 fs-14">Date:<span class="count">10-01-2025</span></h4>
-
+                                <h4 class="mb-0 fs-14">Date:<span class="count">{{ $result['nextPaymentDate'] ? $result['nextPaymentDate']->format('d-m-Y') : 'N/A' }}</span></h4>
                             </div>
                             <div class="d-flex align-items-center justify-content-between">
-                                <h4 class="mb-0 fs-14">Amount:<span class="count">$0</span></h4>
-
+                                <h4 class="mb-0 fs-14">Amount:<span class="count">${{ number_format($result['rentAmount'], 2) }}</span></h4>
                             </div>
                         </div>
                         
@@ -57,8 +55,7 @@ $settings=settings();
                         <div class="flex-grow-1 ms-3">
                             <p class="mb-1">Utilities Due</p>
                             <div class="d-flex align-items-center justify-content-between">
-                                <h4 class="mb-0 fs-14">$<span class="count">0</span></h4>
-
+                                <h4 class="mb-0 fs-14">$<span class="count">{{ number_format($result['utilitiesDue'], 2) }}</span></h4>
                             </div>
                         </div>
                     </div>
@@ -79,8 +76,7 @@ $settings=settings();
                         <div class="flex-grow-1 ms-3">
                             <p class="mb-1">Past Due</p>
                             <div class="d-flex align-items-center justify-content-between">
-                                <h4 class="mb-0 fs-14">$<span class="count">0</span></h4>
-
+                                <h4 class="mb-0 fs-14">$<span class="count">{{ number_format($result['pastDueAmount'], 2) }}</span></h4>
                             </div>
                         </div>
                     </div>

@@ -67,8 +67,53 @@ class HomeController extends Controller
                         $result['unit'] ='';
                     }
 
+                    $contract = TenantContract::where('tenant_id', Auth::user()->tenants->id)
+                        ->with('renewals')
+                        ->first();
+                    
+                    // For Next Payment Date
+                    $nextPaymentDate = null;
+                    $rentAmount = 0;
 
-                    return view('dashboard.tenant', compact('result', 'tenant'));
+                    if ($contract && $contract->start_date) {
+                        $startDate = Carbon::parse($contract->start_date);
+                        $today = Carbon::today();
+
+                        $nextPaymentDate = $startDate->copy();
+                        while ($nextPaymentDate->lessThanOrEqualTo($today)) {
+                            $nextPaymentDate->addMonth();
+                        }
+
+                        $rentAmount = $contract->standard_rent ?? 0;
+                    }
+                    $result['nextPaymentDate'] = $nextPaymentDate;
+                    $result['rentAmount'] = $rentAmount;
+
+                    $result['utilitiesDue'] = UtilityInvoice::where('tenant_id', $tenant->id)
+                        ->where('status', '!=', 'paid')
+                        ->sum('amount');
+
+                    $pastDueAmount = 0;
+
+                    if ($contract) {
+                        $dueDay = $contract->invoice_due_date ?? 1;
+                        $standardRent = $contract->standard_rent ?? 0;
+
+                        // Current month's due date
+                        $dueDate = Carbon::now()->day($dueDay);
+
+                        // If due date already passed in this month → mark as past due
+                        if ($dueDate->isPast()) {
+                            $pastDueAmount = $standardRent;
+                        }
+
+                        // Optional: If contract end date exists, ensure it’s still active
+                        if ($contract->end_date && Carbon::now()->greaterThan($contract->end_date)) {
+                            $pastDueAmount = 0;
+                        }
+                    }
+                    $result['pastDueAmount'] = $pastDueAmount;
+                    return view( 'dashboard.tenant', compact('result', 'tenant'));
                 }
 
                 if (\Auth::user()->type == 'maintainer') {
