@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Mail\OtherInvoiceMail;
+use App\Mail\OtherInvoiceRemovedMail;
 use App\Models\Contact;
 use App\Models\Custom;
 use App\Models\Expense;
@@ -463,6 +464,25 @@ class HomeController extends Controller
 
     }
 
+    public function remove_other_invoice(Request $request, $id)
+    {
+        $otherInvoice = OtherInvoice::with('tenant.user')->findOrFail($id);
+        $message = $request->input('removal_message');
+
+        // Send mail to tenant
+        if ($otherInvoice->tenant && $otherInvoice->tenant->user && $otherInvoice->tenant->user->email) {
+            Mail::to($otherInvoice->tenant->user->email)->send(new OtherInvoiceRemovedMail($otherInvoice, $message));            
+        }
+
+        // Delete invoice and its items
+        DB::transaction(function () use ($otherInvoice) {
+            $otherInvoice->items()->delete();
+            $otherInvoice->delete();
+        });
+
+        return redirect()->route('other')->with('success', 'Invoice removed and notification sent to tenant.');
+    }
+
     public function payNow(OtherInvoice $invoice)
     {
         return response()->json('Payment gateway integration pending');
@@ -486,8 +506,8 @@ class HomeController extends Controller
             'tenant_id' => 'required|integer',
             'subject' => 'required|string|max:255',
             'items' => 'required|array|min:1',
-            'items.*.detail' => 'required|string|max:255',
-            'items.*.amount' => 'required|numeric|min:0.01',
+            'items.*.item' => 'required|string|max:255',
+            'items.*.price' => 'required|numeric|min:0.01',
         ]);
         $otherInvoice = OtherInvoice::findOrFail($id);
 

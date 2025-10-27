@@ -984,55 +984,307 @@ class PropertyController extends Controller
             'status' => 'required|in:0,1',
         ]);
 
+        // $propertyId = $request->propertyid;
+        // $name = $request->name;
+        // $subCategory = $request->sub_category;
+        // $status = $request->status;
+        // $subCategoryNames = $request->sub_category_name ?? [null];
+
         $userId = Auth::id();
+        $propertyId = $request->propertyid;
+        $name = trim($request->name);
+        $subCategory = $request->sub_category;
+        $status = $request->status;
 
-        $subCategoryName = is_array($request->sub_category_name)
-            ? implode(', ', $request->sub_category_name)
-            : $request->sub_category_name;
+        $raw = $request->input('sub_category_name');
+        if (is_array($raw)) {
+            $subCategoryNames = $raw;
+        } elseif (is_string($raw)) {
+            $subCategoryNames = array_map('trim', preg_split('/[,\n\r]+/', $raw));
+        } else {
+            $subCategoryNames = [];
+        }
 
-        $exists = DB::table('utilities_catg')
-            ->where('name', $request->name)
-            ->where('property_id', $request->propertyid)
-            ->where('sub_category', $request->sub_category)
+        // clean and unique
+        $subCategoryNames = array_filter(array_unique($subCategoryNames));        
+
+        // Fetch existing subcategories for this property & company
+        $existing = DB::table('utilities_catg')
+            ->where('property_id', $propertyId)
+            ->where('name', $name)
             ->where('user_id', $userId)
-            ->where(function ($query) use ($request, $subCategoryName) {
-                if ($request->sub_category == 1) {
-                    $query->where('sub_category_name', $subCategoryName);
-                } else {
-                    $query->whereNull('sub_category_name');
-                }
-            })
-            ->where('id', '!=', $request->id)
-            ->exists();
+            ->pluck('sub_category_name', 'id')
+            ->toArray();
 
-        if ($exists) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Utility already exists!',
+        $existingNames = array_values($existing);
+        $existingIds = array_keys($existing);
+
+        $toKeep = [];
+        $toAdd = [];
+        $toDelete = [];
+
+        // Identify what to update/add/delete
+        foreach ($subCategoryNames as $subName) {
+            if (in_array($subName, $existingNames)) {
+                // Keep it
+                $id = array_search($subName, $existing);
+                $toKeep[$id] = $subName;
+            } else {
+                $toAdd[] = $subName;
+            }
+        }
+
+        // Determine deletions
+        foreach ($existing as $id => $nameInDb) {
+            if (!in_array($nameInDb, $subCategoryNames)) {
+                $toDelete[] = $id;
+            }
+        }
+
+        /** STEP 4: Duplicate check only for $toAdd (not existing) **/
+        if (!empty($toAdd)) {
+            $existingDuplicates = DB::table('utilities_catg')
+                ->where('property_id', $propertyId)
+                ->where('user_id', $userId)
+                ->where('name', $name)
+                ->whereIn('sub_category_name', $toAdd)
+                ->pluck('sub_category_name')
+                ->toArray();
+
+            if (!empty($existingDuplicates)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Utility already exists!',
+                    'duplicates' => $existingDuplicates,
+                ]);
+            }
+        }
+        
+        // Update kept ones
+        foreach ($toKeep as $id => $subName) {
+            DB::table('utilities_catg')
+                ->where('id', $id)
+                ->update([
+                    'name' => $name,
+                    'sub_category' => $subCategory,
+                    'sub_category_name' => $subName,
+                    'status' => $status,
+                    'updated_at' => now(),
+                ]);
+        }
+
+        // Insert new ones
+        foreach ($toAdd as $subName) {
+            DB::table('utilities_catg')->insert([
+                'property_id' => $propertyId,
+                'user_id' => $userId,
+                'name' => $name,
+                'sub_category' => $subCategory,
+                'sub_category_name' => $subName,
+                'status' => $status,
+                'falge' => 1,
+                'created_at' => now(),
+                'updated_at' => now(),
             ]);
         }
 
-        DB::table('utilities_catg')
-            ->where('id', $request->id)
-            ->where('property_id', $request->propertyid)
-            ->update([
-                'name' => $request->name,
-                'sub_category' => $request->sub_category,
-                'sub_category_name' => $subCategoryName,
-                'status' => $request->status,
-            ]);
+        // Delete removed ones
+        if (!empty($toDelete)) {
+            DB::table('utilities_catg')
+                ->whereIn('id', $toDelete)
+                ->delete();
+        }
 
         return response()->json([
             'success' => true,
-            'message' => 'Utility updated successfully!',
+            'message' => 'Utilities updated successfully!',
             'data' => [
                 'id' => $request->id,
                 'name' => $request->name,
                 'sub_category' => $request->sub_category,
-                'sub_category_names' => $subCategoryName,
+                'sub_category_names' => implode(', ', array_filter($subCategoryNames)),
                 'status' => $request->status,
             ],
         ]);
+
+        // ✅ Force sub_category_name into array always
+        // $subCategoryNames = is_array($request->sub_category_name)
+        //     ? $request->sub_category_name
+        //     : (empty($request->sub_category_name) ? [null] : [$request->sub_category_name]);
+
+        // ✅ Check duplicates
+        // foreach ($subCategoryNames as $subName) {
+        //     $exists = DB::table('utilities_catg')
+        //         ->where('property_id', $propertyId)
+        //         ->where('user_id', $userId)
+        //         ->where('name', $name)
+        //         ->where('sub_category_name', $subName)
+        //         ->exists();
+
+        //     if ($exists) {
+        //         return response()->json([
+        //             'success' => false,
+        //             'message' => 'Utility already exists!',
+        //         ]);
+        //     }
+        // }
+
+        // ✅ Delete old entries for this property & company
+        // DB::table('utilities_catg')
+        //     ->where('property_id', $propertyId)
+        //     ->where('name', $name)
+        //     ->where('user_id', $userId)
+        //     ->delete();
+
+        // // ✅ Insert new rows (one per subcategory)
+        // foreach ($subCategoryNames as $subName) {
+        //     DB::table('utilities_catg')->insert([
+        //         'property_id' => $propertyId,
+        //         'user_id' => $userId,
+        //         'name' => $name,
+        //         'sub_category' => $subCategory,
+        //         'sub_category_name' => $subCategory == 1 ? $subName : null,
+        //         'status' => $status,
+        //         'falge' => 1,
+        //         'created_at' => now(),
+        //     ]);
+        // }
+
+        // $raw = $request->input('sub_category_name');
+
+        // if (is_array($raw)) {
+        //     $subCategoryNames = $raw;
+        // } elseif (is_null($raw) || $raw === '') {
+        //     $subCategoryNames = [$subCategory == 1 ? null : null]; // single null entry for no subcategory
+        // } else {
+        //     // if it's a comma-separated string, split on comma; otherwise treat as single item
+        //     // also support newline separated values
+        //     if (strpos($raw, ',') !== false || strpos($raw, "\n") !== false) {
+        //         $parts = preg_split("/[,\n\r]+/", $raw);
+        //         $subCategoryNames = $parts;
+        //     } else {
+        //         $subCategoryNames = [$raw];
+        //     }
+        // }
+
+        // // trim and remove empty values
+        // $subCategoryNames = array_values(array_filter(array_map(function($v){
+        //     return is_null($v) ? null : trim($v);
+        // }, $subCategoryNames), function($v){
+        //     // keep null if we explicitly want null (for no sub_category case)
+        //     return $v !== '' && $v !== null ? true : false;
+        // }));
+
+        // // If sub_category == 0, we should insert a single row with sub_category_name = null
+        // if ($subCategory == 0) {
+        //     $subCategoryNames = [null];
+        // }
+
+        // // Optional: check duplicates BEFORE deleting/inserting (prevent same subcategory duplicate)
+        // foreach ($subCategoryNames as $subName) {
+        //     $exists = DB::table('utilities_catg')
+        //         ->where('property_id', $propertyId)
+        //         ->where('user_id', $userId)
+        //         ->where('name', $name)
+        //         ->where(function($q) use ($subName) {
+        //             if (is_null($subName)) {
+        //                 $q->whereNull('sub_category_name');
+        //             } else {
+        //                 $q->where('sub_category_name', $subName);
+        //             }
+        //         })
+        //         ->exists();
+
+        //     if ($exists) {
+        //         // if you want to allow duplicates when editing (i.e. update), you can skip this
+        //         // for now return duplicate message
+        //         return response()->json([
+        //             'success' => false,
+        //             'message' => 'One or more utilities already exist for this property and company.',
+        //         ]);
+        //     }
+        // }
+
+        // // delete existing rows for this property + company + user
+        // DB::table('utilities_catg')
+        //     ->where('property_id', $propertyId)
+        //     ->where('name', $name)
+        //     ->where('user_id', $userId)
+        //     ->delete();
+
+        // // insert one row per subcategory (or single with null)
+        // foreach ($subCategoryNames as $subName) {
+        //     DB::table('utilities_catg')->insert([
+        //         'property_id' => $propertyId,
+        //         'user_id' => $userId,
+        //         'name' => $name,
+        //         'sub_category' => $subCategory,
+        //         'sub_category_name' => $subCategory == 1 ? $subName : null,
+        //         'status' => $status,
+        //         'falge' => 1,
+        //         'created_at' => now(),
+        //         'updated_at' => now(),
+        //     ]);
+        // }
+
+        // return response()->json([
+        //     'success' => true,
+        //     'message' => 'Utility updated successfully!',
+        //     'data' => [
+        //         'id' => $request->id,
+        //         'name' => $request->name,
+        //         'sub_category' => $request->sub_category,
+        //         'sub_category_names' => implode(', ', array_filter($subCategoryNames)),
+        //         'status' => $request->status,
+        //     ],
+        // ]);
+        // $subCategoryName = is_array($request->sub_category_name)
+        //     ? implode(', ', $request->sub_category_name)
+        //     : $request->sub_category_name;
+
+        // $exists = DB::table('utilities_catg')
+        //     ->where('name', $request->name)
+        //     ->where('property_id', $request->propertyid)
+        //     ->where('sub_category', $request->sub_category)
+        //     ->where('user_id', $userId)
+        //     ->where(function ($query) use ($request, $subCategoryName) {
+        //         if ($request->sub_category == 1) {
+        //             $query->where('sub_category_name', $subCategoryName);
+        //         } else {
+        //             $query->whereNull('sub_category_name');
+        //         }
+        //     })
+        //     ->where('id', '!=', $request->id)
+        //     ->exists();
+
+        // if ($exists) {
+        //     return response()->json([
+        //         'success' => false,
+        //         'message' => 'Utility already exists!',
+        //     ]);
+        // }
+
+        // DB::table('utilities_catg')
+        //     ->where('id', $request->id)
+        //     ->where('property_id', $request->propertyid)
+        //     ->update([
+        //         'name' => $request->name,
+        //         'sub_category' => $request->sub_category,
+        //         'sub_category_name' => $subCategoryName,
+        //         'status' => $request->status,
+        //     ]);
+
+        // return response()->json([
+        //     'success' => true,
+        //     'message' => 'Utility updated successfully!',
+        //     'data' => [
+        //         'id' => $request->id,
+        //         'name' => $request->name,
+        //         'sub_category' => $request->sub_category,
+        //         'sub_category_names' => implode(', ', $subCategoryNames),
+        //         'status' => $request->status,
+        //     ],
+        // ]);
     }
 
     public function addUtilities_update(Request $request, $id, $propertyid)

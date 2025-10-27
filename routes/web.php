@@ -136,6 +136,8 @@ Route::get('other-invoice/email-preview/{otherInvoice}', [HomeController::class,
 Route::post('other-invoice/send-email/{otherInvoice}', [HomeController::class, 'sendEmail'])
     ->name('other_invoices.send_email');
 
+Route::delete('other-invoice/remove/{id}', [HomeController::class, 'remove_other_invoice'])->name('remove_other_invoice');
+
 Route::get('payment/pay-now/{otherInvoice}', [HomeController::class, 'payNow'])
     ->name('payment.pay_now');    
 

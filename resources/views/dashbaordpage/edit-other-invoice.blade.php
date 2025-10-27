@@ -152,11 +152,43 @@
         <a href="{{ route('other') }}" class="btn btn-secondary">
           <i class="bi bi-arrow-left"></i> Back
         </a>
+
+        <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#removeInvoiceModal">
+          <i class="bi bi-trash"></i> Remove Invoice
+        </button>
+
         <button type="submit" class="btn btn-success">
           <i class="bi bi-save"></i> Save Changes
-        </button>
+        </button>        
       </div>
     </form>
+  </div>
+</div>
+
+<!-- Remove Invoice Modal -->
+<div class="modal fade" id="removeInvoiceModal" tabindex="-1" aria-labelledby="removeInvoiceModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <form action="{{ route('remove_other_invoice', $otherInvoice->id) }}" method="POST" id="removeInvoiceForm">
+        @csrf
+        @method('DELETE')
+        <div class="modal-header">
+          <h5 class="modal-title" id="removeInvoiceModalLabel">Remove Other Invoice</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+
+        <div class="modal-body">          
+          <textarea name="removal_message" class="form-control" rows="4" placeholder="Enter message to tenant..." required></textarea>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-danger">
+            <i class="bi bi-check-circle"></i> Confirm Remove
+          </button>
+        </div>
+      </form>
+    </div>
   </div>
 </div>
 @endsection
@@ -264,5 +296,12 @@ window.addEventListener("DOMContentLoaded", () => {
     populateTenants(selectedPropertyId, selectedTenantId);
   }
 });
+</script>
+<script>
+  document.getElementById('removeInvoiceForm').addEventListener('submit', function(e) {
+    if (!confirm('Are you sure you want to permanently remove this invoice?')) {
+      e.preventDefault();
+    }
+  });
 </script>
 @endpush
