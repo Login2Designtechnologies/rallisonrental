@@ -157,18 +157,18 @@
           <div class="row g-3">
             <div class="col-md-6 d-flex">
               <div class="card w-100">
-                <div class="card-body">
+                <div class="card-body p-3">
                   <div class="icon-wrapper"><i class="bi bi-building"></i></div>
-                  <h6 class="text-muted">Property Name</h6>
-                  <p class="mb-0 fw-bold">{{ $property->properties->name ?? 'N/A' }}</p>
+                  <h5 class="text-dark mb-0">Property Name :  <span class="text-muted">{{ $property->properties->name ?? 'N/A' }}</span></h5>
+                  <!-- <p class="mb-0 fw-bold">{{ $property->properties->name ?? 'N/A' }}</p> -->
                 </div>
               </div>
             </div>
             <div class="col-md-6 d-flex">
               <div class="card w-100">
-                <div class="card-body">
+                <div class="card-body p-3">
                   <div class="icon-wrapper"><i class="bi bi-door-open"></i></div>
-                  <h6 class="text-muted">Landlord Contact Info</h6>
+                  <h5 class="text-dark mb-0">Landlord Contact Info : <span class="text-muted"></span></h5>
                   <p class="mb-0 fw-bold"></p>
                 </div>
               </div>
@@ -200,7 +200,7 @@
                     </p>
                   </div>
                   <div class="col-md-4 text-md-end mt-3 mt-md-0">
-                    <span class="badge bg-dark">
+                    <span class="badge bg-success">
                       <i class="bi bi-check-circle"></i> Active Lease
                     </span>
                   </div>
@@ -209,27 +209,38 @@
             </div>
             <div class="col-md-6 d-flex">
               <div class="card w-100">
-                <div class="card-body">
+                <div class="card-body p-3">
                   <div class="icon-wrapper"><i class="bi bi-door-open"></i></div>
-                  <h6 class="text-muted">Email  </h6>
-                  @if($property && $property->properties && $property->properties->owner)
-                    <p class="mb-0 fw-bold">{{ $property->properties->owner->email }}</p>
-                  @else
-                    <p class="mb-0 fw-bold">{{ 'N/A' }}</p>
-                  @endif
+                  <h5 class="text-dark mb-0 d-flex">Email : &nbsp;
+
+                  <span>
+                    @if($property && $property->properties && $property->properties->owner)
+                      <p class="mb-0 text-muted">{{ $property->properties->owner->email }}</p>
+                    @else
+                      <p class="mb-0 text-muted">{{ 'N/A' }}</p>
+                    @endif
+                  </span>
+
+                  </h5>
+                  
                 </div>
               </div>
             </div>
             <div class="col-md-6 d-flex">
               <div class="card w-100">
-                <div class="card-body">
+                <div class="card-body p-3">
                   <div class="icon-wrapper"><i class="bi bi-door-open"></i></div>
-                  <h6 class="text-muted">Number </h6>
-                  @if($property && $property->properties && $property->properties->owner)
-                    <p class="mb-0 fw-bold">{{ $property->properties->owner->phone_number }}</p>
-                  @else
-                    <p class="mb-0 fw-bold">{{ 'N/A' }}</p>
-                  @endif
+                  <h5 class="text-muted d-flex">Number : &nbsp; 
+                      <span>
+
+                        @if($property && $property->properties && $property->properties->owner)
+                        <p class="mb-0 text-muted">{{ $property->properties->owner->phone_number }}</p>
+                      @else
+                        <p class="mb-0 text-muted">{{ 'N/A' }}</p>
+                      @endif
+                      </span>
+                  </h5>
+                  
                 </div>
               </div>
             </div>
@@ -244,11 +255,11 @@
               <div class="card w-100">
                 <div class="card-body">
                   <div class="icon-wrapper"><i class="bi bi-calendar-range"></i></div>
-                  <h6 class="text-muted">Lease Period</h6>
-                  <p class="mb-0 fw-bold">
+                  <h5 class="text-dark">Lease Period : <span class="text-muted">
                     {{ \Carbon\Carbon::parse($property->lease_start_date)->format('F d, Y') }} - 
                     {{ \Carbon\Carbon::parse($property->lease_end_date)->format('F d, Y') }}
-                  </p>
+                  </span></h5>
+                  
                 </div>
               </div>
             </div>
@@ -256,7 +267,7 @@
               <div class="card w-100">
                 <div class="card-body">
                   <div class="icon-wrapper"><i class="bi bi-calendar-range"></i></div>
-                  <h6 class="text-muted">Lease Document</h6>
+                  <h5 class="text-dark">Lease Document : </h5>
                   <a href="#" class="d-block mb-2 text-decoration-none">
                     <i class="bi bi-file-earmark-pdf"></i> Download Lease Agreement
                   </a>

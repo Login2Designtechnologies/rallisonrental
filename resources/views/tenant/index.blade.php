@@ -46,10 +46,10 @@
         @foreach ($tenants as $tenant)
             <div class="col-xxl-3 col-xl-4 col-md-6 d-flex">
                 <div class="card follower-card w-100">
-                    <div class="card-body p-3">
+                    <div class="card-body p-3 pb-4">
                         <div class="d-flex align-items-start mb-3">
                             <div class="flex-grow-1">
-                                <div class="d-flex">                                                    
+                                <div class="d-flex align-items-center">                                                    
                                     @if(!empty($tenant->user) && !empty($tenant->user->profile) && $tenant->user->profile !== 'avatar.png')
                                         <img class="img-fluid wid-70 me-2 tenant-img"
                                             src="{{ asset(Storage::url('upload/profile/' . $tenant->user->profile)) }}"
@@ -181,8 +181,7 @@
                                 <h6 class="mb-0">${{ number_format($tenant->utilities_past_due ?? 0, 2) }}</h6>
                             </div>
                             <div class="col-sm-12 mb-3">
-                                <p class="mb-0  text-sm">{{ __('Months Left on Lease') }} : $</p>
-                                <h6>{{ is_null($tenant->months_left) ? '-' : $tenant->months_left }}</h6>
+                                <p class="mb-4 text-sm">{{ __('Months Left on Lease') }} : <i class="bi bi-calendar"></i> <span>{{ is_null($tenant->months_left) ? '-' : $tenant->months_left }}</span></p>
                             </div>
                             
                             <div class="btn-block">

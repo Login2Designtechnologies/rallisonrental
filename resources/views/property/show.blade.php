@@ -107,6 +107,13 @@
                                 {{ __('Utilities') }}
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="profile-tab-5" data-bs-toggle="tab" href="#profile-5" role="tab"
+                                aria-selected="true">
+                                <i class="ti ti-bulb me-2"></i>
+                                {{ __('Our Cost') }}
+                            </a>
+                        </li>
 
                     </ul>
                 </div>
@@ -214,16 +221,16 @@
                                                                 data-bs-toggle="tooltip"
                                                                 data-bs-original-title="{{ __('Type') }}">{{ \App\Models\Property::$Type[$property->type] }}</span>
                                                             <h5 class="mt-4 ">{{ __('Property Details') }}</h5>
-                                                            <hr class="my-3" />
+                                                            
                                                             <p class="">
                                                                 {{ $property->description }}
                                                             </p>
-
-                                                            <h5 class="">{{ __('Property Address') }}</h5>
                                                             <hr class="my-3" />
+                                                            <h5 class="">{{ __('Property Address') }}</h5>
+                                                            <!-- <hr class="my-3" /> -->
                                                             <div class="mb-1 row">
                                                                 <label
-                                                                    class="col-form-label col-lg-3 col-sm-12 text-lg-end ">
+                                                                    class="col-form-label col-lg-2 col-sm-12 text-lg-start ">
                                                                     {{ __('Address') }} :
 
                                                                 </label>
@@ -234,7 +241,7 @@
                                                             </div>
                                                             <div class="mb-1 row">
                                                                 <label
-                                                                    class="col-form-label col-lg-3 col-sm-12 text-lg-end ">
+                                                                    class="col-form-label col-lg-2 col-sm-12 text-lg-start ">
                                                                     {{ __('Location') }} :
 
                                                                 </label>
@@ -245,7 +252,7 @@
                                                             </div>
                                                             <div class="mb-1 row">
                                                                 <label
-                                                                    class="col-form-label col-lg-3 col-sm-12 text-lg-end ">
+                                                                    class="col-form-label col-lg-2 col-sm-12 text-lg-start ">
                                                                     {{ __('Zip Code') }} :
 
                                                                 </label>
@@ -469,6 +476,42 @@
                                                 <!-- </td> -->
                                             </tr>
                                     @endforeach
+                                            
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                        </div>
+                        <div class="tab-pane " id="profile-5" role="tabpanel" aria-labelledby="profile-tab-5">
+                           <div class="w-100">
+                                <div class="row align-items-center g-2">
+                                        <div class="col">
+                                            <h5>Our Cost</h5>
+                                        </div>
+                                    </div>
+                                <div class="table-responsive">
+                                    <table class="table table-bordered mb-0 custom-bg-table">
+                                        <thead class="table-theme">
+                                            <tr>
+                                                <th>#</th>
+                                                <th> Mortgage Amount </th>
+                                                <th> Insurance Amount </th>
+                                                <th> Amenities Amount </th>
+                                                <!-- <th>Price</th> -->
+                                                <th>Status</th>
+                                                <!-- <th class="text-center">Action</th> -->
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td class="text-center"></td>
+                                                <td></td>
+                                                <td></td>
+                                                <td></td>
+                                                <td></td>
+                                               
+                                            </tr>
                                             
                                         </tbody>
                                     </table>

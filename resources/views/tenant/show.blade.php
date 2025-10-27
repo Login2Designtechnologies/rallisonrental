@@ -62,7 +62,7 @@ $country = $tenant->state?->country?->name ?? 'Usa';
                                                 Profile Tab -->
                     <ul class="nav flex-column nav-tabs account-tabs box-card custom-theme" id="myTab" role="tablist">
                         <li class="nav-item" role="presentation">
-                            <a class="nav-link active" id="profile-tab" data-bs-toggle="tab" href="#profile_content"
+                            <a class="nav-link" id="profile-tab" data-bs-toggle="tab" href="#profile_content"
                                 role="tab" aria-selected="true">
                                 <div class="d-flex align-items-center">
                                     <div class="flex-shrink-0">
@@ -92,7 +92,7 @@ $country = $tenant->state?->country?->name ?? 'Usa';
 
                         <!-- Contract Tab -->
                         <li class="nav-item" role="presentation">
-                            <a class="nav-link" id="contract-tab" data-bs-toggle="tab" href="#contract_content"
+                            <a class="nav-link active" id="contract-tab" data-bs-toggle="tab" href="#contract_content"
                                 role="tab" aria-selected="false">
                                 <div class="d-flex align-items-center">
                                     <div class="flex-shrink-0">
@@ -255,7 +255,7 @@ $country = $tenant->state?->country?->name ?? 'Usa';
         <div class="col-lg-8 col-xxl-9">
             <div class="tab-content" id="myTabContent">
 
-                <div class="tab-pane fade show active" id="profile_content" role="tabpanel"
+                <div class="tab-pane fade" id="profile_content" role="tabpanel"
                     aria-labelledby="profile-tab">
                     <div class="card box-card w-100">
                         <div class="card-header">
@@ -352,7 +352,7 @@ $country = $tenant->state?->country?->name ?? 'Usa';
                     </div>
                 </div>
 
-                <div class="tab-pane fade" id="contract_content" role="tabpanel" aria-labelledby="contract-tab">
+                <div class="tab-pane fade show active" id="contract_content" role="tabpanel" aria-labelledby="contract-tab">
                     <div class="card box-card w-100">
                         <div class="card-header">
                             <h5>Contract Setup</h5>
@@ -615,7 +615,7 @@ $country = $tenant->state?->country?->name ?? 'Usa';
 
 
                                     {{-- Standard Rent / Fees / Security Deposit --}}
-                                    <div class="row g-3 mb-3">
+                                    <div class="row g-3 ">
                                         <div class="col-md-6">
                                             <label class="form-label">Standard Rent (USD)</label>
                                             <div class="input-group">
@@ -1168,9 +1168,9 @@ $country = $tenant->state?->country?->name ?? 'Usa';
                                             <th>Status</th>
                                             <th>Action</th>
                                         </tr>
-                                    </thead>         
+                                    </thead>        
                                     @php
-                                    $tenantotherinvoicesall = DB::table('other_invoices')->where('tenant_id',$tenant->id)->where('property_id',$tenant->property_id)->get();
+									$tenantotherinvoicesall = DB::table('other_invoices')->where('tenant_id',$tenant->id)->where('property_id',$tenant->property_id)->get();
                                     @endphp
                                     <tbody class="text-center">
                                         @forelse($tenantotherinvoicesall as $i)
@@ -1363,14 +1363,7 @@ $country = $tenant->state?->country?->name ?? 'Usa';
                                                 </td>
                                             </tr>
                                     @endforeach
-                                            <!-- <tr>
-                                                <td>Document 2</td>
-                                                <td><span class="badge bg-warning text-dark">Pending</span>
-                                                </td>
-                                                <td>
-                                                    <a href="#" class="view-btn"><i class="ti ti-eye mx-1"></i></a>
-                                                </td>
-                                            </tr> -->
+                                           
                                         </tbody>
                                     </table>
                                 </div>
@@ -1454,9 +1447,6 @@ $country = $tenant->state?->country?->name ?? 'Usa';
                                             </p>
                                         </div>
 
-                                        <!-- <div class="text-end">
-                                            <a href="#" class="btn btn-secondary back-btn">Back</a>
-                                        </div> -->
 
                                     </div>
                                 </div>
@@ -1467,55 +1457,13 @@ $country = $tenant->state?->country?->name ?? 'Usa';
                 </div>
 
 
-                <!-- <div class="tab-pane fade" id="report_content" role="tabpanel" aria-labelledby="report-tab">
-                    <div class="card box-card w-100">
-                        <div class="card-header">
-                            <h5>Report</h5>
-                        </div>
-                        <div class="card-body allwhite mb-0">
-                            <div class="card theme-card">
-                                <form id="sendDocForm" enctype="multipart/form-data">
-                                    <div class="mb-3">
-                                        <label for="toEmail" class="form-label">Select Document</label>
-                                        <select name="" id="" class="form-control">
-                                            <option value="">-- Select --</option>
-                                            <option value="">Document 1</option>
-                                            <option value="">Document 2</option>
-                                            <option value="">Document 3</option>
-                                        </select>
-                                    </div>
-
-                                    <div class="mb-3">
-                                        <label for="subject" class="form-label">Subject</label>
-                                        <input type="text" class="form-control" id="subject" name="subject"
-                                            placeholder="Document subject..." required="">
-                                    </div>
-
-                                    <div class="mb-3">
-                                        <label for="description" class="form-label">Comment</label>
-                                        <textarea class="form-control" id="description" name="description" rows="4"
-                                            placeholder="Enter details..."></textarea>
-                                    </div>
-
-                                    <div class="text-end">
-                                        <button type="submit" class="btn btn-secondary">Send</button>
-                                    </div>
-
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                </div> -->
-
                 <!-- a -->
                 <div class="tab-pane fade" id="emergency_content" role="tabpanel" aria-labelledby="emergency-tab">
                     <div class="card box-card w-100">
                         <div class="card-header">
                             <h5>Emergency Information</h5>
                         </div>
-                        <div class="card-body allwhite px-3">
-
-
+                        <div class="card-body allwhite">
                             <div class="table-responsive">
                                 <table class="table table-borderless">
                                     <tbody>
@@ -1538,7 +1486,7 @@ $country = $tenant->state?->country?->name ?? 'Usa';
                         <div class="card-header">
                             <h5>Tenant Information</h5>
                         </div>
-                        <div class="card-body allwhite px-3">
+                        <!-- <div class="card-body allwhite px-3">
 
 
                             <div class="table-responsive">
@@ -1624,7 +1572,287 @@ $country = $tenant->state?->country?->name ?? 'Usa';
                                 </table>
 
                             </div>
+                        </div> -->
+                        <div class="row">
+            <div class="col-lg-12 d-flex">
+                <div class="card box-card w-100">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="form-group col-lg-6 col-md-6">
+                                <label for="first_name" class="form-label">First Name</label> <span class="text-danger">*</span>
+                                <input class="form-control" placeholder="Enter First Name" name="first_name" type="text" value="Tenant" id="first_name" readonly>
+                            </div>
+                            <div class="form-group col-lg-6 col-md-6">
+                                <label for="last_name" class="form-label">Last Name</label> <span class="text-danger">*</span>
+                                <input class="form-control" placeholder="Enter Last Name" name="last_name" type="text" value="T" id="last_name" readonly>
+                            </div>
+                            <div class="form-group ">
+                                <label for="email" class="form-label">Email</label> <span class="text-danger">*</span>
+                                <input class="form-control" placeholder="Enter Email" name="email" type="text" value="tenant@gmail.com" id="email" readonly>
+                            </div>
+                         
+                            <div class="form-group col-lg-6 col-md-6">
+                                <label for="phone_number" class="form-label">Phone Number</label> <span class="text-danger">*</span>
+                                <input class="form-control phone_number" placeholder="xxx-xxx-xxxx" name="phone_number" type="text" value="987-654-3212" id="phone_number" readonly>
+                            </div>
+                        
+                            <div class="form-group col-lg-6 col-md-6">
+                                <label for="emergency_contact" class="form-label">Emergency Contact Number</label> <span class="text-danger">*</span>
+                                <input class="form-control phone_number" placeholder="xxx-xxx-xxxx" name="emergency_phone_number" type="text" value="987-654-3210" readonly>
+                            </div>
+
+                            <div class="form-group">
+                               
+                                <label for="profile" class="form-label">Profile (Optional)</label>
+                                <!-- <input id="profile" class="form-control file-input" name="profile" type="file"> -->
+                                <div class="preview mt-2 small text-muted" style="color: white !important;"></div>
+                                                                    <div class="mt-2">
+                                        <a href="https://dodgerblue-lapwing-476569.hostingersite.com/storage/upload/profile/1760682455_download (1).jpeg" target="_blank">
+                                            <img src="https://dodgerblue-lapwing-476569.hostingersite.com/storage/upload/profile/1760682455_download (1).jpeg" alt="Profile" class="rounded" style="height:60px;width:70px">
+                                        </a>
+                                        <div class="small text-muted">Current photo</div>
+                                    </div>
+                            </div>
+
+
+                            <div class="row">
+                            
+
+                            <div class="form-group col-lg-6 col-md-6">
+                                <label for="property" class="form-label">Property</label>
+                                <span class="text-danger">*</span>
+                                <select class="form-control" id="propertyall" required="required" name="property_id" readonly><option value="">Select</option><option value="0">Select Property</option><option value="4">Moon Villa's</option><option value="13">TEst Property</option><option value="14">Moon Villa's</option><option value="19">check</option><option value="20" selected="selected">Rajasthan’s Regal Experience</option><option value="28">Res Pro</option><option value="29">testing</option><option value="30">dsa</option></select>
+                            </div>
+
+                                                        <div class="form-group col-lg-6 col-md-6">
+                                <label for="unit" class="form-label">Unit</label>
+                                <div class="unit_div">
+                                   <select class="form-control" id="unitall" name="unit" required="" readonly>
+                                        <option value="">Select Unit</option>
+                                                                            </select>
+                                </div>
+                            </div>
+
+                            
+                            
                         </div>
+
+                        <!--  -->
+                        <div class="row">
+
+                            <div class="form-group col-lg-12">
+                                <h3 class="mb-0 mt-3">Property Details</h3>
+                            </div>
+                            <div class="form-group col-lg-6 col-md-6">
+                                <label for="property" class="form-label">Property</label>
+                                <span class="text-danger">*</span>
+                                <select class="form-control" id="propertyall" required="required" name="property_id" readonly><option value="">Select</option><option value="0">Select Property</option><option value="4">Moon Villa's</option><option value="13">TEst Property</option><option value="14">Moon Villa's</option><option value="19">check</option><option value="20" selected="selected">Rajasthan’s Regal Experience</option><option value="28">Res Pro</option><option value="29">testing</option><option value="30">dsa</option></select>
+                            </div>
+
+                                                        <div class="form-group col-lg-6 col-md-6">
+                                <label for="unit" class="form-label">Unit</label>
+                                <div class="unit_div">
+                                   <select class="form-control" id="unitall" name="unit" required="" readonly>
+                                        <option value="">Select Unit</option>
+                                                                            </select>
+                                </div>
+                            </div>
+
+                            
+                            
+                        </div>
+                        <!-- ./ -->
+
+                        <!--  -->
+                        <div class="row">
+                            <div class="form-group col-lg-12">
+                                <h3 class="mb-0 mt-3">Address Details</h3>
+                            </div>
+
+                            <div class="form-group ">
+                                <label for="address" class="form-label">Address</label> <span class="text-danger">*</span>
+                                <textarea class="form-control" rows="1" placeholder="Enter Address" name="address" cols="50" id="address" readonly>New Add</textarea>
+                            </div>
+                            
+
+                              <div class="form-group col-lg-4 col-md-4">
+                                <label for="state" class="form-label">State</label> <span class="text-danger">*</span>
+                                <select class="form-control" id="company_state" required="required" style="" name="state" readonly><option value="">Select</option><option value="3919">Alabama</option><option value="3920">Alaska</option><option value="3921">Arizona</option><option value="3922">Arkansas</option><option value="3923">Byram</option><option value="3924">California</option><option value="3925">Cokato</option><option value="3926">Colorado</option><option value="3927">Connecticut</option><option value="3928">Delaware</option><option value="3929">District of Columbia</option><option value="3930">Florida</option><option value="3931">Georgia</option><option value="3932">Hawaii</option><option value="3933">Idaho</option><option value="3934">Illinois</option><option value="3935" selected="selected">Indiana</option><option value="3936">Iowa</option><option value="3937">Kansas</option><option value="3938">Kentucky</option><option value="3939">Louisiana</option><option value="3940">Lowa</option><option value="3941">Maine</option><option value="3942">Maryland</option><option value="3943">Massachusetts</option><option value="3944">Medfield</option><option value="3945">Michigan</option><option value="3946">Minnesota</option><option value="3947">Mississippi</option><option value="3948">Missouri</option><option value="3949">Montana</option><option value="3950">Nebraska</option><option value="3951">Nevada</option><option value="3952">New Hampshire</option><option value="3953">New Jersey</option><option value="3955">New Mexico</option><option value="3956">New York</option><option value="3957">North Carolina</option><option value="3958">North Dakota</option><option value="3959">Ohio</option><option value="3960">Oklahoma</option><option value="3961">Ontario</option><option value="3962">Oregon</option><option value="3963">Pennsylvania</option><option value="3964">Ramey</option><option value="3965">Rhode Island</option><option value="3966">South Carolina</option><option value="3967">South Dakota</option><option value="3968">Sublimity</option><option value="3969">Tennessee</option><option value="3970">Texas</option><option value="3971">Trimble</option><option value="3972">Utah</option><option value="3973">Vermont</option><option value="3974">Virginia</option><option value="3975">Washington</option><option value="3976">West Virginia</option><option value="3977">Wisconsin</option><option value="3978">Wyoming</option></select>
+                            </div>
+
+                            
+                            
+                            <div class="form-group col-lg-4 col-md-4">
+                                <label for="company_city" class="form-label">City <span class="text-danger">*</span></label>
+                                <select name="city" id="company_city" class="form-control" required="" readonly>
+                                    <option value="" style="">Select</option>
+                                                                    <option value="49716" style="">Albion</option>
+                                                                    <option value="49717" style="">Anderson</option>
+                                                                    <option value="49718" style="">Angola</option>
+                                                                    <option value="49719" style="">Auburn</option>
+                                                                    <option value="49720" style="">Bedford</option>
+                                                                    <option value="49721" style="">Beech Grove</option>
+                                                                    <option value="49722" style="">Bloomington</option>
+                                                                    <option value="49723" style="">Brownsburg</option>
+                                                                    <option value="49724" style="">Carmel</option>
+                                                                    <option value="49725" style="">Cedar Lake</option>
+                                                                    <option value="49726" style="">Chesterton</option>
+                                                                    <option value="49727" style="">Clarksville</option>
+                                                                    <option value="49728" selected="" style="">Columbus</option>
+                                                                    <option value="49729" style="">Connersville</option>
+                                                                    <option value="49730" style="">Crawfordsville</option>
+                                                                    <option value="49731" style="">Crown Point</option>
+                                                                    <option value="49732" style="">Dyer</option>
+                                                                    <option value="49733" style="">East Chicago</option>
+                                                                    <option value="49734" style="">Elkhart</option>
+                                                                    <option value="49735" style="">Evansville</option>
+                                                                    <option value="49736" style="">Fishers</option>
+                                                                    <option value="49737" style="">Fort Wayne</option>
+                                                                    <option value="49738" style="">Frankfort</option>
+                                                                    <option value="49739" style="">Franklin</option>
+                                                                    <option value="49740" style="">Gary</option>
+                                                                    <option value="49741" style="">Goshen</option>
+                                                                    <option value="49742" style="">Gosport</option>
+                                                                    <option value="49743" style="">Granger</option>
+                                                                    <option value="49744" style="">Greenfield</option>
+                                                                    <option value="49745" style="">Greensburg</option>
+                                                                    <option value="49746" style="">Greenwood</option>
+                                                                    <option value="49747" style="">Griffith</option>
+                                                                    <option value="49748" style="">Hammond</option>
+                                                                    <option value="49749" style="">Helmsburg</option>
+                                                                    <option value="49750" style="">Highland</option>
+                                                                    <option value="49751" style="">Hobart</option>
+                                                                    <option value="49752" style="">Huntington</option>
+                                                                    <option value="49753" style="">Indianapolis</option>
+                                                                    <option value="49754" style="">Jasper</option>
+                                                                    <option value="49755" style="">Jeffersonville</option>
+                                                                    <option value="49756" style="">Knightstown</option>
+                                                                    <option value="49757" style="">Kokomo</option>
+                                                                    <option value="49758" style="">La Porte</option>
+                                                                    <option value="49759" style="">Lafayette</option>
+                                                                    <option value="49760" style="">Lake Station</option>
+                                                                    <option value="49761" style="">Lawrence</option>
+                                                                    <option value="49762" style="">Lebanon</option>
+                                                                    <option value="49763" style="">Liberty</option>
+                                                                    <option value="49764" style="">Logansport</option>
+                                                                    <option value="49765" style="">Madison</option>
+                                                                    <option value="49766" style="">Marion</option>
+                                                                    <option value="49767" style="">Martinsville</option>
+                                                                    <option value="49768" style="">Merrillville</option>
+                                                                    <option value="49769" style="">Michigan City</option>
+                                                                    <option value="49770" style="">Mishawaka</option>
+                                                                    <option value="49771" style="">Muncie</option>
+                                                                    <option value="49772" style="">Munster</option>
+                                                                    <option value="49773" style="">N. Albany</option>
+                                                                    <option value="49774" style="">Nashville</option>
+                                                                    <option value="49775" style="">New Albany</option>
+                                                                    <option value="49776" style="">New Castle</option>
+                                                                    <option value="49777" style="">New Haven</option>
+                                                                    <option value="49778" style="">New Trenton</option>
+                                                                    <option value="49779" style="">Noblesville</option>
+                                                                    <option value="49780" style="">North Vernon</option>
+                                                                    <option value="49781" style="">Osceola</option>
+                                                                    <option value="49782" style="">Peru</option>
+                                                                    <option value="49783" style="">Plainfield</option>
+                                                                    <option value="49784" style="">Plymouth</option>
+                                                                    <option value="49785" style="">Poland</option>
+                                                                    <option value="49786" style="">Portage</option>
+                                                                    <option value="49787" style="">Richmond</option>
+                                                                    <option value="49788" style="">Rising Sun</option>
+                                                                    <option value="49789" style="">Roanoke</option>
+                                                                    <option value="49790" style="">Rockport</option>
+                                                                    <option value="49791" style="">Schererville</option>
+                                                                    <option value="49792" style="">Scottsburg</option>
+                                                                    <option value="49793" style="">Seymour</option>
+                                                                    <option value="49794" style="">Shelbyville</option>
+                                                                    <option value="49795" style="">South Bend</option>
+                                                                    <option value="49796" style="">Speedway</option>
+                                                                    <option value="49797" style="">St. John</option>
+                                                                    <option value="49798" style="">Terre Haute</option>
+                                                                    <option value="49799" style="">Thorntown</option>
+                                                                    <option value="49800" style="">Tippecanoe</option>
+                                                                    <option value="49801" style="">Troy</option>
+                                                                    <option value="49802" style="">Valparaiso</option>
+                                                                    <option value="49803" style="">Vermont</option>
+                                                                    <option value="49804" style="">Vincennes</option>
+                                                                    <option value="49805" style="">Wabash</option>
+                                                                    <option value="49806" style="">Warsaw</option>
+                                                                    <option value="49807" style="">Washington</option>
+                                                                    <option value="49808" style="">West Lafayette</option>
+                                                                    <option value="49809" style="">Williams</option>
+                                                                </select>
+                            </div>
+                            <div class="form-group col-lg-4 col-md-4">
+                                <label for="zip_code" class="form-label">Zip Code</label> <span class="text-danger">*</span>
+                                <input class="form-control" placeholder="Enter Zip Code" name="zip_code" type="text" value="456456" id="zip_code" readonly>
+                            </div>
+                            
+                        </div>
+                        <!-- ./ -->
+
+                        <!--  -->
+
+                        <div class="row">
+                             <div class="form-group col-lg-12">
+                                <h3 class="mb-0 mt-3">Documents Upload</h3>
+                            </div>
+                            <div class="col-lg-4">
+                                <div class="form-group mb-3">
+                                    <label for="personal_document" class="form-label">Application Document</label>
+                                    <input class="form-control file-input" name="personal_document" type="file" id="personal_document" readonly>
+                                    <div class="preview mt-2 small text-muted" style="color: white !important;"></div>
+                                                                    <div class="mt-2">
+                                            <a href="https://dodgerblue-lapwing-476569.hostingersite.com/storage/upload/tenantdocument/1618082605IMG_5983-compressed_1760617666.jpg" target="_blank">
+                                                <img src="https://dodgerblue-lapwing-476569.hostingersite.com/storage/upload/tenantdocument/1618082605IMG_5983-compressed_1760617666.jpg" alt="Profile" class="rounded" style="height:60px;width:70px">
+                                            </a>
+                                            <div class="small text-muted">Current photo</div>
+                                        </div>
+                                    
+                                </div> 
+                            </div>
+
+                            <div class="col-lg-4">
+                                <div class="form-group mb-3">
+                                    <label for="ic_document" class="form-label">Driving Licence</label>
+                                    <input class="form-control file-input" name="ic_document" type="file" id="ic_document" readonly>
+                                    <div class="preview mt-2 small text-muted" style="color: white !important;"></div>
+                                                                    <div class="mt-2">
+                                            <a href="https://dodgerblue-lapwing-476569.hostingersite.com/storage/upload/tenantdocument/1618082605IMG_5119-compressed_1760617666.jpg" target="_blank">
+                                                <img src="https://dodgerblue-lapwing-476569.hostingersite.com/storage/upload/tenantdocument/1618082605IMG_5119-compressed_1760617666.jpg" alt="Profile" class="rounded" style="height:60px;width:70px">
+                                            </a>
+                                            <div class="small text-muted">Current</div>
+                                        </div>
+                                    
+                                </div> 
+                            </div>
+
+                            <div class="col-lg-4">
+                                <div class="form-group mb-3">
+                                    <label for="miscellaneous" class="form-label">Bank Statement</label>
+                                    <input class="form-control file-input" name="miscellaneous" type="file" id="miscellaneous" readonly>
+                                    <div class="preview mt-2 small text-muted" style="color: white !important;"></div>
+                                        <div class="mt-2">
+                                            <a href="https://dodgerblue-lapwing-476569.hostingersite.com/storage/upload/tenantdocument/161808260555f4f85c-d8ce-4550-8a4e-09ff3afa0f12_1760617666.jpg" target="_blank">
+                                                <img src="https://dodgerblue-lapwing-476569.hostingersite.com/storage/upload/tenantdocument/161808260555f4f85c-d8ce-4550-8a4e-09ff3afa0f12_1760617666.jpg" alt="Profile" class="rounded" style="height:60px;width:70px">
+                                            </a>
+                                            <div class="small text-muted">Current</div>
+                                        </div>
+                                </div>  
+                            </div>
+                        </div>
+
+                        <!-- ./ -->
+
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+            
+            
+            
+        </div>
+        <!-- ./ -->
                     </div>
                 </div>
                 <!-- c -->
@@ -1633,27 +1861,23 @@ $country = $tenant->state?->country?->name ?? 'Usa';
                         <div class="card-header">
                             <h5>User Name & Password Information</h5>
                         </div>
-                        <div class="card-body allwhite px-3">
+                        <div class="card-body allwhite">
+                           <div class="row">
+                                <div class="col-lg-12">
+                                    <div class="form-group">
+                                        <label class="form-label" for="username">Username</label>
+                                        <input type="text" id="username" class="form-control" placeholder="Enter your username" readonly>
+                                    </div>
+                                </div>
+                                <div class="col-lg-12">
+                                     <div class="form-group">
+                                        <label class="form-label" for="password">Password</label>
+                                        <input type="password" id="password" class="form-control" placeholder="Enter your password" readonly>
+                                    </div>
+                                </div>
+                           </div>
 
-
-                            <div class="table-responsive">
-                                <table class="table table-borderless">
-                                    <tbody>
-                                        <tr>
-                                            <td><b class="text-header">User Name </b></td>
-                                            <td>:</td>
-                                            <td></td>
-                                        </tr>
-                                        <tr>
-                                            <td><b class="text-header">Password </b></td>
-                                            <td>:</td>
-                                            <td></td>
-                                        </tr>
-
-                                    </tbody>
-                                </table>
-
-                            </div>
+                            
                         </div>
                     </div>
                 </div>

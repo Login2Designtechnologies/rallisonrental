@@ -454,7 +454,7 @@
                     <div class="tab-pane show active" id="profile-1" role="tabpanel" aria-labelledby="profile-tab-1">
                         <div class="row">
                             <div class="col-lg-12">
-                                <div class="card border bg-custom bg-white mb-3">
+                                <div class="card border bg-custom bg-white mb-2">
                                     <div class="card-header">
                                         <h5> {{ __('Add Property Details') }}</h5>
                                     </div>
@@ -705,7 +705,7 @@
                     <div class="tab-pane" id="profile-2" role="tabpanel" aria-labelledby="profile-tab-2">
                         <div class="row">
                             <div class="col-lg-12">
-                                <div class="card border bg-custom bg-white mb-3">
+                                <div class="card border bg-custom bg-white mb-2">
                                     <div class="card-header">
                                         {{ Form::label('demo-upload', __('Add Property Images'), ['class' => 'form-label']) }}
                                     </div>
@@ -774,7 +774,7 @@
                         </div>
                     </div>
                     <div class="tab-pane" id="profile-3" role="tabpanel" aria-labelledby="profile-tab-3">
-                        <div class="card border bg-custom bg-white mb-3">
+                        <div class="card border bg-custom bg-white mb-2">
                             <div class="card-body w-100">
                                 {{-- Hidden Template --}}
                                 <div class="row unit_template d-none">
@@ -846,7 +846,7 @@
                         </div>
                     </div>
                     <div class="tab-pane" id="profile-4" role="tabpanel" aria-labelledby="profile-tab-4">
-                        <div class="card border bg-custom bg-white mb-3">
+                        <div class="card border bg-custom bg-white mb-2">
                             <div class="card-body w-100">
                                 <div class="row">
                                     <div class="form-group col-md-12">
@@ -925,7 +925,7 @@
                         </div>
                     </div>
                     <div class="tab-pane" id="profile-5" role="tabpanel" aria-labelledby="profile-tab-5">
-                        <div class="card border bg-custom bg-white mb-3">
+                        <div class="card border bg-custom bg-white mb-2">
                             @php
                                 $hasUtilities = isset($utilities) && $utilities instanceof \Illuminate\Support\Collection && $utilities->count() > 0;
                             @endphp
@@ -1035,7 +1035,7 @@
                     <div class="tab-pane" id="profile-6" role="tabpanel"aria-labelledby="profile-tab-6">
                         <div class="row">
                             <div class="col-lg-12">
-                                <div class="card border bg-custom bg-white mb-3">
+                                <div class="card border bg-custom bg-white mb-2">
                                     <div class="card-header">
                                         <h5> {{ __('Our Cost') }}</h5>
                                     </div>

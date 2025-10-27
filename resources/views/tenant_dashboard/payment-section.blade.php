@@ -28,7 +28,12 @@
                                 <i class="bi bi-calendar text-primary fs-3"></i>
                             </div>
                             <div class="card-body position-relative pt-0 pb-3">
-                                <div class="fs-3 fw-bold">{{ $dueDate->format('M d, Y') }}</div>
+                                <div class="fs-3 fw-bold">
+                                 @if($dueDate)
+                                  {{ $dueDate->format('M d, Y') }}
+                                 @else
+                                 @endif
+                                </div>
                                 <p class="text-muted small mb-2">{{ $daysRemaining > 0 ? "$daysRemaining days remaining" : "Due today" }}</p>
                                 <!-- <span class="badge bg-warning text-dark">Due Soon</span> -->
                                 <a href="#" class="btn btn-primary btn-sm fs-6">Make Payment</a>
@@ -45,7 +50,7 @@
                                 <i class="bi bi-currency-dollar text-success fs-3"></i>
                             </div>
                             <div class="card-body position-relative pt-0 pb-3">
-                                <div class="fs-3 fw-bold">${{ number_format($rentAmount, 2) }}</div>
+                                <div class="fs-4 fw-bold">${{ number_format($rentAmount, 2) }}</div>
                                 <p class="text-muted small mb-2">Monthly rent</p>
                                 <a href="#" class="btn btn-primary btn-sm fs-6">Make Payment</a>
                             </div>
@@ -154,6 +159,7 @@
                                 </thead>
 
                                 <tbody>
+                                @if(!empty($payments))
                                     @forelse($payments as $payment)
                                         <tr>
                                             <td class="fw-medium py-3 px-4">{{ $payment['month'] }}</td>
@@ -181,7 +187,12 @@
                                         <tr>
                                             <td colspan="7" class="text-center text-muted py-3">No payment records found</td>
                                         </tr>
-                                    @endforelse                                   
+                                    @endforelse  
+                                @else
+                                    <tr>
+                                        <td colspan="7" class="text-center text-muted py-3">No payment records found</td>
+                                    </tr>
+                                @endif                                 
                                 </tbody>
                             </table>
                         </div>
