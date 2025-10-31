@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\UtilityInvoiceMail;
 use App\Models\Property;
 use App\Models\PropertyImage;
 use App\Models\PropertyUnit;
@@ -11,6 +12,8 @@ use App\Models\User;
 use App\Models\UtilityBill;
 use App\Models\UtilityInvoice;
 use App\Models\UtilityInvoiceDetail;
+use App\Models\UtilityMain;
+use App\Models\UtilityShare;
 use DB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -79,9 +82,9 @@ class PropertyController extends Controller
             })
             ->whereExists(function ($q) {
                 $q->select(DB::raw(1))
-                    ->from('utilities_catg')
-                    ->whereColumn('utilities_catg.property_id', 'properties.id')
-                    ->where('utilities_catg.user_id', auth()->id());
+                    ->from('utilities_main')
+                    ->whereColumn('utilities_main.property_id', 'properties.id')
+                    ->where('utilities_main.user_id', auth()->id());
             })
             ->get();
 
@@ -114,9 +117,10 @@ class PropertyController extends Controller
             })
             ->whereExists(function ($q) {
                 $q->select(DB::raw(1))
-                    ->from('utilities_catg')
-                    ->whereColumn('utilities_catg.property_id', 'properties.id')
-                    ->where('utilities_catg.user_id', auth()->id());
+                    ->from('utilities_main as m')
+                    ->join('utilities_sub as s', 'm.id', '=', 's.utility_main_id')
+                    ->whereColumn('m.property_id', 'properties.id')
+                    ->where('m.user_id', auth()->id());
             })
             ->first();
         
@@ -171,6 +175,20 @@ class PropertyController extends Controller
             ->where('uploaded_by', auth()->id())
             ->get()
             ->keyBy('utility_id');
+        
+        $allMainUtilities = DB::table('utilities_main')
+            ->where('property_id', request('property_id'))
+            ->pluck('id');
+
+        foreach ($allMainUtilities as $id) {
+            if (!isset($uploadedBills[$id])) {
+                $uploadedBills[$id] = (object)[
+                    'start_date' => null,
+                    'end_date' => null,
+                    'file_path' => null,
+                ];
+            }
+        }
         
         $existingInvoice = DB::table('utility_invoices')
             ->where('property_id', request('property_id'))
@@ -346,20 +364,48 @@ class PropertyController extends Controller
                 }
             }
 
-            // ⚡ Save Utilities (JSON array)
+            // Save Utilities (JSON array)
+            // if ($request->has('utilities')) {
+            //     $utilities = json_decode($request->utilities, true);
+            //     foreach ($utilities as $u) {
+            //         if (! empty($u['name'])) {
+            //             DB::table('utilities_catg')->updateOrInsert(
+            //                 ['property_id' => $property->id, 'name' => $u['name']],
+            //                 [
+            //                     'sub_category' => $u['sub_category'],
+            //                     'sub_category_name' => $u['sub_category_names'] ?? null,
+            //                     'status' => $u['status'],
+            //                     'user_id' => Auth::id(),
+            //                 ]
+            //             );
+            //         }
+            //     }
+            // }
+
             if ($request->has('utilities')) {
                 $utilities = json_decode($request->utilities, true);
+
                 foreach ($utilities as $u) {
-                    if (! empty($u['name'])) {
-                        DB::table('utilities_catg')->updateOrInsert(
-                            ['property_id' => $property->id, 'name' => $u['name']],
+                    if (!empty($u['name'])) {
+                        $main = UtilityMain::updateOrCreate(
                             [
-                                'sub_category' => $u['sub_category'],
-                                'sub_category_name' => $u['sub_category_names'] ?? null,
-                                'status' => $u['status'],
+                                'property_id' => $property->id,
+                                'name' => $u['name'],
                                 'user_id' => Auth::id(),
-                            ]
+                            ],
+                            ['status' => $u['status']]
                         );
+
+                        if (!empty($u['sub_category_names'])) {
+                            $subs = explode(',', $u['sub_category_names']);
+                            $main->subcategories()->delete();
+                            foreach ($subs as $sub) {
+                                $main->subcategories()->create([
+                                    'sub_category_name' => trim($sub),
+                                    'status' => $u['status'],
+                                ]);
+                            }
+                        }
                     }
                 }
             }
@@ -977,6 +1023,202 @@ class PropertyController extends Controller
     public function propertyUtilities_update2(Request $request)
     {
         $request->validate([
+            'id' => 'required|integer|exists:utilities_main,id',
+            'name' => 'required|string|max:255',
+            'sub_category' => 'required|in:0,1',
+            'sub_category_name' => 'nullable',
+            'status' => 'required|in:0,1',
+            'propertyid' => 'required|integer|exists:properties,id',
+        ]);
+
+        $userId = Auth::id();
+        $propertyId = $request->propertyid;
+        $name = trim($request->name);
+        $subCategory = (int) $request->sub_category;
+        $status = (int) $request->status;
+
+        /**
+         * STEP - Normalize sub_category_name
+         * It can come as array OR string (like "New 1, New 2")
+         */
+        $raw = $request->input('sub_category_name');
+
+        if (is_array($raw)) {
+            $subCategoryNames = $raw;
+        } elseif (is_string($raw)) {
+            // Split by comma or newline, then trim each
+            $subCategoryNames = preg_split('/[,|\n|\r]+/', $raw);
+        } else {
+            $subCategoryNames = [];
+        }
+
+        // Clean and remove empty or duplicate names
+        $subCategoryNames = array_filter(array_unique(array_map('trim', $subCategoryNames)));
+
+        /**
+         * STEP - Check for duplicate main company name
+         */
+        $currentMain = DB::table('utilities_main')->where('id', $request->id)->first();
+
+        if ($currentMain && strtolower(trim($currentMain->name)) !== strtolower($name)) {
+            $duplicateMain = DB::table('utilities_main')
+                ->where('property_id', $propertyId)
+                ->where('user_id', $userId)
+                ->whereRaw('LOWER(TRIM(name)) = ?', [strtolower($name)])
+                ->where('id', '!=', $request->id)
+                ->exists();
+
+            if ($duplicateMain) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Another utility company with this name already exists for this property!',
+                ]);
+            }
+        }
+        // $duplicateMain = DB::table('utilities_main')
+        //     ->where('property_id', $propertyId)
+        //     ->where('user_id', $userId)
+        //     ->where('name', $name)
+        //     ->where('id', '!=', $request->id)
+        //     ->exists();
+
+        // if ($duplicateMain) {
+        //     return response()->json([
+        //         'success' => false,
+        //         'message' => 'Another utility company with this name already exists for this property!',
+        //     ]);
+        // }
+
+        /**
+         * STEP - Fetch existing main and its subcategories
+         */
+        $main = DB::table('utilities_main')->where('id', $request->id)->first();
+        if (!$main) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Utility record not found!',
+            ]);
+        }
+
+        $existingSubs = DB::table('utilities_sub')
+            ->where('utility_main_id', $main->id)
+            ->pluck('sub_category_name', 'id')
+            ->toArray();
+
+        $existingNames = array_values($existingSubs);
+        $existingIds = array_keys($existingSubs);
+
+        $toKeep = [];
+        $toAdd = [];
+        $toDelete = [];
+
+        // Compare and separate which to keep/add/delete
+        foreach ($subCategoryNames as $subName) {
+            if (in_array($subName, $existingNames)) {
+                $id = array_search($subName, $existingSubs);
+                $toKeep[$id] = $subName;
+            } else {
+                $toAdd[] = $subName;
+            }
+        }
+
+        foreach ($existingSubs as $id => $nameInDb) {
+            if (!in_array($nameInDb, $subCategoryNames)) {
+                $toDelete[] = $id;
+            }
+        }
+
+        /**
+         * STEP - Check for duplicates in $toAdd
+         */
+        if (!empty($toAdd)) {
+            $existingDuplicates = DB::table('utilities_sub')
+                ->join('utilities_main', 'utilities_sub.utility_main_id', '=', 'utilities_main.id')
+                ->where('utilities_main.property_id', $propertyId)
+                ->where('utilities_main.user_id', $userId)
+                ->where('utilities_main.name', $name)
+                ->whereIn('utilities_sub.sub_category_name', $toAdd)
+                ->pluck('utilities_sub.sub_category_name')
+                ->toArray();
+
+            if (!empty($existingDuplicates)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Some subcategories already exist!',
+                    'duplicates' => $existingDuplicates,
+                ]);
+            }
+        }
+
+        /**
+         * STEP - Update main company record
+         */
+        DB::table('utilities_main')
+            ->where('id', $main->id)
+            ->update([
+                'name' => $name,
+                'status' => $status,
+                'updated_at' => now(),
+            ]);
+
+        /**
+         * STEP - Update existing subcategories (keep)
+         */
+        foreach ($toKeep as $id => $subName) {
+            DB::table('utilities_sub')
+                ->where('id', $id)
+                ->update([
+                    'sub_category_name' => $subName,
+                    'status' => $status,
+                    'updated_at' => now(),
+                ]);
+        }
+
+        /**
+         * STEP - Add new subcategories
+         */
+        foreach ($toAdd as $subName) {
+            DB::table('utilities_sub')->insert([
+                'utility_main_id' => $main->id,
+                'sub_category_name' => $subName,
+                'status' => $status,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+
+        /**
+         * STEP - Delete removed subcategories
+         */
+        if (!empty($toDelete)) {
+            DB::table('utilities_sub')
+                ->whereIn('id', $toDelete)
+                ->delete();
+        }
+
+        /**
+         * STEP - Fetch updated subcategory list for response
+         */
+        $updatedSubNames = DB::table('utilities_sub')
+            ->where('utility_main_id', $main->id)
+            ->pluck('sub_category_name')
+            ->toArray();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Utilities updated successfully!',
+            'data' => [
+                'id' => $main->id,
+                'name' => $name,
+                'sub_category' => $subCategory,
+                'sub_category_names' => implode(', ', $updatedSubNames),
+                'status' => $status,
+            ],
+        ]);
+    }
+    public function propertyUtilities_update2_old(Request $request)
+    {
+        $request->validate([
             'id' => 'required|integer|exists:utilities_catg,id',
             'name' => 'required|string|max:255',
             'sub_category' => 'required|in:0,1',
@@ -1351,7 +1593,20 @@ class PropertyController extends Controller
             $propertyimages = DB::table('property_images')->where('property_id', $property->id)->where('type', 'thumbnail')->first();
             $propertyextraimages = DB::table('property_images')->where('property_id', $property->id)->where('type', 'extra')->get();
             $amenities = DB::table('amenity_catg')->where('property_id', $property->id)->where('user_id', $userId)->get();
-            $utilities = DB::table('utilities_catg')->where('property_id', $property->id)->where('user_id', $userId)->get();
+            // $utilities = DB::table('utilities_catg')->where('property_id', $property->id)->where('user_id', $userId)->get();
+            $utilities = DB::table('utilities_main as m')
+                ->leftJoin('utilities_sub as s', 'm.id', '=', 's.utility_main_id')
+                ->select(
+                    'm.id',
+                    'm.name',
+                    'm.status',
+                    DB::raw('GROUP_CONCAT(s.sub_category_name ORDER BY s.sub_category_name SEPARATOR ", ") as sub_category_name'),
+                    DB::raw('CASE WHEN COUNT(s.id) > 0 THEN 1 ELSE 0 END as sub_category')
+                )
+                ->where('m.property_id', $property->id)
+                ->where('m.user_id', $userId)
+                ->groupBy('m.id', 'm.name', 'm.status')
+                ->get();
             $units = DB::table('property_units')->where('property_id', $property->id)->get();
 
             return view('property.create', compact('types', 'property', 'statesdata', 'propertyimages', 'propertyextraimages', 'amenities', 'utilities', 'units'));
@@ -1856,15 +2111,51 @@ class PropertyController extends Controller
         return response()->json($units);
     }
 
-    public function utility_invoicesgenerate(Request $request)
+    public function utility_invoicesgenerate_bkp(Request $request)
     {
+        \Log::info('⚡ utility_invoicesgenerate reached', [
+            'headers' => $request->headers->all()
+        ]);
+        $payload = $request->all();
+
+    // 🟢 Step 2: Normalize date strings before validation
+    foreach ($payload['invoices'] ?? [] as &$inv) {
+        foreach ($inv['details'] ?? [] as &$detail) {
+            foreach (['start_date', 'end_date'] as $key) {
+                if (!empty($detail[$key])) {
+                    $val = trim($detail[$key]);
+                    try {
+                        // ✅ If format is mm-dd-yyyy → convert to yyyy-mm-dd
+                        if (preg_match('/^\d{2}\-\d{2}\-\d{4}$/', $val)) {
+                            $detail[$key] = \Carbon\Carbon::createFromFormat('m-d-Y', $val)->format('Y-m-d');
+                        }
+                        // ✅ If format is dd-mm-yyyy → also handle
+                        elseif (preg_match('/^\d{2}\-\d{2}\-\d{4}$/', $val)) {
+                            $detail[$key] = \Carbon\Carbon::createFromFormat('d-m-Y', $val)->format('Y-m-d');
+                        }
+                        // ✅ If already ISO or parseable
+                        else {
+                            $detail[$key] = \Carbon\Carbon::parse($val)->format('Y-m-d');
+                        }
+                    } catch (\Exception $e) {
+                        // 🚫 If not parseable → null it out
+                        $detail[$key] = null;
+                    }
+                }
+            }
+        }
+    }
+
+    // 🟢 Step 3: Replace request data with normalized payload
+    $request->replace($payload);
+
+    try {
         $data = $request->validate([
             'property_id' => ['required', 'integer', 'exists:properties,id'],
             'invoice_month' => ['required', 'regex:/^\d{4}\-\d{2}$/'], // YYYY-MM
-            'due_date' => ['nullable', 'date'],
             'invoices' => ['required', 'array', 'min:1'],
             'invoices.*.tenant_id' => ['required', 'integer', 'exists:tenants,id'],
-            'invoices.*.amount' => ['required', 'numeric'],
+            'invoices.*.amount' => ['required', 'numeric', 'min:0.01'],
             'invoices.*.details' => ['required', 'array', 'min:1'],
             'invoices.*.details.*.property_utility_id' => ['nullable', 'integer'],
             'invoices.*.details.*.category' => ['required', 'string', 'max:191'],
@@ -1872,6 +2163,16 @@ class PropertyController extends Controller
             'invoices.*.details.*.start_date' => ['nullable', 'date'],
             'invoices.*.details.*.end_date' => ['nullable', 'date'],
         ]);
+    }catch (\Illuminate\Validation\ValidationException $e) {
+        \Log::error('❌ Validation failed', [
+            'errors' => $e->errors(),
+        ]);
+        return response()->json([
+            'ok' => false,
+            'message' => 'Validation failed',
+            'errors' => $e->errors()
+        ], 422);
+    }
 
         $ownerId = optional(Auth::user()->owner)->id;
         $created = [];
@@ -1909,31 +2210,31 @@ class PropertyController extends Controller
         try {
             DB::transaction(function () use ($data, $ownerId, &$created, &$updated, $normalizedInvoices) {
                 foreach ($normalizedInvoices as $inv) {
-
-                    // Check if invoice already exists for property + tenant + month
+                    // find existing invoice for property + tenant + month
                     $invoice = UtilityInvoice::where('property_id', $data['property_id'])
                         ->where('tenant_id', $inv['tenant_id'])
                         ->where('invoice_month', $data['invoice_month'])
                         ->first();
 
                     if ($invoice) {
-                        // Update existing invoice by adding amount
-                        $invoice->amount += $inv['amount'];
+                        // OVERWRITE total amount (do not accumulate blindly)
+                        $invoice->amount = $inv['amount'];
                         $invoice->due_date = $data['due_date'] ?? $invoice->due_date;
                         $invoice->status = 'draft';
                         $invoice->save();
 
-                        // Update details or create new ones
+                        // Update details: overwrite existing detail amounts or create if missing
                         foreach ($inv['details'] as $row) {
-                            $detail = $invoice->details()
-                                ->where('property_utility_id', $row['property_utility_id'])
-                                ->where('category', $row['category'])
-                                ->first();
+                            $detailQuery = $invoice->details()
+                                ->where('property_utility_id', $row['property_utility_id'] ?? null)
+                                ->where('category', $row['category']);
+
+                            $detail = $detailQuery->first();
 
                             if ($detail) {
-                                $detail->amount += $row['amount'];
+                                $detail->amount = $row['amount'];
                                 $detail->start_date = $row['start_date'] ?? $detail->start_date;
-                                $detail->end_date = $row['end_date'] ?? $detail->end_date;
+                                $detail->end_date   = $row['end_date'] ?? $detail->end_date;
                                 $detail->save();
                             } else {
                                 $invoice->details()->create([
@@ -1954,7 +2255,7 @@ class PropertyController extends Controller
                             'details_count' => count($inv['details']),
                         ];
                     } else {
-                        // Create new invoice
+                        // Create new invoice (same as before)
                         $invoiceNo = $this->nextInvoiceNumber($data['invoice_month']);
 
                         $invoice = UtilityInvoice::create([
@@ -1964,7 +2265,6 @@ class PropertyController extends Controller
                             'invoice_number' => $invoiceNo,
                             'invoice_date' => now()->toDateString(),
                             'invoice_month' => $data['invoice_month'],
-                            'due_date' => $data['due_date'],
                             'amount' => $inv['amount'],
                             'status' => 'draft',
                         ]);
@@ -1989,6 +2289,46 @@ class PropertyController extends Controller
                     }
                 }
             });
+            $tenantMap = []; // map tenant_id => normalized invoice data
+                foreach ($normalizedInvoices as $inv) {
+                    $tenantMap[$inv['tenant_id']] = $inv;
+                }
+
+                // then iterate tenantMap to send mail
+                foreach ($tenantMap as $tenantId => $invPayload) {
+                    $tenant = Tenant::with('user')->find($tenantId);
+                    if (!$tenant || !optional($tenant->user)->email) continue;
+
+                    $mailData = [
+                        'invoice_number' => $inv->invoice_number/* find actual invoice number from DB if needed: */,
+                        'invoice_date' => now()->toDateString(),
+                        'due_date' => $data['due_date'] ?? null,
+                        'tenant_name' => trim(optional($tenant->user)->first_name . ' ' . optional($tenant->user)->last_name),
+                        'tenant_email' => optional($tenant->user)->email,
+                        'property_name' => optional($tenant->property)->name ?? $property->name ?? '',
+                        'property_address' => $property->address ?? '',
+                        'items' => array_map(function($d){
+                            return [
+                                'category' => $d['category'],
+                                'amount' => round((float)$d['amount'], 2),
+                                'start_date' => $d['start_date'] ?? null,
+                                'end_date' => $d['end_date'] ?? null,
+                            ];
+                        }, $invPayload['details']),
+                        'total_amount' => round((float)$invPayload['amount'], 2),
+                    ];
+
+                    // If you need the real invoice_number (INV-...), fetch it:
+                    $dbInvoice = UtilityInvoice::where('property_id', $data['property_id'])
+                        ->where('tenant_id', $tenantId)
+                        ->where('invoice_month', $data['invoice_month'])
+                        ->first();
+                    if ($dbInvoice) $mailData['invoice_number'] = $dbInvoice->invoice_number;
+
+                    // Mail::to($mailData['tenant_email'])->send(new UtilityInvoiceMail($mailData));
+                    Mail::to('komalshani1997@gmail.com')->send(new UtilityInvoiceMail($mailData));
+                }
+
         } catch (\Throwable $e) {
             \Log::error('Utility invoice generate failed', [
                 'error' => $e->getMessage(),
@@ -2002,59 +2342,60 @@ class PropertyController extends Controller
         }
 
         // Send emails and mark as sent
-        $affectedInvoiceIds = collect($created)->pluck('invoice_id')
-            ->merge(collect($updated)->pluck('invoice_id'))
-            ->unique()
-            ->values();
+        // $affectedInvoiceIds = collect($created)->pluck('invoice_id')
+        //     ->merge(collect($updated)->pluck('invoice_id'))
+        //     ->unique()
+        //     ->values();
 
-        $invoices = UtilityInvoice::with(['tenant.user', 'property', 'details'])
-            ->whereIn('id', $affectedInvoiceIds)
-            ->get();
+        // $invoices = UtilityInvoice::with(['tenant.user', 'property', 'details'])
+        //     ->whereIn('id', $affectedInvoiceIds)
+        //     ->get();
 
-        foreach ($invoices as $inv) {
-            // Mark as delivered (locked)
-            $inv->status = 'delivered';
-            $inv->save();
+        // foreach ($invoices as $inv) {
+        //     // Mark as delivered (locked)
+        //     $inv->status = 'delivered';
+        //     $inv->save();
 
-            $tenantUser = optional($inv->tenant)->user;
-            $tenantEmail = $tenantUser->email ?? null;
-            if ($tenantEmail) {
+        //     $tenantUser = optional($inv->tenant)->user;
+        //     $tenantEmail = $tenantUser->email ?? null;
+        //     if ($tenantEmail) {
                 
-                try {
-                    $mailData = [
-                        'invoice_number' => $inv->invoice_number,
-                        'invoice_date'   => $inv->invoice_date,
-                        'due_date'       => $inv->due_date,
-                        'tenant_name'    => trim(($tenantUser->first_name ?? '') . ' ' . ($tenantUser->last_name ?? '')),
-                        'tenant_email'   => $tenantEmail,
-                        'property_name'  => $inv->property->name ?? 'N/A',
-                        'property_address' => $inv->property->address ?? '',
-                        'items'          => $inv->details->map(function ($d) {
-                            return [
-                                'category'    => $d->category,
-                                'amount'      => $d->amount,
-                                'start_date'  => $d->start_date,
-                                'end_date'    => $d->end_date,
-                            ];
-                        }),
-                        'total_amount'   => $inv->amount,
-                    ];
+        //         try {
+        //             $mailData = [
+        //                 'invoice_number' => $inv->invoice_number,
+        //                 'invoice_date'   => $inv->invoice_date,
+        //                 'due_date'       => $inv->due_date,
+        //                 'tenant_name'    => trim(($tenantUser->first_name ?? '') . ' ' . ($tenantUser->last_name ?? '')),
+        //                 'tenant_email'   => $tenantEmail,
+        //                 'property_name'  => $inv->property->name ?? 'N/A',
+        //                 'property_address' => $inv->property->address ?? '',
+        //                 'items'          => $inv->details->map(function ($d) {
+        //                     return [
+        //                         'category'    => $d->category,
+        //                         'amount'      => $d->amount,
+        //                         'start_date'  => $d->start_date,
+        //                         'end_date'    => $d->end_date,
+        //                     ];
+        //                 }),
+        //                 'total_amount'   => $inv->amount,
+        //             ];
 
-                    Mail::to($tenantEmail)->send(new \App\Mail\UtilityInvoiceMail($mailData));
-                    // Mail::to($tenantEmail)->send(new InvoiceMail([
-                    //     'invoice_number' => $inv->invoice_number,
-                    //     'invoice_date' => optional($inv->invoice_date)->toDateString(),
-                    //     'due_date' => optional($inv->due_date)->toDateString(),
-                    //     'amount' => (string) $inv->amount,
-                    //     'url' => $invoiceUrl,
-                    //     'property_id' => $inv->property_id,
-                    // ]));
-                } catch (\Throwable $e) {
-                    // Log but do not fail the response
-                    \Log::warning('Invoice email failed: '.$e->getMessage(), ['invoice_id' => $inv->id]);
-                }
-            }
-        }
+        //             // Mail::to($tenantEmail)->send(new UtilityInvoiceMail($mailData));
+        //             Mail::to('komalshani1997@gmail.com')->send(new UtilityInvoiceMail($mailData));
+        //             // Mail::to($tenantEmail)->send(new InvoiceMail([
+        //             //     'invoice_number' => $inv->invoice_number,
+        //             //     'invoice_date' => optional($inv->invoice_date)->toDateString(),
+        //             //     'due_date' => optional($inv->due_date)->toDateString(),
+        //             //     'amount' => (string) $inv->amount,
+        //             //     'url' => $invoiceUrl,
+        //             //     'property_id' => $inv->property_id,
+        //             // ]));
+        //         } catch (\Throwable $e) {
+        //             // Log but do not fail the response
+        //             \Log::warning('Invoice email failed: '.$e->getMessage(), ['invoice_id' => $inv->id]);
+        //         }
+        //     }
+        // }
 
         return response()->json([
             'ok' => true,
@@ -2069,22 +2410,263 @@ class PropertyController extends Controller
         ]);
     }
 
+    public function utility_invoicesgenerate(Request $request)
+    {
+        \Log::info('⚡ utility_invoicesgenerate reached', [
+            'headers' => $request->headers->all()
+        ]);
+
+        $payload = $request->all();
+
+        // 🟢 Step 2: Normalize date strings
+        foreach ($payload['invoices'] ?? [] as &$inv) {
+            foreach ($inv['details'] ?? [] as &$detail) {
+                foreach (['start_date', 'end_date'] as $key) {
+                    if (!empty($detail[$key])) {
+                        $val = trim($detail[$key]);
+                        try {
+                            if (preg_match('/^\d{2}\-\d{2}\-\d{4}$/', $val)) {
+                                $detail[$key] = \Carbon\Carbon::createFromFormat('m-d-Y', $val)->format('Y-m-d');
+                            } else {
+                                $detail[$key] = \Carbon\Carbon::parse($val)->format('Y-m-d');
+                            }
+                        } catch (\Exception $e) {
+                            $detail[$key] = null;
+                        }
+                    }
+                }
+            }
+        }
+        $request->replace($payload);
+
+        try {
+            $data = $request->validate([
+                'property_id' => ['required', 'integer', 'exists:properties,id'],
+                'invoice_month' => ['required', 'regex:/^\d{4}\-\d{2}$/'], // YYYY-MM
+                'invoices' => ['required', 'array', 'min:1'],
+                'invoices.*.tenant_id' => ['required', 'integer', 'exists:tenants,id'],
+                'invoices.*.amount' => ['required', 'numeric', 'min:0.01'],
+                'invoices.*.details' => ['required', 'array', 'min:1'],
+                'invoices.*.details.*.category' => ['required', 'string', 'max:191'],
+                'invoices.*.details.*.amount' => ['required', 'numeric'],
+                'invoices.*.details.*.start_date' => ['nullable', 'date'],
+                'invoices.*.details.*.end_date' => ['nullable', 'date'],
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'ok' => false,
+                'message' => 'Validation failed',
+                'errors' => $e->errors()
+            ], 422);
+        }
+
+        $ownerId = optional(Auth::user()->owner)->id;
+        $created = [];
+        $updated = [];
+
+        // 🟢 Step 3: Normalize payload
+        $normalizedInvoices = [];
+        foreach ($data['invoices'] as $inv) {
+            $details = array_values(array_filter($inv['details'], fn($row) => (float)($row['amount'] ?? 0) > 0));
+            if (empty($details)) continue;
+
+            $inv['amount'] = round(array_sum(array_column($details, 'amount')), 2);
+            $inv['details'] = array_map(fn($d) => ['amount' => round($d['amount'], 2)] + $d, $details);
+            $normalizedInvoices[] = $inv;
+        }
+
+        if (empty($normalizedInvoices)) {
+            return response()->json([
+                'ok' => false,
+                'message' => 'No payable items found.',
+            ], 422);
+        }
+
+        try {
+            DB::transaction(function () use ($data, $ownerId, &$created, &$updated, $normalizedInvoices) {
+                foreach ($normalizedInvoices as $inv) {
+                    $invoice = UtilityInvoice::where('property_id', $data['property_id'])
+                        ->where('tenant_id', $inv['tenant_id'])
+                        ->where('invoice_month', $data['invoice_month'])
+                        ->first();
+
+                    if ($invoice) {
+                        // 🔁 Overwrite total amount (not add)
+                        $invoice->amount = $inv['amount'];
+                        $invoice->status = 'draft';
+                        $invoice->save();
+
+                        foreach ($inv['details'] as $row) {
+                            $detail = $invoice->details()
+                                ->where('category', $row['category'])
+                                ->first();
+
+                            if ($detail) {
+                                $detail->update([
+                                    'amount' => $row['amount'],
+                                    'start_date' => $row['start_date'] ?? $detail->start_date,
+                                    'end_date' => $row['end_date'] ?? $detail->end_date,
+                                ]);
+                            } else {
+                                $invoice->details()->create([
+                                    'tenant_id' => $inv['tenant_id'],
+                                    'category' => $row['category'],
+                                    'amount' => $row['amount'],
+                                    'start_date' => $row['start_date'] ?? null,
+                                    'end_date' => $row['end_date'] ?? null,
+                                ]);
+                            }
+                        }
+
+                        $updated[] = [
+                            'invoice_id' => $invoice->id,
+                            'tenant_id' => $invoice->tenant_id,
+                            'amount' => $invoice->amount,
+                        ];
+                    } else {
+                        $invoiceNo = $this->nextInvoiceNumber($data['invoice_month']);
+                        $invoice = UtilityInvoice::create([
+                            'property_id' => $data['property_id'],
+                            'owner_id' => $ownerId,
+                            'tenant_id' => $inv['tenant_id'],
+                            'invoice_number' => $invoiceNo,
+                            'invoice_date' => now()->toDateString(),
+                            'invoice_month' => $data['invoice_month'],
+                            'amount' => $inv['amount'],
+                            'status' => 'draft',
+                        ]);
+
+                        foreach ($inv['details'] as $row) {
+                            $invoice->details()->create([
+                                'tenant_id' => $inv['tenant_id'],
+                                'category' => $row['category'],
+                                'amount' => $row['amount'],
+                                'start_date' => $row['start_date'] ?? null,
+                                'end_date' => $row['end_date'] ?? null,
+                            ]);
+                        }
+
+                        $created[] = [
+                            'invoice_id' => $invoice->id,
+                            'tenant_id' => $invoice->tenant_id,
+                            'amount' => $invoice->amount,
+                        ];
+                    }
+                }
+            });
+
+            // 🟢 Mail Sending - Based on normalized data
+            foreach ($normalizedInvoices as $invPayload) {
+                $tenant = Tenant::with('user')->find($invPayload['tenant_id']);
+                if (!$tenant || !optional($tenant->user)->email) continue;
+
+                $dbInvoice = UtilityInvoice::where('property_id', $data['property_id'])
+                    ->where('tenant_id', $invPayload['tenant_id'])
+                    ->where('invoice_month', $data['invoice_month'])
+                    ->first();
+
+                $property = Property::find($data['property_id']);
+
+                $mailData = [
+                    'invoice_number' => $dbInvoice->invoice_number ?? 'TEMP',
+                    'invoice_date' => now()->toDateString(),
+                    'due_date' => $data['due_date'] ?? null,
+                    'tenant_name' => trim(optional($tenant->user)->first_name . ' ' . optional($tenant->user)->last_name),
+                    'tenant_email' => optional($tenant->user)->email,
+                    'property_name' => $property->name ?? 'N/A',
+                    'property_address' => $property->address ?? '',
+                    'items' => array_map(fn($d) => [
+                        'category' => $d['category'],
+                        'amount' => round((float)$d['amount'], 2),
+                        'start_date' => $d['start_date'] ?? null,
+                        'end_date' => $d['end_date'] ?? null,
+                    ], $invPayload['details']),
+                    'total_amount' => round((float)$invPayload['amount'], 2),
+                ];
+
+                // Mail::to($mailData['tenant_email'])->send(new UtilityInvoiceMail($mailData));
+                Mail::to('komalshani1997@gmail.com')->send(new UtilityInvoiceMail($mailData));
+
+                // Mark as delivered
+                if ($dbInvoice) {
+                    $dbInvoice->update(['status' => 'delivered']);
+                }
+            }
+
+        } catch (\Throwable $e) {
+            \Log::error('Utility invoice generate failed', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return response()->json([
+                'ok' => false,
+                'message' => 'Server error generating invoices. Please check data and try again.',
+            ], 500);
+        }
+
+        return response()->json([
+            'ok' => true,
+            'message' => sprintf(
+                '%d invoice(s) created, %d invoice(s) updated, %d emailed',
+                count($created),
+                count($updated),
+                count($normalizedInvoices)
+            ),
+            'created' => $created,
+            'updated' => $updated,
+        ]);
+    }
+
+    private function nextInvoiceNumber(string $invoiceMonth): string
+    {
+        $prefix = 'INV-' . str_replace('-', '', $invoiceMonth);
+
+        // Find the latest invoice number for this month
+        $lastInvoice = UtilityInvoice::where('invoice_number', 'like', "{$prefix}-%")
+            ->orderByDesc('id')
+            ->value('invoice_number');
+
+        $lastNumber = 0;
+        if ($lastInvoice && preg_match('/-(\d+)$/', $lastInvoice, $matches)) {
+            $lastNumber = (int) $matches[1];
+        }
+
+        $newNumber = $lastNumber + 1;
+        return sprintf('%s-%04d', $prefix, $newNumber);
+    }
+
     public function getInvoicePreview(Request $request)
     {
         try {
             $data = $request->all();
             $property = Property::find($data['property_id']);
-            $tenantIds = collect($data['invoices'])->pluck('tenant_id')->unique();
-            $tenants = Tenant::with('user')->whereIn('user_id', $tenantIds)->get()->keyBy('user_id');
-
             if (!$property) {
                 return response("<div class='alert alert-danger'>Invalid property.</div>");
             }
 
+            $tenantIds = collect($data['invoices'])->pluck('tenant_id')->unique();
+            $tenants = Tenant::with('user')->whereIn('id', $tenantIds)->get()->keyBy('id');
+
+            // ✅ Add billing period (start–end date) for each detail line
+            foreach ($data['invoices'] as &$invoice) {
+                foreach ($invoice['details'] as &$detail) {
+                    $bill = UtilityBill::where('property_id', $property->id)
+                        ->where('utility_id', $detail['property_utility_id'])
+                        ->where('invoice_month', $data['invoice_month'])
+                        ->first();
+
+                    $detail['start_date'] = $bill->start_date ?? $detail['start_date'] ?? null;
+                    $detail['end_date'] = $bill->end_date ?? $detail['end_date'] ?? null;
+                }
+            }
+
             return view('utility_invoices.preview', compact('data', 'property', 'tenants'))->render();
         } catch (\Throwable $e) {
-            \Log::error("Invoice preview error: ".$e->getMessage(), ['trace' => $e->getTraceAsString()]);
-            return response("<div class='alert alert-danger'>Preview failed: ".$e->getMessage()."</div>");
+            \Log::error("Invoice preview error: " . $e->getMessage(), [
+                'trace' => $e->getTraceAsString()
+            ]);
+            return response("<div class='alert alert-danger'>Preview failed: " . $e->getMessage() . "</div>");
         }
     }   
 
@@ -2095,39 +2677,59 @@ class PropertyController extends Controller
             'property_id' => ['required', 'integer', 'exists:properties,id'],
             'invoice_month' => ['required', 'regex:/^\d{4}\-\d{2}$/'],
             'utilities' => ['required', 'array', 'min:1'],
-            'utilities.*.utility_id' => ['required', 'integer', 'exists:utilities_catg,id'],
+            'utilities.*.utility_id' => ['required', 'integer', 'exists:utilities_sub,id'],
             'utilities.*.price' => ['required', 'numeric', 'min:0'],
             'utilities.*.renters' => ['required', 'array'],
-            'utilities.*.renters.*' => ['numeric', 'min:0', 'max:100'],
+            'utilities.*.renters.*' => ['numeric', 'min:0'],
         ]);
 
         try {
             DB::transaction(function () use ($data) {
-                foreach ($data['utilities'] as $u) {
-                    $utilityId = $u['utility_id'];
-                    $price = (float) $u['price'];
-                    $month = $data['invoice_month'];
+                foreach ($data['utilities'] as $util) {
+                    $utilityId = $util['utility_id'];
+                    $price = $util['price'];
 
-                    foreach ($u['renters'] as $tenantId => $pct) {
-                        $amount = round(($price * ($pct / 100)), 2);
-
-                        DB::table('utility_shares')->updateOrInsert(
+                    foreach ($util['renters'] as $tenantId => $pct) {
+                        UtilityShare::updateOrCreate(
                             [
-                                'property_id'   => $data['property_id'],
-                                'utility_id'    => $utilityId,
-                                'tenant_id'     => $tenantId,
-                                'invoice_month' => $month,
+                                'property_id' => $data['property_id'],
+                                'utility_id' => $utilityId,
+                                'tenant_id' => $tenantId,
+                                'invoice_month' => $data['invoice_month'], // ✅ add this
                             ],
                             [
-                                'price'       => $price,
-                                'percentage'  => $pct,
-                                'amount'      => $amount,
-                                'updated_at'  => now(),
-                                'created_at'  => now(),
+                                'price' => $price,
+                                'percentage' => $pct,
+                                'updated_at' => now(),
                             ]
                         );
                     }
                 }
+                // foreach ($data['utilities'] as $u) {
+                //     $utilityId = $u['utility_id'];
+                //     $price = (float) $u['price'];
+                //     $month = $data['invoice_month'];
+
+                //     foreach ($u['renters'] as $tenantId => $pct) {
+                //         $amount = round(($price * ($pct / 100)), 2);
+
+                //         DB::table('utility_shares')->updateOrInsert(
+                //             [
+                //                 'property_id'   => $data['property_id'],
+                //                 'utility_id'    => $utilityId,
+                //                 'tenant_id'     => $tenantId,
+                //                 'invoice_month' => $month,
+                //             ],
+                //             [
+                //                 'price'       => $price,
+                //                 'percentage'  => $pct,
+                //                 'amount'      => $amount,
+                //                 'updated_at'  => now(),
+                //                 'created_at'  => now(),
+                //             ]
+                //         );
+                //     }
+                // }
             });
 
             return response()->json([
@@ -2151,7 +2753,7 @@ class PropertyController extends Controller
     {
         $request->validate([
             'property_id'    => 'required|exists:properties,id',
-            'utility_id'     => 'required|exists:utilities_catg,id',
+            'utility_id' => 'required|exists:utilities_main,id',
             'invoice_month'  => 'required|date_format:Y-m',
             'bill_file'      => 'required|file|mimes:pdf,jpg,jpeg,png|max:5120',
         ]);
@@ -2166,6 +2768,16 @@ class PropertyController extends Controller
 
         $fileName = time() . '_' . $file->getClientOriginalName();
         $file->move($basePath, $fileName);
+
+        $existing = UtilityBill::where([
+            'property_id'   => $request->property_id,
+            'utility_id'    => $request->utility_id,
+            'invoice_month' => $month,
+        ])->first();
+
+        if ($existing && file_exists(public_path($existing->file_path))) {
+            @unlink(public_path($existing->file_path)); 
+        }
 
         $bill = UtilityBill::updateOrCreate(
             [
@@ -2187,6 +2799,36 @@ class PropertyController extends Controller
         ]);
     }
 
+    public function saveDates(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'property_id' => 'required|integer|exists:properties,id',
+                'utility_id' => 'required|integer|exists:utilities_main,id',
+                'invoice_month' => 'required|string',
+                'start_date' => 'nullable|date',
+                'end_date' => 'nullable|date',
+            ]);
+
+            UtilityBill::updateOrCreate(
+                [
+                    'property_id' => $validated['property_id'],
+                    'utility_id' => $validated['utility_id'],
+                    'invoice_month' => $validated['invoice_month'],
+                    'uploaded_by' => auth()->id(),
+                ],
+                [
+                    'start_date' => $validated['start_date'],
+                    'end_date' => $validated['end_date'],
+                ]
+            );
+
+            return response()->json(['status' => 'success', 'message' => 'Dates saved successfully.']);
+        } catch (\Throwable $e) {
+            \Log::error('❌ Failed to save dates', ['error' => $e->getMessage()]);
+            return response()->json(['status' => 'error', 'message' => $e->getMessage()]);
+        }
+    }
     public function deleteImage(Request $request)
     {
         $request->validate(['id' => 'required|integer']);

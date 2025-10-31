@@ -27,6 +27,6 @@ class UtilityInvoiceMail extends Mailable
     public function build()
     {
         return $this->subject('Utility Invoice - ' . $this->mailData['invoice_number'])
-                    ->view('emails.utility_invoice');
+                    ->view('email.utility_invoice');
     }
 }

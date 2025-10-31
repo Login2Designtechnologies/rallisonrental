@@ -58,11 +58,24 @@
             @if($properties->isNotEmpty())
                 @foreach($properties as $property)
                   @php
-                    $utilitiescatg = DB::table('utilities_catg')->where('property_id',$property->id)->where('user_id',auth()->id())->where('status','1')->get();
-                  @endphp
+                    $utilitiescatg = DB::table('utilities_main as m')
+                      ->join('utilities_sub as s', 'm.id', '=', 's.utility_main_id')
+                      ->where('m.property_id', $property->id)
+                      ->where('m.user_id', auth()->id())
+                      ->where('m.status', '1')
+                      ->where('s.status', '1')
+                      ->select(
+                          'm.id as main_id',
+                          'm.name as main_name',
+                          's.id as sub_id',
+                          's.sub_category_name'
+                      )
+                      ->get()
+                      ->groupBy('main_name');
+                  @endphp            
                     <div id="companyDetails" property_id="{{ $property->id }}" class="d-none">
-                        @forelse($utilitiescatg as $u)
-                            <h4 class="mt-4">{{ $u->name }}</h4>
+                        @forelse($utilitiescatg as $mainName => $subcategories)
+                          <h4 class="mt-4">{{ $mainName }}</h4>
                         @empty
                             <p class="text-muted">No active utilities found for this property.</p>
                         @endforelse
@@ -298,95 +311,163 @@ document.addEventListener("DOMContentLoaded", () => {
 window.toNumber = (v) => parseFloat(String(v).replace(/[^\d.]/g, "")) || 0;
 window.formatMoney = (n) => Number(n).toFixed(2);
 
-/* ---------- Single Row Calculation ---------- */
-window.recalcRow = function(row) {
-  const priceCell = row.querySelector(".price-cell");
-  const price = parseFloat((priceCell?.textContent || "").replace(/[^\d.]/g, "")) || 0;
+function parseCurrencyText(text) {
+  if (!text && text !== 0) return 0;
+  // remove $ and commas and other non-number chars except dot and minus
+  const n = String(text).replace(/[^0-9.-]/g, '');
+  return parseFloat(n) || 0;
+}
+function formatCurrency(n) {
+  return '$' + Number(n || 0).toFixed(2);
+}
 
-  // Sum all tenant share values
-  let totalShare = 0;
-  row.querySelectorAll("td[data-renter-id]").forEach(cell => {
-    const text = cell.textContent.replace("%", "").trim();
-    const val = parseFloat(text) || 0;
-    totalShare += val;
+/* ---------- Single Row Calculation ---------- */
+window.recalcRow = function(rowEl) {
+  const row = rowEl instanceof Element ? rowEl : document.querySelector(rowEl);
+  if (!row) return 0;
+
+  const priceCell = row.querySelector('.price-cell');
+  const totalCell  = row.querySelector('.total-row-cell');
+
+  const price = parseCurrencyText(priceCell?.textContent);
+
+  // sum tenant absolute amounts
+  let tenantSum = 0;
+  row.querySelectorAll('td[data-renter-id]').forEach(td => {
+    tenantSum += parseCurrencyText(td.textContent);
   });
 
-  // Update total cell display
-  const totalCell = row.querySelector(".total-row-cell");
+  // update total column to show absolute amount difference or sum
   if (totalCell) {
-    totalCell.textContent = `${totalShare.toFixed(2)}`;
-    totalCell.classList.remove("cell-red", "cell-green");
+    // show tenant sum formatted
+    totalCell.textContent = formatCurrency(tenantSum);
 
-    // ✅ Green only if tenant shares total == price
-    const isMatched = price > 0 && totalShare === price;
-    totalCell.classList.add(isMatched ? "cell-green" : "cell-red");
+    // remove existing classes
+    totalCell.classList.remove('cell-red','cell-green');
+
+    // small tolerance for floating point arithmetic
+    const EPS = 0.01;
+    if (Math.abs(tenantSum - price) <= EPS && price > 0) {
+      totalCell.classList.add('cell-green');
+    } else {
+      totalCell.classList.add('cell-red');
+    }
   }
 
   return price;
 };
 
 /* ---------- Table Calculation ---------- */
-window.recalcTable = function(table) {
+window.recalcTable = function(tableEl) {
+  const table = tableEl instanceof Element ? tableEl : document.querySelector(tableEl);
   if (!table) return;
 
-  let totalPrice = 0;
-  const renterTotals = {};
+  let columnTotal = 0;
+  const renterTotals = {}; // absolute amounts per renter id
 
-  table.querySelectorAll("tbody tr[data-utility_id]").forEach((row) => {
-    const price = recalcRow(row);
-    totalPrice += price;
+  table.querySelectorAll('tbody tr[data-utility_id]').forEach(row => {
+    const price = window.recalcRow(row);
+    columnTotal += price;
 
-    // accumulate renter data
-    row.querySelectorAll("td[data-renter-id]").forEach((cell) => {
-      const rid = cell.getAttribute("data-renter-id");
-      const pct = window.toNumber(cell.textContent);
-      const amount = (price * pct) / 100;
-      renterTotals[rid] = (renterTotals[rid] || 0) + amount;
+    row.querySelectorAll('td[data-renter-id]').forEach(td => {
+      const rid = td.getAttribute('data-renter-id');
+      const amt = parseCurrencyText(td.textContent);
+      renterTotals[rid] = (renterTotals[rid] || 0) + amt;
     });
   });
 
-  // Update column total
-  const colTotalEl = table.querySelector(".column-total");
-  if (colTotalEl) colTotalEl.textContent = `$${window.formatMoney(totalPrice)}`;
+  // update column total cell
+  const colTotalEl = table.querySelector('.column-total');
+  if (colTotalEl) colTotalEl.textContent = formatCurrency(columnTotal);
 
+  // update per-renter totals inside the table footer/total row
   for (const [rid, amt] of Object.entries(renterTotals)) {
     const cell = table.querySelector(`.renter-total-cell-${rid}`);
-    if (cell) cell.textContent = `$${window.formatMoney(amt)}`;
+    if (cell) cell.textContent = formatCurrency(amt);
   }
 
-  const totalCol = table.querySelector(".table-total-cell");
-  if (totalCol) totalCol.textContent = "—";
+  // ensure grand totals recalculated
+  if (typeof window.recalcGrandTotals === 'function') window.recalcGrandTotals();
 
-  recalcGrandTotals();
+  // after recalculation, check invoice readiness
+  if (typeof window.checkIfInvoiceCanBeGenerated === 'function') {
+    window.checkIfInvoiceCanBeGenerated();
+  }
 };
-
 /* ---------- Grand Totals Calculation ---------- */
 window.recalcGrandTotals = function() {
   let grandTotalPrice = 0;
   const grandTotals = {};
 
-  document.querySelectorAll("table.custom-bg-table").forEach(table => {
-    const tablePrice = window.toNumber(table.querySelector(".column-total")?.textContent);
-    grandTotalPrice += tablePrice;
+  document.querySelectorAll('table.custom-bg-table').forEach(table => {
+    const colTotal = parseCurrencyText(table.querySelector('.column-total')?.textContent);
+    grandTotalPrice += colTotal;
 
-    table.querySelectorAll("tbody tr[data-utility_id]").forEach(row => {
-      const price = window.toNumber(row.querySelector(".price-cell")?.textContent);
-      row.querySelectorAll("td[data-renter-id]").forEach(cell => {
-        const rid = cell.getAttribute("data-renter-id");
-        const pct = window.toNumber(cell.textContent);
-        const amount = (price * pct) / 100;
-        grandTotals[rid] = (grandTotals[rid] || 0) + amount;
+    table.querySelectorAll('tbody tr[data-utility_id]').forEach(row => {
+      row.querySelectorAll('td[data-renter-id]').forEach(td => {
+        const rid = td.getAttribute('data-renter-id');
+        const amt = parseCurrencyText(td.textContent);
+        grandTotals[rid] = (grandTotals[rid] || 0) + amt;
       });
     });
   });
 
-  const gPrice = document.querySelector(".grand_total");
-  if (gPrice) gPrice.textContent = `$${window.formatMoney(grandTotalPrice)}`;
+  const gPrice = document.querySelector('.grand_total');
+  if (gPrice) gPrice.textContent = formatCurrency(grandTotalPrice);
 
   for (const [rid, amt] of Object.entries(grandTotals)) {
     const cell = document.querySelector(`.grand-renter-total-${rid}`);
-    if (cell) cell.textContent = `$${window.formatMoney(amt)}`;
+    if (cell) cell.textContent = formatCurrency(amt);
   }
 };
 
+function bindInlineEditing() {
+  // price-cell and renter cells should be editable. We sanitize and format on input/blur.
+  document.addEventListener('input', function(ev) {
+    const t = ev.target;
+    if (!t.matches('.price-cell, td[data-renter-id]')) return;
+
+    // allow user typing; but strip invalid characters as they type
+    let raw = t.textContent;
+    // Keep numbers, dot and minus only while typing
+    raw = raw.replace(/[^\d.-]/g, '');
+    // Avoid multiple dots
+    const parts = raw.split('.');
+    if (parts.length > 2) raw = parts.shift() + '.' + parts.join('');
+    t.textContent = raw;
+  });
+
+  // On blur, format nicely and trigger recalculation
+  document.addEventListener('blur', function(ev) {
+    const t = ev.target;
+    if (!t.matches('.price-cell, td[data-renter-id]')) return;
+
+    const val = parseCurrencyText(t.textContent);
+    t.textContent = formatCurrency(val);
+
+    // recalc the table this cell belongs to
+    const table = t.closest('table.custom-bg-table');
+    if (table) window.recalcTable(table);
+  }, true); // use capture so blur fires
+}
+
+/* Initialize calculations on page load (and after AJAX loads) */
+document.addEventListener('DOMContentLoaded', function() {
+  bindInlineEditing();
+
+  // format existing price and tenant cells that are not yet formatted
+  document.querySelectorAll('.price-cell').forEach(td => {
+    const v = parseCurrencyText(td.textContent);
+    td.textContent = formatCurrency(v);
+  });
+  document.querySelectorAll('td[data-renter-id]').forEach(td => {
+    const v = parseCurrencyText(td.textContent);
+    td.textContent = formatCurrency(v);
+  });
+
+  // run table recalc for all present tables
+  document.querySelectorAll('table.custom-bg-table').forEach(table => {
+    window.recalcTable(table);
+  });
+});
 </script>

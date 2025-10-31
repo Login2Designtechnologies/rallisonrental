@@ -35,7 +35,7 @@ return new class extends Migration
 
             $table->foreign('utility_id')
                   ->references('id')
-                  ->on('utilities_catg')
+                  ->on('property_utilities_main')
                   ->onDelete('cascade');
 
             $table->foreign('tenant_id')

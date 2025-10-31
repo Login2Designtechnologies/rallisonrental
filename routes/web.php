@@ -456,6 +456,7 @@ Route::group(
         Route::post('utility_invoicesgenerate', [PropertyController::class, 'utility_invoicesgenerate'])->name('utility-invoices.generate');
         Route::post('/utility-invoices/save-shares', [PropertyController::class, 'saveUtilityShares'])->name('utility-invoices.save-shares');
         Route::post('/utility-invoices/upload-bill', [PropertyController::class, 'uploadBill'])->name('utility-invoices.upload-bill');
+        Route::post('utility-invoices/save-dates', [PropertyController::class, 'saveDates'])->name('utility-invoices.save-dates');
         Route::post('/get-invoice-preview', [PropertyController::class, 'getInvoicePreview']);
         Route::get('get_cities/{state_id}', [PropertyController::class, 'get_cities'])->name('get_cities');
         Route::put('property/{pid}/unit/{id}/update', [PropertyController::class, 'unitUpdate'])->name('unit.update');

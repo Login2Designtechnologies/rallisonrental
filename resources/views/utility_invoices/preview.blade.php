@@ -37,34 +37,15 @@
           @foreach($inv['details'] as $i => $d)
             <tr>
               <td>{{ $i+1 }}</td>
-              <td>{{ $d['category'] }}</td>
-              @php
-                try {
-                    $start = $d['start_date']
-                        ? \Carbon\Carbon::createFromFormat('m-d-Y', $d['start_date'])->format('d M Y')
-                        : 'N/A';
-                } catch (\Exception $e) {
-                    try {
-                        $start = \Carbon\Carbon::parse($d['start_date'])->format('d M Y');
-                    } catch (\Exception $e2) {
-                        $start = 'N/A';
-                    }
-                }
-
-                try {
-                    $end = $d['end_date']
-                        ? \Carbon\Carbon::createFromFormat('m-d-Y', $d['end_date'])->format('d M Y')
-                        : 'N/A';
-                } catch (\Exception $e) {
-                    try {
-                        $end = \Carbon\Carbon::parse($d['end_date'])->format('d M Y');
-                    } catch (\Exception $e2) {
-                        $end = 'N/A';
-                    }
-                }
-                @endphp
+              <td>{{ $d['category'] }}</td>              
               <td>
-                {{ $start }} - {{ $end }}
+                 @if(!empty($d['start_date']) && !empty($d['end_date']))
+                  {{ \Carbon\Carbon::parse($d['start_date'])->format('d M Y') }}
+                  –
+                  {{ \Carbon\Carbon::parse($d['end_date'])->format('d M Y') }}
+                @else
+                  —
+                @endif
               </td>
               <td class="text-end">${{ number_format($d['amount'], 2) }}</td>
             </tr>
@@ -75,9 +56,6 @@
           </tr>
         </tbody>
       </table>
-      <div class="text-end mt-3">
-        <strong>Due Date:</strong> {{ \Carbon\Carbon::parse($data['due_date'])->format('d M Y') }}
-      </div>
     </div>
   @endforeach
 </div>

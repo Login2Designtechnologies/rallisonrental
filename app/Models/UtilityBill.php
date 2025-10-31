@@ -13,6 +13,8 @@ class UtilityBill extends Model
         'property_id',
         'utility_id',
         'invoice_month',
+        'start_date',
+        'end_date',
         'file_path',
         'file_name',
         'uploaded_by',
@@ -25,7 +27,7 @@ class UtilityBill extends Model
 
     public function utility()
     {
-        return $this->belongsTo(UtilitiesCatg::class, 'utility_id');
+        return $this->belongsTo(UtilityMain::class, 'utility_id');
     }
 
     public function uploader()

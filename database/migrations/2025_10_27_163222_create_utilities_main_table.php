@@ -13,22 +13,17 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('utility_bills', function (Blueprint $table) {
+        Schema::create('utilities_main', function (Blueprint $table) {
             $table->id();
             
             $table->unsignedBigInteger('property_id')->nullable();
             $table->foreign('property_id')->references('id')->on('properties')->onDelete('cascade');
 
-            $table->unsignedBigInteger('utility_id')->nullable();
-            $table->foreign('utility_id')->references('id')->on('property_utilities_main')->onDelete('cascade');
+            $table->unsignedBigInteger('user_id')->nullable();
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
 
-            $table->string('invoice_month', 10)->nullable();
-            $table->string('file_path')->nullable();
-            $table->string('file_name')->nullable();
-
-            $table->unsignedBigInteger('uploaded_by')->nullable();
-            $table->foreign('uploaded_by')->references('id')->on('users')->onDelete('set null');
-            
+            $table->string('name')->nullable();
+            $table->tinyInteger('status')->nullable();
             $table->timestamps();
         });
     }
@@ -40,6 +35,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('utility_bills');
+        Schema::dropIfExists('utilities_main');
     }
 };
