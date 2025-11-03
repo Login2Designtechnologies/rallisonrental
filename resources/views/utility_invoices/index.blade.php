@@ -189,17 +189,20 @@ $(document).ready(function() {
   function bindDynamicHandlers() {
     // Remove old listeners
     $(document).off("input", ".price-cell, td[data-renter-id]");
-    // Add unified input listener
-    $(document).on("input", ".price-cell, td[data-renter-id]", function() {
-      const $t = $(this);
-      let text = $t.text().replace(/[^\d.%]/g, "");
-      if ($t.is("td[data-renter-id]")) text = parseFloat(text.replace("%", "")) + "%";
-      $t.text(text);
-      const $table = $t.closest("table.custom-bg-table");
-      recalcTable($table);
-    });
+    
+    // ❌ Disable old % logic
+    if (false) {
+      $(document).on("input", ".price-cell, td[data-renter-id]", function() {
+        const $t = $(this);
+        let text = $t.text().replace(/[^\d.%]/g, "");
+        if ($t.is("td[data-renter-id]")) text = parseFloat(text.replace("%", "")) + "%";
+        $t.text(text);
+        const $table = $t.closest("table.custom-bg-table");
+        recalcTable($table);
+      });
+    }
 
-    // Initial calculation
+    // Initial calculation (keep this)
     $("table.custom-bg-table").each(function() {
       recalcTable(this);
     });
@@ -221,8 +224,12 @@ $(document).ready(function() {
       data: { property_id: propertyId, invoice_month: invoiceMonth },
       success: function(html) {
         $(".table_data").html(html);
-        bindDynamicHandlers();
 
+        // 🧩 Fix: Remove old inline % scripts from AJAX-loaded HTML
+        $('script:contains("recalcRow")').remove();
+        document.dispatchEvent(new Event("ajaxPageLoaded"));
+
+        bindDynamicHandlers();
         setTimeout(() => {
           document.querySelectorAll("table.custom-bg-table").forEach((table) => {
             window.recalcTable(table);
@@ -423,32 +430,30 @@ window.recalcGrandTotals = function() {
 
 function bindInlineEditing() {
   // price-cell and renter cells should be editable. We sanitize and format on input/blur.
-  document.addEventListener('input', function(ev) {
-    const t = ev.target;
-    if (!t.matches('.price-cell, td[data-renter-id]')) return;
+  if (false) {
+    // price-cell and renter cells should be editable. We sanitize and format on input/blur.
+    document.addEventListener('input', function(ev) {
+      const t = ev.target;
+      if (!t.matches('.price-cell, td[data-renter-id]')) return;
 
-    // allow user typing; but strip invalid characters as they type
-    let raw = t.textContent;
-    // Keep numbers, dot and minus only while typing
-    raw = raw.replace(/[^\d.-]/g, '');
-    // Avoid multiple dots
-    const parts = raw.split('.');
-    if (parts.length > 2) raw = parts.shift() + '.' + parts.join('');
-    t.textContent = raw;
-  });
+      let raw = t.textContent;
+      raw = raw.replace(/[^\d.-]/g, '');
+      const parts = raw.split('.');
+      if (parts.length > 2) raw = parts.shift() + '.' + parts.join('');
+      t.textContent = raw;
+    });
 
-  // On blur, format nicely and trigger recalculation
-  document.addEventListener('blur', function(ev) {
-    const t = ev.target;
-    if (!t.matches('.price-cell, td[data-renter-id]')) return;
+    document.addEventListener('blur', function(ev) {
+      const t = ev.target;
+      if (!t.matches('.price-cell, td[data-renter-id]')) return;
 
-    const val = parseCurrencyText(t.textContent);
-    t.textContent = formatCurrency(val);
+      const val = parseCurrencyText(t.textContent);
+      t.textContent = formatCurrency(val);
 
-    // recalc the table this cell belongs to
-    const table = t.closest('table.custom-bg-table');
-    if (table) window.recalcTable(table);
-  }, true); // use capture so blur fires
+      const table = t.closest('table.custom-bg-table');
+      if (table) window.recalcTable(table);
+    }, true);
+  }
 }
 
 /* Initialize calculations on page load (and after AJAX loads) */
@@ -470,4 +475,73 @@ document.addEventListener('DOMContentLoaded', function() {
     window.recalcTable(table);
   });
 });
+</script>
+
+<script>
+/* ===============================
+   🔥 UNIVERSAL INLINE EDITING FIX
+   (for all AJAX-loaded create pages)
+   =============================== */
+/* ✅ FINAL INLINE EDITING FIX — No cursor jump, smooth typing, correct totals */
+(() => {
+  console.log("💡 Stable inline editing logic active — cursor fix applied");
+
+  const parseCurrency = (v) => parseFloat(String(v).replace(/[^\d.-]/g, "")) || 0;
+  const formatCurrency = (n) => "$" + (parseFloat(n) || 0).toFixed(2);
+
+  // User typing — keep cursor steady (no auto-$)
+  document.addEventListener("input", (e) => {
+    const t = e.target;
+    if (!t.matches(".price-cell, td[data-renter-id]")) return;
+
+    let val = t.textContent.replace(/[^\d.]/g, "");
+    const parts = val.split(".");
+    if (parts.length > 2) val = parts[0] + "." + parts.slice(1).join("");
+
+    if (t.textContent !== val) {
+      const sel = window.getSelection();
+      const range = sel.rangeCount ? sel.getRangeAt(0) : null;
+      const cursorOffset = range ? range.startOffset : 0;
+
+      t.textContent = val;
+
+      if (t.firstChild) {
+        const newRange = document.createRange();
+        newRange.setStart(t.firstChild, Math.min(cursorOffset, t.textContent.length));
+        newRange.collapse(true);
+        sel.removeAllRanges();
+        sel.addRange(newRange);
+      }
+    }
+
+    // update totals live
+    const table = t.closest("table.custom-bg-table");
+    if (table && typeof window.recalcTable === "function") {
+      window.recalcTable(table);
+    }
+  });
+
+  // On blur — format with $ and recheck totals
+  document.addEventListener("blur", (e) => {
+    const t = e.target;
+    if (!t.matches(".price-cell, td[data-renter-id]")) return;
+    const num = parseCurrency(t.textContent);
+    t.textContent = formatCurrency(num);
+
+    const table = t.closest("table.custom-bg-table");
+    if (table && typeof window.recalcTable === "function") {
+      window.recalcTable(table);
+    }
+  }, true);
+
+  // Reinitialize after AJAX content load (like property change)
+  document.addEventListener("ajaxPageLoaded", () => {
+    document.querySelectorAll("table.custom-bg-table").forEach(window.recalcTable);
+  });
+
+  // Initial recalculation on load
+  document.addEventListener("DOMContentLoaded", () => {
+    document.querySelectorAll("table.custom-bg-table").forEach(window.recalcTable);
+  });
+})();
 </script>

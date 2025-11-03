@@ -131,9 +131,11 @@
                 <button type="button" class="btn btn-info btn-sm btn-preview" data-utility-id="{{ $sub->main_id }}" data-file-path="{{ $billFilePath }}">
                   Preview Bill
                 </button>
-                <button type="button" class="btn btn-warning btn-sm btn-modify mt-1" data-utility-id="{{ $sub->main_id }}">
-                  Modify Bill
-                </button>
+                @if($isEditableMonth)
+                  <button type="button" class="btn btn-warning btn-sm btn-modify mt-1" data-utility-id="{{ $sub->main_id }}">
+                    Modify Bill
+                  </button>
+                @endif
               @endif
             </div>
         </div>
@@ -173,8 +175,8 @@
       <tr>
         <th>Grand Total Price ($)</th>
         @if (!empty($property))
-          @foreach($tenantsuserdata as $renter)
-            <th>{{ $renter->first_name }} {{ $renter->last_name }} Total $</th>
+          @foreach($tenantsuserdata as $renter)            
+            <th>{{ $renter->user->first_name }} {{ $renter->user->last_name }} Total ($)</th>
           @endforeach
         @endif
       </tr>
@@ -264,82 +266,126 @@
 
 
 <script>
+if (false) {
+// ===============================
+// 🧩 INLINE EDITING FIXED (Cursor + $ symbol only)
+// ===============================
 
-function bindInlineEditing() {
-  document.removeEventListener("input", inlineInputHandler);
-  document.addEventListener("input", inlineInputHandler);
+function formatCellValue(cell, rawText, isTenant) {
+  const clean = rawText.replace(/[^\d.]/g, "");
+  const num = parseFloat(clean) || 0;
+  return isTenant ? `${num.toFixed(2)}$` : `$${num.toFixed(2)}`;
 }
 
-function inlineInputHandler(ev) {
-  const t = ev.target;
-  if (!t.matches("td.price-cell, td[data-renter-id]")) return;
+function restoreCursor(cell, position) {
+  const selection = window.getSelection();
+  if (!selection) return;
+  const range = document.createRange();
+  range.setStart(cell.firstChild || cell, Math.min(position, cell.textContent.length));
+  range.collapse(true);
+  selection.removeAllRanges();
+  selection.addRange(range);
+}
 
-  // preserve cursor position
-  const sel = window.getSelection();
-  const range = sel.rangeCount ? sel.getRangeAt(0) : null;
+function handleInlineEdit(ev) {
+  const cell = ev.target;
+  if (!cell.matches("td.price-cell, td[data-renter-id]")) return;
+
+  const isTenant = cell.hasAttribute("data-renter-id");
+
+  const selection = window.getSelection();
+  const range = selection.rangeCount ? selection.getRangeAt(0) : null;
   const cursor = range ? range.startOffset : 0;
 
-  // sanitize text
-  let val = t.textContent.replace(/[^\d.]/g, "");
-  let num = parseFloat(val) || 0;
+  // Reformat value while typing
+  const formatted = formatCellValue(cell, cell.textContent, isTenant);
+  cell.textContent = formatted;
 
-  // Always show with $ and 2 decimals
-  const formatted = `$${num.toFixed(2)}`;
-  t.textContent = formatted;
+  restoreCursor(cell, cursor);
 
-  // restore cursor position
-  if (range) {
-    const newRange = document.createRange();
-    newRange.setStart(t.firstChild || t, Math.min(cursor, formatted.length));
-    newRange.collapse(true);
-    sel.removeAllRanges();
-    sel.addRange(newRange);
-  }
-
-  // Recalculate the totals in this table
-  const table = t.closest("table.custom-bg-table");
+  // Update totals
+  const table = cell.closest("table.custom-bg-table");
   if (table) recalcTable(table);
 }
 
-function initRecalcSystem() {
-  // bind handler once
-  bindInlineEditing();
+// Attach event safely
+if (!window.inlineHandlerBoundV2) {
+  document.addEventListener("input", handleInlineEdit);
+  window.inlineHandlerBoundV2 = true;
+}
 
-  // initial pass (in case tables are already in DOM)
-  document.querySelectorAll("table.custom-bg-table").forEach(table => {
-    recalcTable(table);
+// ===============================
+// 🧮 ROW & GRAND TOTAL REWORKED
+// ===============================
+window.recalcTable = function (table) {
+  const rows = table.querySelectorAll("tbody tr[data-utility_id]");
+  const renterTotals = {};
+  let grandTotal = 0;
+
+  rows.forEach(row => {
+    const price = parseFloat((row.querySelector(".price-cell")?.textContent || "").replace(/[^\d.]/g, "")) || 0;
+    let rowTotal = 0;
+
+    row.querySelectorAll("td[data-renter-id]").forEach(td => {
+      const renterId = td.dataset.renterId;
+      const val = parseFloat(td.textContent.replace(/[^\d.]/g, "")) || 0;
+      renterTotals[renterId] = (renterTotals[renterId] || 0) + val;
+      rowTotal += val;
+    });
+
+    const totalCell = row.querySelector(".total-row-cell");
+    if (totalCell) {
+      totalCell.textContent = `$${rowTotal.toFixed(2)}`;
+      totalCell.classList.toggle("cell-green", Math.abs(price - rowTotal) < 0.01);
+      totalCell.classList.toggle("cell-red", Math.abs(price - rowTotal) >= 0.01);
+    }
+
+    grandTotal += rowTotal;
   });
-}
 
-document.addEventListener("DOMContentLoaded", initRecalcSystem);
+  // Update footer total row
+  const totalRow = table.querySelector("tr.fw-bold.bg-light");
+  if (totalRow) {
+    const colTotal = totalRow.querySelector(".column-total");
+    if (colTotal) colTotal.textContent = `$${grandTotal.toFixed(2)}`;
 
-// Handle inline editing with cursor preservation
-document.addEventListener("input", (ev) => {
-  const t = ev.target;
-  if (!t.matches("td.price-cell, td[data-renter-id]")) return;
+    Object.entries(renterTotals).forEach(([rid, val]) => {
+      const cell = totalRow.querySelector(`.renter-total-cell-${rid} div:last-child`);
+      if (cell) cell.textContent = `${val.toFixed(2)}$`;
+    });
 
-  const sel = window.getSelection();
-  const range = sel.rangeCount ? sel.getRangeAt(0) : null;
-  const cursor = range ? range.startOffset : 0;
-
-  let text = t.textContent.replace(/[^\d.%]/g, "");
-  if (t.matches("td[data-renter-id]")) {
-    const pct = parseFloat(text.replace("$", "")) || 0;
-    text = pct + "$";
-  }
-  t.textContent = text;
-
-  if (range) {
-    const newRange = document.createRange();
-    newRange.setStart(t.firstChild || t, Math.min(cursor, text.length));
-    newRange.collapse(true);
-    sel.removeAllRanges();
-    sel.addRange(newRange);
+    const lastTotal = totalRow.querySelector(".table-total-cell");
+    if (lastTotal) lastTotal.textContent = `$${grandTotal.toFixed(2)}`;
   }
 
-  const table = t.closest("table.custom-bg-table");
-  if (table) recalcTable(table);
-});
+  recalcGrandTotals();
+};
+
+window.recalcGrandTotals = function () {
+  const tables = document.querySelectorAll("table.custom-bg-table");
+  let overall = 0;
+  const renterGrand = {};
+
+  tables.forEach(table => {
+    table.querySelectorAll("tr[data-utility_id]").forEach(row => {
+      const total = parseFloat((row.querySelector(".total-row-cell")?.textContent || "").replace(/[^\d.]/g, "")) || 0;
+      overall += total;
+      row.querySelectorAll("td[data-renter-id]").forEach(td => {
+        const rid = td.dataset.renterId;
+        const val = parseFloat(td.textContent.replace(/[^\d.]/g, "")) || 0;
+        renterGrand[rid] = (renterGrand[rid] || 0) + val;
+      });
+    });
+  });
+
+  const grandTotalEl = document.querySelector(".grand_total");
+  if (grandTotalEl) grandTotalEl.textContent = `$${overall.toFixed(2)}`;
+
+  Object.entries(renterGrand).forEach(([rid, val]) => {
+    const cell = document.querySelector(`.grand-renter-total-${rid}`);
+    if (cell) cell.textContent = `${val.toFixed(2)}$`;
+  });
+};
 
 // Initialize on page load
 document.addEventListener("DOMContentLoaded", () => {
@@ -350,6 +396,7 @@ document.addEventListener("DOMContentLoaded", () => {
     recalcGrandTotals();
   }, 300);
 });
+}
 </script>
 
 <script>
