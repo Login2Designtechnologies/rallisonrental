@@ -231,6 +231,20 @@
 
                                         <div class=" col-lg-6 col-md-6">
                                             <div class="form-group">
+                                                <label class="form-label" for="">Emergency Contact Name</label> <span class="text-danger">*</span>
+                                                <input type="text" name="emergency_contact_name" class="form-control name" placeholder="name" required>
+                                            </div>
+                                        </div>
+
+                                        <div class=" col-lg-6 col-md-6">
+                                            <div class="form-group">
+                                                <label class="form-label" for="">Emergency Contact Email</label> <span class="text-danger">*</span>
+                                                <input type="email" name="emergency_email" class="form-control email" placeholder="email" required>
+                                            </div>
+                                        </div>
+
+                                        <div class=" col-lg-6 col-md-6">
+                                            <div class="form-group">
                                                 <label class="form-label" for="">Emergency Contact Number</label> <span class="text-danger">*</span>
                                                 <input type="text" name="emergency_phone_number" class="form-control phone_number" placeholder="xxx-xxx-xxxx" required>
                                             </div>

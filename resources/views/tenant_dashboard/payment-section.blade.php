@@ -144,17 +144,17 @@
                         </button>
                     </div>
                     <div class="mt-3">
-                        <div class="table-responsive border rounded">
-                            <table class="table table-hover mb-0">
+                        <div class="table-responsive">
+                            <table class="table mb-0">
                                 <thead class="bg-dark">
                                     <tr>
-                                        <th class="text-white py-3 px-4">MONTH</th>
-                                        <th class="text-white py-3 px-4">RENT</th>
-                                        <th class="text-white py-3 px-4">SECURITY</th>
-                                        <th class="text-white py-3 px-4">LAST MONTH RENT</th>
-                                        <th class="text-white py-3 px-4">AMENITIES</th>
-                                        <th class="text-white py-3 px-4">STATUS</th>
-                                        <th class="text-white py-3 px-4">ACTION</th>
+                                        <th>Month</th>
+                                        <th>Rent</th>
+                                        <th>Security</th>
+                                        <th>Last Month Rent</th>
+                                        <th>Amenities</th>
+                                        <th>Status</th>
+                                        <th>Action</th>
                                     </tr>
                                 </thead>
 
@@ -162,17 +162,17 @@
                                 @if(!empty($payments))
                                     @forelse($payments as $payment)
                                         <tr>
-                                            <td class="fw-medium py-3 px-4">{{ $payment['month'] }}</td>
-                                            <td class="fw-semibold py-3 px-4">${{ number_format($payment['rent'], 2) }}</td>
-                                            <td class="py-3 px-4">${{ number_format($payment['security'], 2) }}</td>
-                                            <td class="py-3 px-4">${{ number_format($payment['last_month_rent'], 2) }}</td>
-                                            <td class="py-3 px-4">${{ number_format($payment['amenities'], 2) }}</td>
-                                            <td class="py-3 px-4">
+                                            <td class="fw-medium ">{{ $payment['month'] }}</td>
+                                            <td class="fw-semibold ">${{ number_format($payment['rent'], 2) }}</td>
+                                            <td>${{ number_format($payment['security'], 2) }}</td>
+                                            <td>${{ number_format($payment['last_month_rent'], 2) }}</td>
+                                            <td>${{ number_format($payment['amenities'], 2) }}</td>
+                                            <td>
                                                 <span class="badge {{ $payment['status'] === 'Paid' ? 'bg-success' : 'bg-warning text-dark' }}">
                                                     {{ $payment['status'] }}
                                                 </span>
                                             </td>
-                                            <td class="py-3 px-4">
+                                            <td>
                                                 <div class="d-flex gap-2">
                                                     <button class="btn btn-outline-secondary btn-sm">
                                                         <i class="bi bi-eye"></i>

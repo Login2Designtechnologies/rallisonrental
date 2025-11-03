@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Enums\TenantPaymentMethod;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
@@ -30,7 +29,8 @@ class Tenant extends Model
     ];
 	
 	protected $casts = [
-        'payment_method' => TenantPaymentMethod::class, 
+        /*'payment_method' => TenantPaymentMethod::class, */
+        'payment_method' => 'integer', 
     ];
 
     public function properties()

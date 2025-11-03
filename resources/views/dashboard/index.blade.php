@@ -106,17 +106,21 @@ chart.render();
 
 @endphp
 @section('content')
+
+<style>
+    .page-header{display: none;}
+</style>
 	<div class="row g-3 pt-0">
         <div class="col-lg-3 col-md-6 d-flex">
             <div class="card bg-custom radius-40 bg-1 bg-img fw-100">
                 <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-shrink-0">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
                             <div class="avtar bg-light-secondary">
                                 <i class="ti ti-building f-24"></i>
                             </div>
                         </div>
-                        <div class="flex-grow-1 ms-3">
+                        <div>
                             <p class="mb-1">{{ __('Current Amount Due') }}</p>
                             <div class="d-flex align-items-center justify-content-between text-white">
                                 <h4 class="mb-0 text-white">{{ $result['currentDue'] }}</h4>
@@ -131,13 +135,13 @@ chart.render();
         <div class="col-lg-3 col-md-6 d-flex">
             <div class="card bg-custom radius-40 bg-2 bg-img fw-100">
                 <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-shrink-0">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
                             <div class="avtar bg-light-warning">
                                 <i class="ti ti-3d-cube-sphere f-24"></i>
                             </div>
                         </div>
-                        <div class="flex-grow-1 ms-3">
+                        <div>
                             <p class="mb-1">{{ __('Past Due Amount') }}</p>
                             <div class="d-flex align-items-center justify-content-between text-white">
                                 <h4 class="mb-0 text-white">{{ $result['pastDue'] }}</h4>
@@ -153,13 +157,13 @@ chart.render();
         <div class="col-lg-3 col-md-6 d-flex">
             <div class="card bg-custom radius-40 bg-3 bg-img bg-img fw-100">
                 <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-shrink-0">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
                             <div class="avtar bg-light-primary">
                                 <i class="ti ti-file-invoice f-24"></i>
                             </div>
                         </div>
-                        <div class="flex-grow-1 ms-3">
+                        <div>
                             <p class="mb-1">{{ __('Utilities Due') }}</p>
                             <div class="d-flex align-items-center justify-content-between text-white">
                                 <h4 class="mb-0 text-white">{{ $settings['CURRENCY_SYMBOL'] }}<span
@@ -175,13 +179,13 @@ chart.render();
         <div class="col-lg-3 col-md-6 d-flex">
             <div class="card bg-custom radius-40 bg-4 bg-img bg-img fw-100">
                 <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-shrink-0">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
                             <div class="avtar bg-light-danger">
                                 <i class="ti ti-exposure f-24"></i>
                             </div>
                         </div>
-                        <div class="flex-grow-1 ms-3">
+                        <div>
                             <p class="mb-1">{{ __('Utilities Past Due') }}</p>
                             <div class="d-flex align-items-center justify-content-between text-white">
                                 <h4 class="mb-0 text-white">{{ $settings['CURRENCY_SYMBOL'] }}<span
@@ -199,15 +203,15 @@ chart.render();
 
     <div class="row g-3">
         <div class="col-lg-3 col-md-6 d-flex">
-            <div class="card bg-custom radius-40 bg-1 bg-img fw-100">
+            <div class="card bg-custom radius-40 bg-11 bg-img fw-100">
                 <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-shrink-0">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
                             <div class="avtar bg-light-secondary">
                                 <i class="ti ti-building f-24"></i>
                             </div>
                         </div>
-                        <div class="flex-grow-1 ms-3">
+                        <div>
                             <p class="mb-1">{{ __('Total Property') }}</p>
                             <div class="d-flex align-items-center justify-content-between text-white">
                                 <h4 class="mb-0 text-white">{{ $result['totalProperty'] }}</h4>
@@ -220,15 +224,15 @@ chart.render();
         </div>
 
         <div class="col-lg-3 col-md-6 d-flex">
-            <div class="card bg-custom radius-40 bg-2 bg-img fw-100">
+            <div class="card bg-custom radius-40 bg-12 bg-img fw-100">
                 <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-shrink-0">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
                             <div class="avtar bg-light-warning">
-                                <i class="ti ti-3d-cube-sphere f-24"></i>
+                                <i class="ti ti-box f-24"></i>
                             </div>
                         </div>
-                        <div class="flex-grow-1 ms-3">
+                        <div>
                             <p class="mb-1">{{ __('Total Unit') }}</p>
                             <div class="d-flex align-items-center justify-content-between text-white">
                                 <h4 class="mb-0 text-white">{{ $result['totalUnit'] }}</h4>
@@ -242,15 +246,15 @@ chart.render();
 
 
         <div class="col-lg-3 col-md-6 d-flex">
-            <div class="card bg-custom radius-40 bg-3 bg-img bg-img fw-100">
+            <div class="card bg-custom radius-40 bg-13 bg-img bg-img fw-100">
                 <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-shrink-0">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
                             <div class="avtar bg-light-primary">
-                                <i class="ti ti-file-invoice f-24"></i>
+                                <i class="ti ti-currency-dollar f-24"></i>
                             </div>
                         </div>
-                        <div class="flex-grow-1 ms-3">
+                        <div>
                             <p class="mb-1">{{ __('Amount Collected') }}</p>
                             <div class="d-flex align-items-center justify-content-between text-white">
                                 <h4 class="mb-0 text-white">{{ $settings['CURRENCY_SYMBOL'] }}<span
@@ -264,15 +268,15 @@ chart.render();
         </div>
 
         <div class="col-lg-3 col-md-6 d-flex">
-            <div class="card bg-custom radius-40 bg-4 bg-img bg-img fw-100">
+            <div class="card bg-custom radius-40 bg-14 bg-img bg-img fw-100">
                 <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-shrink-0">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
                             <div class="avtar bg-light-danger">
-                                <i class="ti ti-exposure f-24"></i>
+                                <i class="ti ti-wallet f-24"></i>
                             </div>
                         </div>
-                        <div class="flex-grow-1 ms-3">
+                        <div>
                             <p class="mb-1">{{ __('Total Expenses YTD') }}</p>
                             <div class="d-flex align-items-center justify-content-between text-white">
                                 <h4 class="mb-0 text-white">{{ $settings['CURRENCY_SYMBOL'] }}<span

@@ -180,6 +180,14 @@
                                 {{ Form::number('family_member', null, ['class' => 'form-control', 'placeholder' => __('Enter Total Family Member')]) }}
                             </div> -->
                             <div class="form-group col-lg-6 col-md-6">
+                                {{ Form::label('emergency_contact', 'Emergency Contact Name', ['class' => 'form-label']) }} <span class="text-danger">*</span>
+                                {{ Form::text('emergency_contact_name', $user->emergency_contact_name, ['class' => 'form-control contact_name', 'placeholder' => 'name']) }}
+                            </div>
+                            <div class="form-group col-lg-6 col-md-6">
+                                {{ Form::label('emergency_contact', 'Emergency Contact Email', ['class' => 'form-label']) }} <span class="text-danger">*</span>
+                                {{ Form::text('emergency_email', $user->emergency_email, ['class' => 'form-control emergency_email', 'placeholder' => 'email']) }}
+                            </div>
+                            <div class="form-group col-lg-6 col-md-6">
                                 {{ Form::label('emergency_contact', 'Emergency Contact Number', ['class' => 'form-label']) }} <span class="text-danger">*</span>
                                 {{ Form::text('emergency_phone_number', $user->emergency_phone_number, ['class' => 'form-control phone_number', 'placeholder' => 'xxx-xxx-xxxx']) }}
                             </div>
@@ -307,7 +315,7 @@
                             <div class="form-group col-lg-6 col-md-6">
                                 {{ Form::label('unit', __('Unit'), ['class' => 'form-label']) }}
                                 <div class="unit_div">
-                                   <select class="form-control" id="unitall" name="unit" required>
+                                   <select class="form-control" id="unitall" name="unit">
                                         <option value="">{{ __('Select Unit') }}</option>
                                         @foreach($propertyunit as $propertyval)
                                             <option value="{{ $propertyval->id }}" 

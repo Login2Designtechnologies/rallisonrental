@@ -17,24 +17,27 @@
 $settings=settings();
 @endphp
 @section('content')
+<style>
+    .page-header{display:none}
+</style>
  
     <div class="row g-3 pt-0 mb-3">
         <div class="col-lg-3 col-md-6 d-flex">
             <div class="card bg-custom radius-40 bg-1 bg-img fw-100">
                 <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-shrink-0">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div class="">
                             <div class="avtar bg-light-secondary">
                                 <i class="ti ti-calendar f-24"></i>
                             </div>
                         </div>
-                        <div class="flex-grow-1 ms-3">
+                        <div class="">
                             <p class="mb-1">Next Rent Payment</p>
                             <div class="d-flex align-items-center justify-content-between">
-                                <h4 class="mb-0 fs-14">Date:<span class="count">{{ $result['nextPaymentDate'] ? $result['nextPaymentDate']->format('d-m-Y') : 'N/A' }}</span></h4>
+                                <h4 class="mb-0 fs-14">Date : <span class="count">{{ $result['nextPaymentDate'] ? $result['nextPaymentDate']->format('d-m-Y') : 'N/A' }}</span></h4>
                             </div>
                             <div class="d-flex align-items-center justify-content-between">
-                                <h4 class="mb-0 fs-14">Amount:<span class="count">${{ number_format($result['rentAmount'], 2) }}</span></h4>
+                                <h4 class="mb-0 fs-14">Amount : <span class="count">${{ number_format($result['rentAmount'], 2) }}</span></h4>
                             </div>
                         </div>
                         
@@ -46,13 +49,13 @@ $settings=settings();
         <div class="col-lg-3 col-md-6 d-flex">
             <div class="card bg-custom radius-40 bg-2 bg-img fw-100">
                 <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-shrink-0">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div class="">
                             <div class="avtar bg-light-warning">
                                 <i class="ti ti-flame f-24"></i>
                             </div>
                         </div>
-                        <div class="flex-grow-1 ms-3">
+                        <div class="">
                             <p class="mb-1">Utilities Due</p>
                             <div class="d-flex align-items-center justify-content-between">
                                 <h4 class="mb-0 fs-14">$<span class="count">{{ number_format($result['utilitiesDue'], 2) }}</span></h4>
@@ -67,13 +70,13 @@ $settings=settings();
         <div class="col-lg-3 col-md-6 d-flex">
             <div class="card bg-custom radius-40 bg-3 bg-img fw-100">
                 <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-shrink-0">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div class="">
                             <div class="avtar bg-light-primary">
                                 <i class="ti ti-file-invoice f-24"></i>
                             </div>
                         </div>
-                        <div class="flex-grow-1 ms-3">
+                        <div class="">
                             <p class="mb-1">Past Due</p>
                             <div class="d-flex align-items-center justify-content-between">
                                 <h4 class="mb-0 fs-14">$<span class="count">{{ number_format($result['pastDueAmount'], 2) }}</span></h4>
@@ -87,13 +90,13 @@ $settings=settings();
         <div class="col-lg-3 col-md-6 d-flex">
             <div class="card bg-custom radius-40 bg-4 bg-img fw-100">
                 <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-shrink-0">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div class="">
                             <div class="avtar bg-light-danger">
                                 <i class="ti ti-receipt f-24"></i>
                             </div>
                         </div>
-                        <div class="flex-grow-1 ms-3">
+                        <div class="">
                             <p class="mb-1">Other Expenses</p>
                             <div class="d-flex align-items-center justify-content-between">
                                 <h4 class="mb-0 fs-14">$<span class="count">0</span></h4>
@@ -178,7 +181,7 @@ $settings=settings();
         <div class="col-md-5 d-flex">
             <div class="card w-100 mb-0">
                 <div class="card-body">
-                    <h5 class="card-title">Property overview</h5>
+                    <h5 class="card-title mb-3">Property overview</h5>
                     <div class="row align-items-center">
                         <!-- Chart -->
                         <div class="col-md-7">
@@ -187,7 +190,7 @@ $settings=settings();
                         <!-- Dynamic Data -->
                         <div class="col-md-5">
                             <div class="">
-                                <h4 class="mb-3">Show for spending</h4>
+                                <h4 class="mb-3 ls-1">Show for spending</h4>
                                 <ul id="spendingList" class="list-unstyled mb-0"></ul>
                             </div>
                         </div>
@@ -203,7 +206,7 @@ $settings=settings();
                         
                         <!-- Occupancy Chart -->
                         <div class="col-md-5">
-                        <h5 class="card-title">Occupancy rate</h5>
+                        <h5 class="card-title mb-3 ls-1">Occupancy rate</h5>
                         <canvas id="occupancyChart" width="150" height="150"></canvas>
                         </div>
 

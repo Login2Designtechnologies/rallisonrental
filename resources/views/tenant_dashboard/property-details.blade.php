@@ -156,20 +156,52 @@
           <h4 class="mb-3"><i class="bi bi-building"></i> Property &amp; Unit Information</h4>
           <div class="row g-3">
             <div class="col-md-6 d-flex">
-              <div class="card w-100">
-                <div class="card-body p-3">
+              <div class="card w-100 border-0">
+                <div class="form-group mb-0">
                   <div class="icon-wrapper"><i class="bi bi-building"></i></div>
-                  <h5 class="text-dark mb-0">Property Name :  <span class="text-muted">{{ $property->properties->name ?? 'N/A' }}</span></h5>
+                  <!-- <h5 class="text-dark mb-0">Property Name :  <span class="text-muted">{{ $property->properties->name ?? 'N/A' }}</span></h5> -->
+                   <label for="">Property Name : </label>
+                   <span class="form-control">{{ $property->properties->name ?? 'N/A' }}<span>
                   <!-- <p class="mb-0 fw-bold">{{ $property->properties->name ?? 'N/A' }}</p> -->
                 </div>
               </div>
             </div>
             <div class="col-md-6 d-flex">
-              <div class="card w-100">
-                <div class="card-body p-3">
+              <div class="card w-100 border-0">
+                <div class="form-group mb-0">
                   <div class="icon-wrapper"><i class="bi bi-door-open"></i></div>
-                  <h5 class="text-dark mb-0">Landlord Contact Info : <span class="text-muted"></span></h5>
+                  <label>Email : </label>
+
+                  <span class="form-control">
+                    @if($property && $property->properties && $property->properties->owner)
+                      <p class="mb-0 text-muted">{{ $property->properties->owner->email }}</p>
+                    @else
+                      <p class="mb-0 text-muted">{{ 'N/A' }}</p>
+                    @endif
+                  </span>
+
+                  
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6 d-flex">
+              <div class="card w-100 border-0">
+                <div class="form-group mb-0">
+                  <div class="icon-wrapper"><i class="bi bi-door-open"></i></div>
+                  <label>Landlord Contact Info : </label> 
+                    <span class="form-control">{{$property->properties->owner->phone_number ?? 'N/A'}}</span>
                   <p class="mb-0 fw-bold"></p>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6 d-flex">
+              <div class="card w-100 border-0">
+                <div class="form-group mb-0">
+                  <div class="icon-wrapper"><i class="bi bi-door-open"></i></div>
+                  <label class="d-flex">Lease Status : </label> 
+                    <span class="badge bg-success">
+                      <i class="bi bi-check-circle"></i> Active Lease
+                    </span>
                 </div>
               </div>
             </div>
@@ -182,58 +214,62 @@
                 </div>
               </div>
             </div> -->
+            
             <div class="col-md-12">
-              <div class="text-white p-4 rounded property-header">
+              <div class="form-group">
                 <div class="row align-items-center">
-                  <div class="col-md-8">
-                    <h5 class="text-white">Full Address</h5>
-                    <h2 class="h4 mb-2 text-white">{{ $property->properties->name ?? '' }} - {{ $property->units->name ?? '' }}</h2>
-                    <p class="mb-0">
+                  <div class="col-md-12">
+                    <label>Full Address</label>
+                    <span class="form-control">
+                      {{ $property->properties->name ?? '' }} - {{ $property->units->name ?? '' }} <br>
                       <i class="bi bi-geo-alt me-2"></i>
-                      @php $prop = $property->properties; @endphp
+                       @php $prop = $property->properties; @endphp
                       @if($prop && $prop->address)
+                        @php
+                          $statename = DB::table('states')->where('id',$prop->state_id)->first();
+                          $citiesname = DB::table('cities')->where('id',$prop->city_id)->first();
+                        @endphp
                         {{ $prop->address }},
-                        {{ optional($prop->city)->name }},
+                        {{ $statename->name ?? '' }},
+                        {{ $citiesname->name ?? '' }},
                         {{ $prop->country }}
                         {{ $prop->zip_code }}
                       @endif
-                    </p>
+                    </span>
+                    <!-- <h2 class="h4 mb-2 text-dark">{{ $property->properties->name ?? '' }} - {{ $property->units->name ?? '' }}</h2>
+                    <span>
+                      <i class="bi bi-geo-alt me-2"></i>
+                      @php $prop = $property->properties; @endphp
+                      @if($prop && $prop->address)
+                        @php
+                          $statename = DB::table('states')->where('id',$prop->state_id)->first();
+                          $citiesname = DB::table('cities')->where('id',$prop->city_id)->first();
+                        @endphp
+                        {{ $prop->address }},
+                        {{ $statename->name ?? '' }},
+                        {{ $citiesname->name ?? '' }},
+                        {{ $prop->country }}
+                        {{ $prop->zip_code }}
+                      @endif
+                    </span> -->
                   </div>
-                  <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                  <!-- <div class="col-md-4 text-md-end mt-3 mt-md-0">
                     <span class="badge bg-success">
                       <i class="bi bi-check-circle"></i> Active Lease
                     </span>
-                  </div>
+                  </div> -->
                 </div>
               </div>
             </div>
-            <div class="col-md-6 d-flex">
-              <div class="card w-100">
-                <div class="card-body p-3">
-                  <div class="icon-wrapper"><i class="bi bi-door-open"></i></div>
-                  <h5 class="text-dark mb-0 d-flex">Email : &nbsp;
-
-                  <span>
-                    @if($property && $property->properties && $property->properties->owner)
-                      <p class="mb-0 text-muted">{{ $property->properties->owner->email }}</p>
-                    @else
-                      <p class="mb-0 text-muted">{{ 'N/A' }}</p>
-                    @endif
-                  </span>
-
-                  </h5>
-                  
-                </div>
-              </div>
-            </div>
-            <div class="col-md-6 d-flex">
+            
+            {{--<div class="col-md-6 d-flex">
               <div class="card w-100">
                 <div class="card-body p-3">
                   <div class="icon-wrapper"><i class="bi bi-door-open"></i></div>
                   <h5 class="text-muted d-flex">Number : &nbsp; 
                       <span>
 
-                        @if($property && $property->properties && $property->properties->owner)
+                      @if($property && $property->properties && $property->properties->owner)
                         <p class="mb-0 text-muted">{{ $property->properties->owner->phone_number }}</p>
                       @else
                         <p class="mb-0 text-muted">{{ 'N/A' }}</p>
@@ -243,7 +279,7 @@
                   
                 </div>
               </div>
-            </div>
+            </div>--}}
           </div>
         </div>
 
@@ -255,10 +291,11 @@
               <div class="card w-100">
                 <div class="card-body">
                   <div class="icon-wrapper"><i class="bi bi-calendar-range"></i></div>
-                  <h5 class="text-dark">Lease Period : <span class="text-muted">
-                    {{ \Carbon\Carbon::parse($property->lease_start_date)->format('F d, Y') }} - 
-                    {{ \Carbon\Carbon::parse($property->lease_end_date)->format('F d, Y') }}
-                  </span></h5>
+                  <h5 class="text-dark d-flex">Lease Period : </h5>
+                  <span class="d-block">
+                    {{ \Carbon\Carbon::parse($tenantcontracts->start_date ?? '')->format('F d, Y') }} - 
+                    {{ \Carbon\Carbon::parse($tenantcontracts->end_date ?? '')->format('F d, Y') }}
+                  </span>
                   
                 </div>
               </div>

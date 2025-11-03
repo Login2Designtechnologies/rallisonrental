@@ -146,7 +146,7 @@
                                 </h6>
                             </div>
                             <div class="col-sm-6 mb-3">
-                                <p class="mb-0 text-sm">{{ __('Unit (if exist) ') }} :</p>
+                                <p class="mb-0 text-sm">{{ __('Unit ') }} :</p>
                                 <h6 class="mb-0">
                                     {{ !empty($tenant->units) ? $tenant->units->name : '-' }}
                                 </h6>

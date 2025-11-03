@@ -124,7 +124,7 @@
                         <div class="col-sm-6 col-md-4 col-xxl-3">
                             <div class="card product-card">
                                 <div class="card-img-top">
-                                 @if(!empty($thumbnail) && $thumbnail !== 'default.jpg')
+                                 {{--<!-- @if(!empty($thumbnail) && $thumbnail !== 'default.jpg')
                                     <img src="{{ asset(Storage::url('upload/thumbnail')) . '/' . $thumbnail }}"
                                         alt="{{ $property->name }}" class="img-prod" />
                                  @else
@@ -135,7 +135,16 @@
                                             alt="{{ $property->name }}" 
                                             class="img-prod" 
                                         />
-                                 @endif
+                                 @endif -->--}}
+                                 @php
+                                   $propertyextraimages = DB::table('property_images')->where('property_id',$property->id)->where('type','extra')->latest('id')->first();
+                                    $img = $propertyextraimages ? asset(Storage::url('upload/property/' . $propertyextraimages->image)) : 'https://placehold.co/270x220';
+                                 @endphp
+                                    <img 
+                                        src="{{ $img }}" 
+                                        alt="{{ $property->name }}" 
+                                        class="img-prod" 
+                                    />
 
                                 </div>
                                 <div class="card-body">

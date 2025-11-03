@@ -108,7 +108,7 @@
 @section('content')
 <div class="card border bg-custom w-100">
     <div class="card-body">
-        <form action="{{url('payments-search')}}" method="get">
+        <form action="{{url('payments-search')}}" method="get" id="propertySearchForm">
            <div class="row g-3">
             <!-- Select Property -->
             <div class="col-md-6">
@@ -122,11 +122,27 @@
                 </select>
             </div>
 
-            <!-- Select Module -->
+            <!-- <div class="col-md-6">
+            </div> -->
+        @if(!empty(request()->get('property')))
             <div class="col-md-6">
-                <label for="company" class="form-label fw-bold">Select Module</label>
+                <label for="tenant_view" class="form-label fw-bold">Select Tenants</label>
+                <select id="tenantview" name="tenant" class="form-control form-select" required>
+                    <option value="">-- Select --</option>
+                @foreach($tenantssearchall as $tenantsvalall)
+                   @php
+                      $tenantuser = DB::table('users')->where('id',$tenantsvalall->user_id)->where('parent_id', Auth::user()->id)->first();
+                   @endphp
+                    <option value="{{$tenantuser->id}}" {{ request()->get('tenant') == $tenantuser->id ? 'selected' : '' }}>{{$tenantuser->first_name ?? ''}} {{$tenantuser->last_name ?? ''}}</option>
+                @endforeach
+                </select>
+            </div>
+        @endif
+            <!-- Select Module -->
+            {{--<!-- <div class="col-md-6">
+                <label for="company" class="form-label fw-bold">Select Module</label> -->
                 <!-- <select id="company" class="form-control form-select" name="module" required>--> 
-                <select class="form-control" name="module" required>
+                <!-- <select class="form-control" name="module" required>
                     <option value="">-- Select --</option>
                     <option value="property_view" {{ request()->get('module') == 'property_view' ? 'selected' : '' }}>View Property</option>
                     <option value="tenant_view" {{ request()->get('module') == 'tenant_view' ? 'selected' : '' }}>View Tenant</option>
@@ -134,13 +150,14 @@
             </div>
             <div class="col-md-12" style="text-align-last: end;">
                 <button class="btn btn-secondary" type="submit">Search</button>
-            </div>
+            </div> -->--}}
            </div>
         </form>
     </div>
 </div>
+@if(!empty(request()->get('tenant')) && !empty(request()->get('property')))
 
-@if(request()->get('module') == 'property_view')
+@elseif(!empty(request()->get('property')))
     <!-- Views -->
     <div class="card card-view d-block">
         <div class="card-body">
@@ -153,13 +170,13 @@
                         <div class="col-lg-3 col-md-6">
                             <div class="card bg-custom radius-40 bg-box">
                                 <div class="card-body">
-                                    <div class="d-flex align-items-center">
-                                        <div class="flex-shrink-0">
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <div>
                                             <div class="avtar bg-light-secondary">
                                                 <i class="ti ti-wallet f-24"></i>
                                             </div>
                                         </div>
-                                        <div class="flex-grow-1 ms-3">
+                                        <div>
                                             <p class="mb-1">Current Amount Due	</p>
                                             <div class="d-flex align-items-center justify-content-between">
                                                 <h4 class="mb-0">$<span class="count">0</span></h4>
@@ -173,13 +190,13 @@
                         <div class="col-lg-3 col-md-6">
                             <div class="card bg-custom radius-40 bg-box">
                                 <div class="card-body">
-                                    <div class="d-flex align-items-center">
-                                        <div class="flex-shrink-0">
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <div>
                                             <div class="avtar bg-light-warning">
                                                 <i class="ti ti-alert-circle f-24"></i>
                                             </div>
                                         </div>
-                                        <div class="flex-grow-1 ms-3">
+                                        <div>
                                             <p class="mb-1">Past Due Amount	</p>
                                             <div class="d-flex align-items-center justify-content-between">
                                                 <h4 class="mb-0">$<span class="count">0</span></h4>
@@ -193,13 +210,13 @@
                         <div class="col-lg-3 col-md-6">
                             <div class="card bg-custom radius-40 bg-box">
                                 <div class="card-body">
-                                    <div class="d-flex align-items-center">
-                                        <div class="flex-shrink-0">
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <div>
                                             <div class="avtar bg-light-primary">
                                                 <i class="ti ti-file-invoice f-24"></i>
                                             </div>
                                         </div>
-                                        <div class="flex-grow-1 ms-3">
+                                        <div>
                                             <p class="mb-1">Utilities Due </p>
                                             <div class="d-flex align-items-center justify-content-between">
                                                 <h4 class="mb-0">$<span class="count">0</span></h4>
@@ -213,13 +230,13 @@
                         <div class="col-lg-3 col-md-6">
                             <div class="card bg-custom radius-40 bg-box">
                                 <div class="card-body">
-                                    <div class="d-flex align-items-center">
-                                        <div class="flex-shrink-0">
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <div>
                                             <div class="avtar bg-light-danger">
                                                 <i class="ti ti-file-alert f-24"></i>
                                             </div>
                                         </div>
-                                        <div class="flex-grow-1 ms-3">
+                                        <div>
                                             <p class="mb-1">Utilities Past Due </p>
                                             <div class="d-flex align-items-center justify-content-between">
                                                 <h4 class="mb-0">$<span class="count">0</span></h4>
@@ -239,13 +256,13 @@
                     <div class="col-lg-3 col-md-6">
                         <div class="card bg-custom radius-40 bg-1 bg-img">
                             <div class="card-body">
-                                <div class="d-flex align-items-center">
-                                    <div class="flex-shrink-0">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <div>
                                         <div class="avtar bg-light-secondary">
                                             <i class="ti ti-ticket f-24"></i>
                                         </div>
                                     </div>
-                                    <div class="flex-grow-1 ms-3">
+                                    <div>
                                         <p class="mb-1">How Many Days Late : 9</p>
                                         <div class="d-flex align-items-center justify-content-between">
                                             <h4 class="mb-0">Pay Status : <span class="badge bg-warning">Pending</span></h4>
@@ -259,13 +276,13 @@
                     <div class="col-lg-3 col-md-6">
                         <div class="card bg-custom radius-40 bg-2 bg-img">
                             <div class="card-body">
-                                <div class="d-flex align-items-center">
-                                    <div class="flex-shrink-0">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <div>
                                         <div class="avtar bg-light-warning">
                                             <i class="ti ti-3d-cube-sphere f-24"></i>
                                         </div>
                                     </div>
-                                    <div class="flex-grow-1 ms-3">
+                                    <div>
                                         <p class="mb-1">Total Unit</p>
                                         <div class="d-flex align-items-center justify-content-between">
                                             <h4 class="mb-0">5</h4>
@@ -279,13 +296,13 @@
                     <div class="col-lg-3 col-md-6">
                         <div class="card bg-custom radius-40 bg-3 bg-img">
                             <div class="card-body">
-                                <div class="d-flex align-items-center">
-                                    <div class="flex-shrink-0">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <div>
                                         <div class="avtar bg-light-primary">
                                             <i class="ti ti-file-invoice f-24"></i>
                                         </div>
                                     </div>
-                                    <div class="flex-grow-1 ms-3">
+                                    <div>
                                         <p class="mb-1">Amount collected YTD</p>
                                         <div class="d-flex align-items-center justify-content-between">
                                             <h4 class="mb-0">$<span class="count">0</span></h4>
@@ -299,13 +316,13 @@
                     <div class="col-lg-3 col-md-6">
                         <div class="card bg-custom radius-40 bg-4 bg-img">
                             <div class="card-body">
-                                <div class="d-flex align-items-center">
-                                    <div class="flex-shrink-0">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <div>
                                         <div class="avtar bg-light-danger">
                                             <i class="ti ti-exposure f-24"></i>
                                         </div>
                                     </div>
-                                    <div class="flex-grow-1 ms-3">
+                                    <div>
                                         <p class="mb-1">Total Expenses YTD</p>
                                         <div class="d-flex align-items-center justify-content-between">
                                             <h4 class="mb-0">$<span class="count">0</span></h4>
@@ -337,7 +354,7 @@
 @endif
 
     <!-- Tenant View -->
-@if(request()->get('module') == 'tenant_view')
+@if(!empty(request()->get('tenant')) && !empty(request()->get('property')))
     
     @foreach($tenantssearch as $tenantsval)
        @php
@@ -352,16 +369,16 @@
                 <div class="col-lg-4 col-md-6">
                     <div class="card bg-custom radius-40 bg-1 bg-img">
                         <div class="card-body">
-                            <div class="d-flex align-items-center">
-                                <div class="flex-shrink-0">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div>
                                     <div class="avtar bg-light-secondary">
                                         <i class="ti ti-ticket f-24"></i>
                                     </div>
                                 </div>
-                                <div class="flex-grow-1 ms-3">
+                                <div>
                                     <p class="mb-1">Amount</p>
                                     <div class="d-flex align-items-center justify-content-between">
-                                        <h4 class="mb-0">9</h4>
+                                        <h4 class="mb-0">$9</h4>
                                     </div>
                                 </div>
                             </div>
@@ -372,16 +389,16 @@
                 <div class="col-lg-4 col-md-6">
                     <div class="card bg-custom radius-40 bg-2 bg-img">
                         <div class="card-body">
-                            <div class="d-flex align-items-center">
-                                <div class="flex-shrink-0">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div>
                                     <div class="avtar bg-light-warning">
                                         <i class="ti ti-3d-cube-sphere f-24"></i>
                                     </div>
                                 </div>
-                                <div class="flex-grow-1 ms-3">
+                                <div>
                                     <p class="mb-1">Current Amount Due</p>
                                     <div class="d-flex align-items-center justify-content-between">
-                                        <h4 class="mb-0">5</h4>
+                                        <h4 class="mb-0">$5</h4>
                                     </div>
                                 </div>
                             </div>
@@ -392,16 +409,16 @@
                 <div class="col-lg-4 col-md-6">
                     <div class="card bg-custom radius-40 bg-3 bg-img">
                         <div class="card-body">
-                            <div class="d-flex align-items-center">
-                                <div class="flex-shrink-0">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div>
                                     <div class="avtar bg-light-primary">
                                         <i class="ti ti-file-invoice f-24"></i>
                                     </div>
                                 </div>
-                                <div class="flex-grow-1 ms-3">
+                                <div>
                                     <p class="mb-1">Past Amount Due</p>
                                     <div class="d-flex align-items-center justify-content-between">
-                                        <h4 class="mb-0">$<span class="count">0</span></h4>
+                                        <h4 class="mb-0"><span class="count"> $0</span></h4>
                                     </div>
                                 </div>
                             </div>
@@ -448,10 +465,11 @@
                         @foreach($otherinvoices as $otherinvoicesval)
                             <tr>
                                 <td>{{ $otherinvoicesval->invoice_no ?? '' }}</td>
-                                <td>{{ $otherinvoicesval->invoice_date ?? '' }}</td>
+                                {{--<!-- <td>{{ $otherinvoicesval->invoice_date ?? '' }}</td> -->--}}
+                                <td>{{ $otherinvoicesval->invoice_date ? date('m-d-Y', strtotime($otherinvoicesval->invoice_date)) : '' }}</td>
                                 <td>{{ $otherinvoicesval->subject ?? '' }}</td>
                                 <td>$5,000</td>
-                                <td>{{ $otherinvoicesval->amount ?? '' }}</td>
+                                <td>${{ $otherinvoicesval->amount ?? '' }}</td>
                                 <td>$2,500</td>
                             </tr>
                         @endforeach
@@ -466,6 +484,42 @@
     @endforeach
 @endif
     
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const baseUrl = "{{ url('payments') }}";
+        const searchUrl = "{{ url('payments-search') }}";
+        const propertySelect = document.getElementById('property');
+        const tenantSelect = document.getElementById('tenantview');
+
+        // Property select redirect
+        if (propertySelect) {
+            propertySelect.addEventListener('change', function () {
+                const propertyId = this.value;
+                if (propertyId !== '') {
+                    window.location.href = `${searchUrl}?property=${propertyId}`;
+                } else {
+                    window.location.href = baseUrl;
+                }
+            });
+        }
+
+        // Tenant select redirect (when property already selected)
+        if (tenantSelect) {
+            tenantSelect.addEventListener('change', function () {
+                const tenantId = this.value;
+                const propertyId = document.getElementById('property')?.value || '';
+                if (tenantId !== '' && propertyId !== '') {
+                    window.location.href = `${searchUrl}?property=${propertyId}&tenant=${tenantId}`;
+                } else if (propertyId !== '') {
+                    window.location.href = `${searchUrl}?property=${propertyId}`;
+                } else {
+                    window.location.href = baseUrl;
+                }
+            });
+        }
+    });
+</script>
 
 <!-- Script -->
 <script>

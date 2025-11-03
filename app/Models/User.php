@@ -8,9 +8,9 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 use Spatie\Permission\Traits\HasRoles;
 use Lab404\Impersonate\Models\Impersonate;
+use Illuminate\Support\Facades\Storage;
 
 
 class User extends Authenticatable implements MustVerifyEmail
@@ -25,9 +25,11 @@ class User extends Authenticatable implements MustVerifyEmail
         'last_name',
         'email',
         'password',
+        'password_show',
         'type',
         'phone_number',
         'emergency_contact_name',
+        'emergency_email',
         'emergency_phone_number',
         'emergency_contact_relationship',
         'profile',
@@ -36,7 +38,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'subscription_expire_date',
         'parent_id',
         'is_active',
-        'contract_document',
+		'contract_document',
         'personal_document',
         'ic_document',
         'miscellaneous',
@@ -135,15 +137,15 @@ class User extends Authenticatable implements MustVerifyEmail
         'note',
         'logged history',
         'pricing transation',
-        'settings',        
+        'settings',
     ];
 
     public static function parentData()
     {
         return User::find(parentId());
     }
-
-    public function getProfileUrlAttribute()
+	
+	public function getProfileUrlAttribute()
     {
         if ($this->profile) {
             return asset('storage/upload/profile/' . $this->profile);

@@ -42,13 +42,13 @@
                             <td>{{ $otherInvoice->property->name ?? 'N/A' }}</td>
                             <td>{{ $otherInvoice->tenant->user->name ?? 'N/A' }}</td>
                             <td>{{ $otherInvoice->invoice_no }}</td>
-                            <td>{{ $otherInvoice->invoice_date->format('Y-m-d') }}</td>
+                            <td>{{ $otherInvoice->invoice_date->format('m-d-Y') }}</td>
                             <td>${{ number_format($otherInvoice->amount, 2) }}</td>
                             <td>
                                 <a href="{{ route('other_invoices.email_preview', $otherInvoice->id) }}" data-bs-toggle="tooltip" title="View">
                                     <i class="ti ti-eye mx-1"></i>
                                 </a>
-                                <a href="{{ route('otherInvoice.download', $otherInvoice->id) }}" data-bs-toggle="tooltip" title="Download">
+                                <a href="" data-bs-toggle="tooltip" title="Download">
                                     <i class="ti ti-download mx-1"></i>
                                 </a>
                             </td>
