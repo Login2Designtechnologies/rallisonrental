@@ -138,7 +138,7 @@
         <div class="row">
             <div class="col-md-3 d-flex">
                 <ul class="nav flex-column nav-tabs account-tabs card box-card custom-theme w-100" id="myTab" role="tablist">
-                    <li class="nav-item" role="presentation">
+                    <li class="nav-item" role="presentation" style="pointer-events: none;">
                         <a class="nav-link active" id="profile-tab-1" data-bs-toggle="tab" href="#one" role="tab" aria-selected="true">
                             <div class="d-flex align-items-center">
                                 <div class="flex-shrink-0">
@@ -150,7 +150,7 @@
                             </div>
                         </a>
                     </li>
-                    <li class="nav-item" role="presentation">
+                    <li class="nav-item" role="presentation" style="pointer-events: none;">
                         <a class="nav-link" id="profile-tab-2" data-bs-toggle="tab" href="#two" role="tab" aria-selected="false" tabindex="-1">
                             <div class="d-flex align-items-center">
                                 <div class="flex-shrink-0">
@@ -163,7 +163,7 @@
                             </div>
                         </a>
                     </li>
-                    <li class="nav-item" role="presentation">
+                    <li class="nav-item" role="presentation" style="pointer-events: none;">
                         <a class="nav-link" id="profile-tab-3" data-bs-toggle="tab" href="#three" role="tab" aria-selected="false" tabindex="-1">
                             <div class="d-flex align-items-center">
                                 <div class="flex-shrink-0">
@@ -175,7 +175,7 @@
                             </div>
                         </a>
                     </li>
-                    <li class="nav-item" role="presentation">
+                    <li class="nav-item" role="presentation" style="pointer-events: none;">
                         <a class="nav-link" id="profile-tab-4" data-bs-toggle="tab" href="#four" role="tab" aria-selected="false" tabindex="-1">
                             <div class="d-flex align-items-center">
                                 <div class="flex-shrink-0">
@@ -450,6 +450,48 @@
         });
     });
 </script>
+
+
+<script>
+$(document).ready(function() {
+    function checkTabFields(tabPane) {
+        let allFilled = true;
+
+        $(tabPane).find('[required]').each(function() {
+            if ($(this).is(':invalid') || $(this).val().trim() === '') {
+                allFilled = false;
+                return false; // break loop
+            }
+        });
+
+        // Enable/disable Next button in this tab
+        const nextBtn = $(tabPane).find('.nextButton');
+        if (allFilled) {
+            nextBtn.prop('disabled', false);
+        } else {
+            nextBtn.prop('disabled', true);
+        }
+    }
+
+    // Check fields initially for each tab
+    $('.tab-pane').each(function() {
+        checkTabFields(this);
+    });
+
+    // Watch input changes in each tab
+    $(document).on('input change', '.tab-pane :input[required]', function() {
+        const tabPane = $(this).closest('.tab-pane');
+        checkTabFields(tabPane);
+    });
+
+    // Optional: on tab switch, check new tab again
+    $('a[data-bs-toggle="tab"]').on('shown.bs.tab', function(e) {
+        const target = $(e.target).attr('href'); // e.g. "#one", "#two"
+        checkTabFields($(target));
+    });
+});
+</script>
+
 
 <script>
     document.querySelectorAll('.file-input').forEach(input => {
