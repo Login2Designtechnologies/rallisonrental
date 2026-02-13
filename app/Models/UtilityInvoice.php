@@ -25,6 +25,11 @@ class UtilityInvoice extends Model
     public function tenant()   { return $this->belongsTo(Tenant::class); }
     public function details() {  return $this->hasMany(UtilityInvoiceDetail::class, 'invoice_id');}
 
+    public function owner()
+    {
+        return $this->belongsTo(User::class, 'owner_id');
+    }
+
     // Scopes
     public function scopeFilters($q, array $filters)
     {

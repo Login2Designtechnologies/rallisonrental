@@ -24,15 +24,22 @@ class Tenant extends Model
         'lease_start_date',
         'lease_end_date',
         'is_active',
+		'parent_id',
+        'payment_method',
+    ];
+	
+	protected $casts = [
+        /*'payment_method' => TenantPaymentMethod::class, */
+        'payment_method' => 'integer', 
     ];
 
     public function properties()
     {
-        return $this->hasOne('App\Models\Property', 'id', 'property_id');
+		return $this->hasOne('App\Models\Property', 'id', 'property_id');
     }
     public function units()
     {
-        return $this->hasOne('App\Models\PropertyUnit', 'id', 'property_unit_id');
+		return $this->hasOne('App\Models\PropertyUnit', 'id', 'property_unit_id');
     }
 
     public function user()

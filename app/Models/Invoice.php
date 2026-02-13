@@ -16,6 +16,7 @@ class Invoice extends Model
         'unit_id',
         'invoice_month',
         'end_date',
+        'due_date',
         'status',
         'notes',
         'parent_id',

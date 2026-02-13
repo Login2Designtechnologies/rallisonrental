@@ -2,29 +2,102 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ContractRenewal;
+use App\Models\Invoice;
+use App\Models\LatePaymentRule;
 use App\Models\Notification;
 use App\Models\Property;
 use App\Models\Subscription;
 use App\Models\Tenant;
 use App\Models\TenantDocument;
 use App\Models\User;
+use App\Models\UtilityInvoice;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\Models\Role;
 use DB;
 use Carbon\Carbon;
+use Carbon\CarbonPeriod;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Auth;
+use App\Models\TenantPaymentStatus;
 
 class TenantController extends Controller
 {
 
     public function index()
     {
-        if (\Auth::user()->can('manage tenant')) {
-            $tenants = Tenant::where('parent_id', parentId())->get();
-            return view('tenant.index', compact('tenants'));
-        } else {
+        if (!\Auth::user()->can('manage tenant')) {
             return redirect()->back()->with('error', __('Permission Denied!'));
         }
+
+        $ownerId = parentId(); // Owner’s auth_id
+        $today = Carbon::today()->toDateString();
+
+        $tenants = Tenant::where('parent_id', $ownerId)->get();
+
+        foreach ($tenants as $tenant) {
+            // ----- Rent/Lease Amount Due -----
+            $tenant->amount_due = DB::table('invoices')
+                ->join('invoice_items', 'invoices.id', '=', 'invoice_items.invoice_id')
+                ->where('invoices.parent_id', $ownerId)
+                ->where('invoices.property_id', $tenant->property_id)
+                ->when(!empty($tenant->unit_id), function ($q) use ($tenant) {
+                    $q->where('invoices.unit_id', $tenant->unit_id);
+                })
+                ->whereDate('invoices.due_date', '>=', $today)
+                ->where('invoices.status', '!=', 'paid')
+                ->sum('invoice_items.amount');
+
+            // ----- Rent/Lease Amount Past Due -----
+            $tenant->amount_past_due = DB::table('invoices')
+                ->join('invoice_items', 'invoices.id', '=', 'invoice_items.invoice_id')
+                ->where('invoices.parent_id', $ownerId)
+                ->where('invoices.property_id', $tenant->property_id)
+                ->when(!empty($tenant->unit_id), function ($q) use ($tenant) {
+                    $q->where('invoices.unit_id', $tenant->unit_id);
+                })
+                ->whereDate('invoices.due_date', '<', $today)
+                ->where('invoices.status', '!=', 'paid')
+                ->sum('invoice_items.amount');
+
+            // ----- Utilities Due -----
+            $tenant->utilities_due = DB::table('utility_invoices')
+                ->where('utility_invoices.owner_id', $ownerId)
+                ->where('utility_invoices.property_id', $tenant->property_id)
+                ->when(!empty($tenant->unit_id), function ($q) use ($tenant) {
+                    $q->where('utility_invoices.unit_id', $tenant->unit_id);
+                })
+                ->whereDate('utility_invoices.due_date', '>=', $today)
+                ->where('utility_invoices.status', '!=', 'paid')
+                ->sum('utility_invoices.amount');
+
+            // ----- Utilities Past Due -----
+            $tenant->utilities_past_due = DB::table('utility_invoices')
+                ->where('utility_invoices.owner_id', $ownerId)
+                ->where('utility_invoices.property_id', $tenant->property_id)
+                ->when(!empty($tenant->unit_id), function ($q) use ($tenant) {
+                    $q->where('utility_invoices.unit_id', $tenant->unit_id);
+                })
+                ->whereDate('utility_invoices.due_date', '<', $today)
+                ->where('utility_invoices.status', '!=', 'paid')
+                ->sum('utility_invoices.amount');
+
+            // ----- Months Left on Lease -----
+            $latestEnd = DB::table('invoices')
+                ->where('parent_id', $ownerId)
+                ->where('property_id', $tenant->property_id)
+                ->when(!empty($tenant->unit_id), function ($q) use ($tenant) {
+                    $q->where('unit_id', $tenant->unit_id);
+                })
+                ->max('end_date');
+
+            $tenant->months_left = $latestEnd
+                ? Carbon::parse($latestEnd)->diffInMonths(Carbon::today())
+                : 0;
+        }
+
+        return view('tenant.index', compact('tenants'));
     }
 
 
@@ -329,8 +402,8 @@ class TenantController extends Controller
             $tenant->city = $request->city;
             $tenant->zip_code = $request->zip_code;
             $tenant->address = $request->address;
-            $tenant->property = $request->property;
-            $tenant->unit = $request->unit;
+            $tenant->property_id = $request->property;
+            $tenant->property_unit_id = $request->unit ?? 0;
             $tenant->lease_start_date = $request->lease_start_date;
             $tenant->lease_end_date = $request->lease_end_date;
             $tenant->parent_id = parentId();
@@ -403,27 +476,178 @@ class TenantController extends Controller
     {
         $contract = Tenant::where('id', $tenant->id)->first();
 
-        $tenantcontracts = DB::table('tenant_contracts')->where('property_id', $tenant->property)->where('tenant_id', $tenant->id)->where('owner_id', $tenant->user_id)->first();
-
-        $period = null;
-        if ($tenantcontracts && $tenantcontracts->start_date && $tenantcontracts->end_date) {
-            $period = \Carbon\CarbonPeriod::create(
-                \Carbon\Carbon::parse($tenantcontracts->start_date)->startOfMonth(),
-                '1 month',
-                \Carbon\Carbon::parse($tenantcontracts->end_date)->startOfMonth()
-            );
-        }
-
-        // Total active amenities for this property
+        $tenantcontracts = DB::table('tenant_contracts')->where('property_id', $tenant->property_id)->where('tenant_id', $tenant->id)->where('owner_id', $tenant->user_id)->first();
+        $contractRenewals = DB::table('contract_renewals')->where('tenant_contract_id', $tenantcontracts->id ?? 0)->orderBy('id')->get();
+        // compute amenities total (only if tenantcontracts has property_id)
+        
+        // default value so compact() never gets an undefined var
         $propertyAmenitiesTotal = 0;
-        if ($tenantcontracts && $tenantcontracts->property_id) {
+        if ($tenantcontracts && !empty($tenantcontracts->property_id)) {
             $propertyAmenitiesTotal = DB::table('amenity_catg')
                 ->where('property_id', $tenantcontracts->property_id)
                 ->where('status', 1)
-                ->sum('price');
+                ->sum('price') ?: 0;
+        }
+        // build combined periods
+        $periods = collect();
+
+        // base contract months
+        if ($tenantcontracts && $tenantcontracts->start_date && $tenantcontracts->end_date) {
+            try {
+                $baseStart = Carbon::parse($tenantcontracts->start_date)->startOfMonth();
+                $baseEnd = Carbon::parse($tenantcontracts->end_date)->startOfMonth();
+
+                $basePeriod = CarbonPeriod::create($baseStart, '1 month', $baseEnd);
+
+                foreach ($basePeriod as $m) {
+                    $periods->push([
+                        'month_label' => $m->format('F Y'),
+                        'ym' => $m->format('Y-m'),
+                        'rent' => (float) ($tenantcontracts->standard_rent ?? 0),
+                        'security' => (float) ($tenantcontracts->security_deposit ?? 0),
+                        'type' => 'base',
+                        'source' => null,
+                    ]);
+                }
+            } catch (\Exception $e) {
+                // ignore invalid dates, keep periods empty
+            }
         }
 
-        return view('tenant.show', compact('tenant', 'contract', 'period', 'propertyAmenitiesTotal','tenantcontracts'));
+        $contractStart = null;
+        $contractEnd = null;
+        if (!empty($tenantcontracts->start_date)) {
+            try {
+                $contractStart = Carbon::parse($tenantcontracts->start_date)->startOfMonth();
+            } catch (\Exception $e) {
+                $contractStart = null;
+            }
+        }
+        if (!empty($tenantcontracts->end_date)) {
+            try {
+                $contractEnd = Carbon::parse($tenantcontracts->end_date)->startOfMonth();
+            } catch (\Exception $e) {
+                $contractEnd = null;
+            }
+        }
+
+        // Determine base contract month count (1-based). If base dates exist:
+        $baseMonthsCount = 0;
+        if ($contractStart && $contractEnd) {
+            $baseMonthsCount = $contractStart->diffInMonths($contractEnd) + 1; // e.g. 12 for 12 months
+        }
+
+        foreach ($contractRenewals as $renewal) {
+            // parse offsets as integers
+            $startIdx = (int) ($renewal->start_month ?: 0);
+            $endIdx   = (int) ($renewal->end_month ?: 0);
+
+            // skip invalid offsets
+            if ($startIdx <= 0 || $endIdx <= 0 || $endIdx < $startIdx) {
+                // invalid, skip this renewal
+                continue;
+            }
+
+            // If we have a valid contractStart, compute absolute months from that
+            if ($contractStart) {
+                // startIdx = 1 means contractStart, so addMonths(startIdx - 1)
+                $startDate = $contractStart->copy()->addMonths($startIdx - 1)->startOfMonth();
+                $endDate   = $contractStart->copy()->addMonths($endIdx - 1)->startOfMonth();
+            } else {
+                // fallback: if no contractStart use contractEnd if present, else now()
+                $anchor = $contractEnd ?? Carbon::now()->startOfMonth();
+                // Here we treat startIdx as offset from the anchor; you can tweak this behavior
+                $startDate = $anchor->copy()->addMonths($startIdx - 1)->startOfMonth();
+                $endDate   = $anchor->copy()->addMonths($endIdx - 1)->startOfMonth();
+            }
+
+            // Ensure endDate is not before startDate
+            if ($endDate->lessThan($startDate)) {
+                $endDate = $startDate->copy();
+            }
+
+            // If renewal starts within base months (overlap), optionally shift it to begin after base end:
+            // (comment out if you want overlapping behavior)
+            if ($baseMonthsCount > 0 && $startIdx <= $baseMonthsCount) {
+                // move start to first month after base contract if that's what you want:
+                $startDate = $contractStart->copy()->addMonths($baseMonthsCount)->startOfMonth();
+                // adjust endDate to maintain same length (optional), or use provided endIdx:
+                $endDate = $contractStart->copy()->addMonths($endIdx - 1)->startOfMonth();
+                if ($endDate->lessThan($startDate)) {
+                    $endDate = $startDate->copy();
+                }
+            }
+
+            // Now add each month in the renewal period
+            try {
+                $renewalPeriod = CarbonPeriod::create($startDate, '1 month', $endDate);
+
+                foreach ($renewalPeriod as $m) {
+                    $periods->push([
+                        'month_label' => $m->format('F Y'),
+                        'ym' => $m->format('Y-m'),
+                        'rent' => (float) (($tenantcontracts->standard_rent ?? 0) + ($renewal->amount_increase ?? 0)),
+                        'security' => 0.0,
+                        'type' => 'renewal',
+                        'source' => [
+                            'renewal_id' => $renewal->id,
+                            'amount_increase' => (float) ($renewal->amount_increase ?? 0),
+                            'start_idx' => $startIdx,
+                            'end_idx' => $endIdx,
+                        ],
+                    ]);
+                }
+
+                // shift contractEnd forward so subsequent renewals treat the anchor correctly
+                $contractEnd = $endDate->copy();
+            } catch (\Exception $e) {
+                // skip invalid periods silently (or log)
+            }
+
+        }
+		
+		$paymentStatuses = DB::table('tenant_payment_statuses')
+            ->where('tenant_id', $tenant->id)
+            ->where('property_id', $tenantcontracts->property_id ?? 0)
+            ->pluck('status', 'month');
+
+        // Optionally remove duplicate months (keep first occurrence)
+		$periods = $periods->map(function ($period) use ($paymentStatuses) {
+            $period['status'] = $paymentStatuses[$period['ym']] ?? 'pending';
+            return $period;
+        });
+       
+        $citiesdata = DB::table('cities')->where('id',$tenant->city)->first();
+        $statesdata = DB::table('states')->where('id',$tenant->state)->first();
+
+        $propertyname = DB::table('properties')->where('id',$tenant->property_id)->first();
+
+        $propertyunit = DB::table('property_units')->where('property_id',$tenant->property_id)->first();
+
+        $senddocdata = DB::table('owner-send-doc')->where('tenant_id',$tenant->id)->where('created_by',Auth::user()->id)->get();
+
+        return view('tenant.show', compact('tenant', 'contract', 'periods', 'contractRenewals', 'propertyAmenitiesTotal','tenantcontracts','citiesdata','statesdata','propertyunit','propertyname','senddocdata'));
+    }
+	
+	public function updatePaymentStatus(Request $request)
+    {
+        $validated = $request->validate([
+            'tenant_id' => 'required|integer',
+            'property_id' => 'required|integer',
+            'month' => 'required|string',
+            'status' => 'required|string|in:pending,paid',
+        ]);
+
+        TenantPaymentStatus::updateOrCreate(
+            [
+                'tenant_id' => $validated['tenant_id'],
+                'property_id' => $validated['property_id'],
+                'month' => $validated['month'],
+            ],
+            ['status' => $validated['status']]
+        );
+
+        return response()->json(['success' => true]);
     }
 
 
@@ -455,31 +679,42 @@ class TenantController extends Controller
 
     public function tenant_contractsupdate(Request $request, $id = null)
     {
-        // dd($request->all());
         // 🔹 Validate input
+        if (empty($request->property_id)) {
+            $tenant = DB::table('tenants')->where('id', $request->tenant_id)->first();
+            if ($tenant && !empty($tenant->property_id)) {
+                $request->merge(['property_id' => $tenant->property_id]);
+            }
+        }
         $validated = $request->validate([
             'tenant_id' => 'required|exists:tenants,id',
             'property_id' => 'required|integer',
             'owner_id' => 'required|integer',
-            'start_date' => 'nullable|string',  // We'll store as m-d-Y
+            'start_date' => 'nullable|string',
             'end_date' => 'nullable|string',
             'standard_rent' => 'required|numeric',
             'late_fee' => 'nullable|numeric',
             'security_deposit' => 'nullable|numeric',
             'notice_period_months' => 'nullable|integer',
             'contract_renewal_month' => 'nullable|integer',
-            'contract_renewal_amount' => 'nullable|numeric',
+            'contract_renewal_amount' => 'nullable|array',
+            'contract_renewal_amount.*' => 'nullable|numeric',
+            'invoice_due_date' => 'nullable|integer|min:1|max:31',
         ]);
-
-        // 🔹 Fill default end_date if empty using start_date + contract_renewal_month
-        if (empty($request->end_date) && !empty($validated['contract_renewal_month'])) {
+        
+        if (!empty($validated['start_date'])) {
             try {
-                $endDate = Carbon::createFromFormat('m-d-Y', $validated['start_date'])
-                    ->addMonths((int) $validated['contract_renewal_month'])
-                    ->format('m-d-Y');
-                $validated['end_date'] = $endDate;
+                $validated['start_date'] = Carbon::parse($validated['start_date'])->format('Y-m-d');
             } catch (\Exception $e) {
-                // return back()->withErrors(['start_date' => 'Invalid start date'])->withInput();
+                $validated['start_date'] = null;
+            }
+        }
+
+        if (!empty($validated['end_date'])) {
+            try {
+                $validated['end_date'] = Carbon::parse($validated['end_date'])->format('Y-m-d');
+            } catch (\Exception $e) {
+                $validated['end_date'] = null;
             }
         }
 
@@ -494,9 +729,24 @@ class TenantController extends Controller
         if ($contract) {
             DB::table('tenant_contracts')
                 ->where('id', $contract->id)
-                ->update(array_merge($validated, ['updated_at' => now()]));
+                ->update([
+                    'tenant_id'             => $validated['tenant_id'],
+                    'property_id'           => $validated['property_id'],
+                    'owner_id'              => $validated['owner_id'],
+                    'start_date'            => $validated['start_date'] ?? null,
+                    'end_date'              => $validated['end_date'] ?? null,
+                    'standard_rent'         => $validated['standard_rent'] ?? 0,
+                    'late_fee'              => $validated['late_fee'] ?? null,
+                    'security_deposit'      => $validated['security_deposit'] ?? null,
+                    'notice_period_months'  => $validated['notice_period_months'] ?? null,                        
+                    'invoice_due_date'      => $validated['invoice_due_date'] ?? null,
+                    'updated_at'            => now(),
+                ]);
             $contractId = $contract->id;
         } else {
+            if (isset($validated['contract_renewal_amount']) && is_array($validated['contract_renewal_amount'])) {
+                unset($validated['contract_renewal_amount']);
+            }
             $contractId = DB::table('tenant_contracts')
                 ->insertGetId(array_merge($validated, ['created_at' => now(), 'updated_at' => now()]));
         }
@@ -511,6 +761,34 @@ class TenantController extends Controller
                 ->where('id', $contractId)
                 ->update(['contract_doc' => $filename]);
         }
+
+        ContractRenewal::where('tenant_contract_id', $contractId)->delete();
+
+        if (!empty($request->contract_renewal_amount)) {
+            foreach ($request->contract_renewal_amount as $index => $amount) {
+                ContractRenewal::create([
+                    'tenant_contract_id' => $contractId,
+                    'amount_increase' => $amount ?? 0,
+                    'start_month' => $request->start_months[$index] ?? null,
+                    'end_month' => $request->end_months[$index] ?? null,
+                ]);
+            }
+        }
+
+        LatePaymentRule::where('tenant_contract_id', $contractId)->delete();
+
+        if (!empty($request->tier)) {
+            foreach ($request->tier as $i => $tier) {
+                LatePaymentRule::create([
+                    'tenant_contract_id' => $contractId,
+                    'tier' => $tier,
+                    'grace_days' => $request->grace_days[$i] ?? null,
+                    'time' => $request->time[$i] ?? null,
+                    'amount' => $request->amount[$i] ?? null,
+                ]);
+            }
+        }
+
 
         // 🔹 Redirect to tenant page
         return redirect(url('tenant/' . $request->tenant_id))
@@ -557,7 +835,7 @@ class TenantController extends Controller
                 'city'    => 'required',
                 'zip_code'=> 'required',
                 'address' => 'required',
-                'property'=> 'required',
+                'property_id'=> 'required',
             ]
         );
 
@@ -615,8 +893,8 @@ class TenantController extends Controller
         $tenant->city    = $request->city;
         $tenant->zip_code= $request->zip_code;
         $tenant->address = $request->address;
-        $tenant->property= $request->property;
-        $tenant->unit    = $request->unit;
+        $tenant->property_id= $request->property_id;
+        $tenant->property_unit_id    = $request->unit;
         $tenant->lease_start_date = $request->lease_start_date;
         $tenant->lease_end_date   = $request->lease_end_date;
         $tenant->save();
@@ -753,4 +1031,70 @@ class TenantController extends Controller
             return redirect()->back()->with('error', __('Permission Denied!'));
         }
     }
+
+    public function sendNoticeMail(Request $request)
+    {
+        $tenant = DB::table('tenants')->where('id', $request->tenant_id)->first();
+        $template = DB::table('manage-template')->where('id', $request->template_id)->first();
+
+        if (!$tenant || !$template) {
+            return back()->with('error', 'Invalid tenant or template.');
+        }
+
+        Mail::send([], [], function ($message) use ($tenant, $template) {
+            $message->to($tenant->email)
+                ->subject($template->subject)
+                ->setBody($template->body, 'text/html');
+        });
+
+        return back()->with('success', 'Notice email sent successfully.');
+    }
+
+
+
+     public function owner_generate_notice(Request $request,$id,$tenantid)
+    {
+        
+        $checknotice = DB::table('managen-notice')->where('id',$id)->first();
+
+        if(!empty($checknotice)){
+          
+          $noticedatainsert = [
+            'notice_id' => $id,
+            'tenant_id' => $tenantid,
+            'name' => $checknotice->name,
+            'subject' => $checknotice->subject,
+            'body' => $checknotice->body,
+            'created_by' => Auth::user()->id,
+          ];
+
+          DB::table('owner-generatenotice')->insert($noticedatainsert);
+          return redirect('tenant/'.$tenantid)->with('success', __('Generate Notice successfully.'));
+        }else{
+           return redirect('tenant/'.$tenantid)->with('error', __('Generate Notice Id Not Match.'));
+        }
+
+    }
+   
+
+
+     public function owner_send_doc(Request $request,$userid,$tenantid)
+    {
+          $senddocinsert = [
+            'user_id' => $userid,
+            'tenant_id' => $tenantid,
+            'document' => $request->document,
+            'subject' => $request->subject,
+            'description' => $request->description,
+            'created_by' => Auth::user()->id,
+          ];
+
+          DB::table('owner-send-doc')->insert($senddocinsert);
+          return redirect('tenant/'.$tenantid)->with('success', __('Send Document successfully.'));
+
+    }
+
+
+
+
 }

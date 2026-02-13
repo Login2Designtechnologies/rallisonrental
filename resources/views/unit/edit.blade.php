@@ -5,7 +5,7 @@
 
         <!-- Property Select -->
         <div class="form-group  col-md-6">
-            {{ Form::label('property', __('Property'), ['class' => 'form-label']) }}
+            {{ Form::label('property', __('Property'), ['class' => 'form-label']) }} <span class="text-danger">*</span>
             {{ Form::select(
                 'property_id',
                 $property,     // array or collection: [id => name]
@@ -21,16 +21,16 @@
         </div>
             
         <div class="form-group  col-md-6">
-            {{Form::label('name',__('Name'),array('class'=>'form-label'))}}
-            {{Form::text('name',null,array('class'=>'form-control','placeholder'=>__('Enter unit name')))}}
+            {{Form::label('name',__('Name'),array('class'=>'form-label'))}} <span class="text-danger">*</span>
+            {{Form::text('name',null,array('class'=>'form-control','placeholder'=>__('Enter unit name'), 'required' => true))}}
         </div>
 
         <div class="form-group col-md-6">
-            {{ Form::label('status', __('Status'), ['class' => 'form-label']) }}
+            {{ Form::label('status', __('Status'), ['class' => 'form-label']) }} <span class="text-danger">*</span>
             {{ Form::select('status', [
                 '1' => 'Active',
                 '0' => 'Inactive'
-            ], $unit->status ?? null, ['class' => 'form-control', 'placeholder' => __('Select Status')]) }}
+            ], $unit->status ?? null, ['class' => 'form-control', 'placeholder' => __('Select Status'),'required' => true]) }}
         </div>
 
         {{--<!-- <div class="form-group  col-md-4">
@@ -100,7 +100,7 @@
     </div>
 </div>
 <div class="modal-footer">
-    {{Form::submit(__('Update'),array('class'=>'btn btn-secondary btn-rounded'))}}
+    {{Form::submit(__('Update'),array('class'=>'btn btn-secondary btn-rounded text-white'))}}
 </div>
 {{ Form::close() }}
 <script>

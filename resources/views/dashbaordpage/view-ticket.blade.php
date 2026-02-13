@@ -63,7 +63,7 @@
         </form>
 
         <!-- Example previous reply -->
-        <div class="reply-card d-flex gap-3">
+        <div class="reply-card d-flex gap-3 mt-2">
             <img src="https://placehold.co/50x50" class="rounded-circle" alt="avatar" />
             <div>
                 <div class="d-flex align-items-center mb-1">

@@ -1,114 +1,109 @@
-<div id="monthNav" class="d-flex justify-content-center align-items-center mb-3">
-  <span id="prevMonth" class="month-arrow fs-4 me-3" style="cursor:pointer">←</span>
-  <span id="monthLabel" class="fw-bold text-dark"></span>
-  <span id="nextMonth" class="month-arrow fs-4 ms-3" style="cursor:pointer">→</span>
-</div>
+@php
+  use Carbon\Carbon;
 
+  $currentMonth = Carbon::now()->format('Y-m');
+  $previousMonth = Carbon::now()->subMonth()->format('Y-m');
+  $isEditableMonth = in_array($invoiceMonth, [$currentMonth, $previousMonth]);
+@endphp
 <!-- Company Details -->
 <div id="companyDetails" property_id="{{ $property->id }}">
   <input type="hidden" id="invoiceMonth" value="{{ $invoiceMonth ?? date('Y-m') }}">
-
   @php
-    $utilitiescatg = DB::table('utilities_catg')->where('property_id',$property->id)->where('user_id',auth()->id())->where('status','1')->get();
+    function getUtilityAmount($amounts, $utilityId, $category = '') {
+        $key = ($utilityId ?: 'null') . '|' . ($category ?: '');
+        return isset($amounts[$key]) ? number_format($amounts[$key]->total_amount, 2) : '0.00';
+    }
   @endphp
+  @php
+    $utilitiescatg = DB::table('utilities_main as m')
+        ->join('utilities_sub as s', 'm.id', '=', 's.utility_main_id')
+        ->where('m.property_id', $property->id)
+        ->where('m.user_id', auth()->id())
+        ->where('m.status', '1')
+        ->where('s.status', '1')
+        ->select('m.id as main_id', 'm.name as main_name', 's.id as sub_id', 's.sub_category_name')
+        ->get()
+        ->groupBy('main_name');
+  @endphp
+  @forelse($utilitiescatg as $utilityName => $subcategories)
+    <div class="card table-custom-card mb-4">
+      <div class="card-body">
+        <div class="d-flex justify-content-between mb-3">
+          <h4 class="mt-2">{{ $utilityName }}</h4>
 
-  @forelse($utilitiescatg as $u)
+          @php
+            $mainId = optional($subcategories->first())->main_id;
+          @endphp
+          <div class="d-flex">
+            <div class="me-2">
+              <label class="form-label mb-1">Start Date</label>
+              <!-- <input type="date" class="form-control start-date" data-main-id="{{ $mainId }}" value="{{ $uploadedBills[$mainId]->start_date ?? now()->format('m-d-Y') }}"> -->
+              <input type="date" class="form-control start-date" data-main-id="{{ $mainId }}" value="{{ optional($uploadedBills[$mainId] ?? null)->start_date ? \Carbon\Carbon::parse($uploadedBills[$mainId]->start_date)->format('Y-m-d') : now()->format('Y-m-d') }}">
+            </div>
+            <div>
+              <label class="form-label mb-1">End Date</label>
+              <!-- <input type="date" class="form-control end-date" data-main-id="{{ $mainId }}" value="{{ $uploadedBills[$mainId]->end_date ?? now()->format('m-d-Y') }}"> -->
+              <input type="date" class="form-control end-date" data-main-id="{{ $mainId }}" value="{{ optional($uploadedBills[$mainId] ?? null)->end_date ? \Carbon\Carbon::parse($uploadedBills[$mainId]->end_date)->format('Y-m-d') : now()->format('Y-m-d') }}">
+            </div>
+          </div>
+        </div>
 
-    <!-- Start Date & End Date Inputs -->
-   <!-- Start Date & End Date Inputs -->
-<div class="card table-custom-card">
-  <div class="card-body">
-    <div class="d-flex gap-2 mb-3 justify-content-between">
-      <!-- Company Name -->
-      <h4 class="mt-4">{{ $u->name }}</h4>
-      <div class="d-flex">
-        <div class="me-2">
-        <label for="startDate" class="form-label mb-1">Start Date</label>
-        <input 
-            class="form-control custom-datepicker datepicker-input" 
-            placeholder="Start Date" 
-            type="text" 
-            style="max-width:150px;"
-            value="{{ \Carbon\Carbon::parse($u->created_at)->format('m-d-Y') }}">
-      </div>
-          
-      <div>
-        <label for="endDate" class="form-label mb-1">End Date</label>
-        <input 
-            class="form-control custom-datepicker datepicker-input" 
-            placeholder="End Date" 
-            type="text" 
-            style="max-width:150px;"
-            value="{{ \Carbon\Carbon::parse($u->created_at)->format('m-d-Y') }}">
-      </div>
-      </div>
-    </div>
-
-        <!-- Categories Table -->
         <div class="table-responsive">
           <table class="table table-bordered custom-bg-table">
             <thead>
               <tr>
                 <th>Category</th>
                 <th>Price ($)</th>
-                @if($property)
-                   @php
-                    $tenantsdata = DB::table('tenants')->where('property',$property->id)->where('parent_id',auth()->id())->first();
-                    $tenantsuserdata = DB::table('users')->where('id',$tenantsdata->user_id)->get();
-                  @endphp
-
-                  @foreach($tenantsuserdata as $renter)
-                    <th>{{ $renter->first_name }} {{ $renter->last_name }} (%)</th>
-                  @endforeach
-                @endif
-                <th>Total (%)</th>
+                @php
+                  $tenantsuserdata = \App\Models\Tenant::with('user')
+                    ->where('property_id', $property->id)
+                    ->where('parent_id', auth()->id())
+                    ->get();
+                @endphp
+                @foreach($tenantsuserdata as $tenant)
+                  <th>{{ $tenant->user->first_name }} {{ $tenant->user->last_name }} ($)</th>
+                @endforeach
+                <th>Total ($)</th>
               </tr>
             </thead>
 
             <tbody>
-              @forelse($utilitiescatg as $c)
-                @if($c->status == 1)
-                  <tr data-utility_id="{{ $u->id }}">
-                    <td><span>{{ trim($c->sub_category_name) }}</span></td>
-
-                    <!-- Price with $ -->
+              @foreach($subcategories as $sub)
+                @php
+                  $key = ($sub->sub_id ?: 'null').'|'.($sub->sub_category_name ?: '');
+                  $existing = isset($amounts) && $amounts->has($key)
+                      ? number_format((float)$amounts->get($key)->total_amount, 2)
+                      : '0.00';
+                @endphp
+                <tr data-utility_id="{{ $sub->sub_id }}">
+                  <td>{{ $sub->sub_category_name }}</td>
+                  @php
+                    $savedPrice = isset($utilityPrices[$sub->sub_id]) ? number_format($utilityPrices[$sub->sub_id], 2) : $existing;
+                  @endphp
+                  <td contenteditable="true" class="price-cell">${{ $savedPrice }}</td>
+                  @foreach($tenantsuserdata as $tenant)
                     @php
-                      $key = ($u->id ?: 'null').'|'.($c->name ?: '');
-                      $existing = isset($amounts) && $amounts->has($key) ? number_format((float)$amounts->get($key)->total_amount, 2) : '0.00';
+                      $pct = isset($tenantShares[$sub->sub_id][$tenant->id])
+                          ? number_format($tenantShares[$sub->sub_id][$tenant->id], 0)
+                          : 0;
                     @endphp
-                    <td contenteditable="true" class="price-cell"><span>${{ $existing }}</span></td>
-                    @php
-                        $tenantsdata = DB::table('tenants')->where('property',$property->id)->where('parent_id',auth()->id())->first();
-                        $tenantsuserdata = DB::table('users')->where('id',$tenantsdata->user_id)->get();
-                    @endphp
-                    @if(!empty($property))
-                      @foreach($tenantsuserdata as $renter)
-                        <td contenteditable="true"
-                            data-renter-id="{{ $renter->id }}"
-                            class="renter-cell-{{ $renter->id }}"><span>0%</span></td>
-                      @endforeach
-                    @endif
-                    <td class="cell-red total-row-cell"><span>0%</span></td>
-                  </tr>
-                @endif
-              @empty
-                <tr>
-                  <td colspan="{{ 2 + ($property->tenants->count() ?: 0) }}" class="text-muted">No categories found.</td>
+                    <td contenteditable="true"
+                        data-renter-id="{{ $tenant->id }}"
+                        class="renter-cell-{{ $tenant->id }}">
+                        {{ $pct }}$
+                    </td>
+                  @endforeach
+                  <td class="cell-red total-row-cell"></td>
                 </tr>
-              @endforelse
-              <!-- Totals row -->
+              @endforeach
+
               <tr class="fw-bold bg-light">
                 <td>Total</td>
-                <td class="column-total">$0</td>
-                @if (!empty($property))
-                  @foreach($tenantsuserdata as $renter)
-                    <td
-                        data-renter-is="{{ $renter->id }}"
-                        class="renter-total-cell-{{ $renter->id }}">0%</td>
-                  @endforeach
-                @endif
-
-                <td class="table-total-cell">0%</td>
+                <td class="column-total">$0.00</td>
+                @foreach($tenantsuserdata as $tenant)
+                  <td class="renter-total-cell-{{ $tenant->id }}">0$</td>
+                @endforeach
+                <td class="table-total-cell"></td>
               </tr>
             </tbody>
           </table>
@@ -116,58 +111,72 @@
 
 
       <div class="row">
+        @php
+          $billRecord = $uploadedBills[$sub->main_id] ?? null;
+          $billFilePath = $billRecord ? $billRecord->file_path : null;
+          $hasBill = !empty($billFilePath);
+        @endphp
         <div class="col-md-6">
-            <div id="upload-section">
-              <input type="file" id="billUpload" hidden>
-              <label for="billUpload" class="btn btn-info">Upload Bill</label>
-            </div>
+            @if($isEditableMonth)
+              <div id="upload-section-{{ $sub->main_id }}" class="{{ $hasBill ? 'd-none' : '' }}">
+                <input type="file" id="billUpload-{{ $sub->main_id }}" class="billUpload d-none"
+                      data-utility-id="{{ $sub->main_id }}" accept=".pdf,.jpg,.jpeg,.png">
+                <label for="billUpload-{{ $sub->main_id }}" class="btn btn-info">Upload Bill</label>
+              </div>
+            @endif
 
             <!-- After upload -->
-            <div id="after-upload" class="mt-3 d-none">
-              <button class="btn btn-success me-2">Upload Bill</button>
-              <button class="btn btn-secondary" id="previousBtn">Preview </button>
+            <div id="after-upload-{{ $sub->main_id }}" class="mt-3 {{ !$hasBill ? 'd-none' : '' }}">
+              @if($hasBill)
+                <button type="button" class="btn btn-info btn-sm btn-preview" data-utility-id="{{ $sub->main_id }}" data-file-path="{{ $billFilePath }}">
+                  Preview Bill
+                </button>
+                @if($isEditableMonth)
+                  <button type="button" class="btn btn-warning btn-sm btn-modify mt-1" data-utility-id="{{ $sub->main_id }}">
+                    Modify Bill
+                  </button>
+                @endif
+              @endif
             </div>
-        
-            <!-- Upload Bill Button -->
-            <!-- <form id="uploadBillForm-{{ $u->id }}" enctype="multipart/form-data" class="d-flex gap-2">
-                <input type="file" name="bill_file" id="billFileInput-{{ $u->id }}" class="form-control" style="max-width:150px;">
-                <button type="button" class="btn btn-info" onclick="previewBill('{{ $u->id }}')">Upload / Preview Bill</button>
-            </form> -->
         </div>
         <div class="col-md-6">
           <div class="text-end">
-            <button class="btn btn-primary toggle-edit-btn"
-                    data-utility-id="{{ $u->id }}">
-                {{ (isset($amounts) && $utilitiescatg->filter(function($cat) use ($u, $amounts) { $k = ($u->id ?: 'null').'|'.($cat->name ?: ''); return $amounts->has($k) && (float)$amounts->get($k)->total_amount > 0; })->count()) ? 'EDIT / UPDATE' : 'SAVE' }}
-            </button>
+            
+              @php                  
+                  $key = ($sub->sub_id ?: 'null').'|'.($sub->sub_category_name ?: '');
+                  $hasAmount = isset($amounts) && $amounts->has($key) && (float)$amounts->get($key)->total_amount > 0;
+                  $initialMode = $hasAmount ? 'edit' : 'save';
+              @endphp
+
+              <!-- <button class="btn btn-primary utility-toggle-btn"
+                    data-utility-id="{{ $sub->sub_id }}"
+                    data-mode="{{ $initialMode }}">
+              {{ $initialMode === 'save' ? 'SAVE' : 'EDIT / UPDATE' }}
+            </button> -->
+            @if($isEditableMonth)
+              <button class="btn btn-primary utility-toggle-btn" data-mode="save">
+                SAVE
+              </button>
+            @endif
           </div>
         </div>
       </div>
-  </div>
-</div>
-
-   
-</div>
-
-<!-- Bill Preview -->
-<div id="billPreview-{{ $u->id }}" class="mt-2"></div>
-
-
+    </div>
   @empty
-    <p class="text-muted">No utilities available for this property.</p>
+    <p class="text-muted">No utilities found.</p>
   @endforelse
 </div>
 
  
 <!-- Grand Total Table -->
 <div id="grandTotalTable" class="mt-4">
-  <table class="table table-bordered table-striped mt-3 custom-bg-table">
+  <table class="table table-bordered table-striped mt-3 grand-total-table">
     <thead>
       <tr>
         <th>Grand Total Price ($)</th>
         @if (!empty($property))
-          @foreach($tenantsuserdata as $renter)
-            <th>{{ $renter->first_name }} {{ $renter->last_name }} Total %</th>
+          @foreach($tenantsuserdata as $renter)            
+            <th>{{ $renter->user->first_name }} {{ $renter->user->last_name }} Total ($)</th>
           @endforeach
         @endif
       </tr>
@@ -177,7 +186,7 @@
         <td class="grand-price-cell grand_total">$0.00</td>
         @if (!empty($property))
           @foreach($tenantsuserdata as $renter)
-            <td class="grand-renter-total-{{ $renter->id }}">0%</td>
+            <td class="grand-renter-total-{{ $renter->id }}">0$</td>
           @endforeach
         @endif
       </tr>
@@ -185,313 +194,786 @@
   </table>
 </div>
 
-<div id="generateInvoiceBtnContainer" class="mt-3 d-flex justify-content-center gap-2" style="display:none;">
-    <input type="date" name="due_date" value="{{ date('Y-m-d') }}" class="form-control" style="max-width:150px;">
-    <button id="generateInvoiceBtn" class="btn btn-success">
-        Generate Invoice
+<!-- <input type="date" name="due_date" value="{{ date('Y-m-d') }}" class="form-control" style="max-width:150px;" {{ $existingInvoice ? 'disabled' : '' }}> -->
+@if($isEditableMonth)
+  <div id="generateInvoiceBtnContainer" class="mt-3 d-flex justify-content-center gap-2 {{ $existingInvoice ? 'disabled' : '' }}" style="display:none;">
+    <button id="generateInvoiceBtn" class="btn btn-success" {{ $existingInvoice ? 'disabled' : '' }}>
+      Generate Invoice
     </button>
+  </div>
+@endif
 </div>
 
-<!-- JS for Bill Preview -->
+<div class="modal fade" id="invoicePreviewModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title">Invoice Preview</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" id="invoicePreviewContent" style="max-height:80vh; overflow:auto;">
+        <!-- dynamic HTML will be injected here -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" id="confirmGenerateInvoice" class="btn btn-success">
+          Confirm & Send
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- 
+@if ($existingInvoice)
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      console.log("🟡 Existing invoice detected for {{ $invoiceMonth }} — locking UI");
+
+      // Disable inline editing
+      document.querySelectorAll("td[contenteditable]").forEach(td => {
+        td.setAttribute("contenteditable", "false");
+        td.classList.add("bg-light");
+      });
+
+      // Disable and hide Save/Edit buttons
+      document.querySelectorAll(".utility-toggle-btn").forEach(btn => {
+        btn.classList.add("d-none");
+        btn.disabled = true;
+      });
+
+      // Disable and hide upload sections
+      document.querySelectorAll("input[type='file']").forEach(inp => inp.disabled = true);
+      document.querySelectorAll("[id^='upload-section-']").forEach(div => div.classList.add("d-none"));
+
+      // Disable Generate Invoice
+      const genBtn = document.getElementById("generateInvoiceBtn");
+      const genContainer = document.getElementById("generateInvoiceBtnContainer");
+      if (genBtn) genBtn.disabled = true;
+      if (genContainer) genContainer.classList.add("disabled", "d-none");
+
+      // Add visual indicator
+      document.querySelectorAll(".card.table-custom-card h4").forEach(h4 => {
+        h4.classList.add("text-secondary");
+        h4.insertAdjacentHTML(
+          'beforeend',
+          ' <small class="text-muted">(Locked - Invoice Generated)</small>'
+        );
+      });
+    });
+  </script>
+@endif -->
+
+
+
 <script>
-function previewBill(utilityId) {
-    const fileInput = document.getElementById(`billFileInput-${utilityId}`);
-    const previewDiv = document.getElementById(`billPreview-${utilityId}`);
-    previewDiv.innerHTML = '';
+if (false) {
+// ===============================
+// 🧩 INLINE EDITING FIXED (Cursor + $ symbol only)
+// ===============================
 
-    if (fileInput.files && fileInput.files[0]) {
-        const file = fileInput.files[0];
-        const reader = new FileReader();
+function formatCellValue(cell, rawText, isTenant) {
+  const clean = rawText.replace(/[^\d.]/g, "");
+  const num = parseFloat(clean) || 0;
+  return isTenant ? `${num.toFixed(2)}$` : `$${num.toFixed(2)}`;
+}
 
-        reader.onload = function(e) {
-            if(file.type.startsWith('image/')) {
-                const img = document.createElement('img');
-                img.src = e.target.result;
-                img.style.maxWidth = '100%';
-                previewDiv.appendChild(img);
-            } else if(file.type === 'application/pdf') {
-                const iframe = document.createElement('iframe');
-                iframe.src = e.target.result;
-                iframe.style.width = '100%';
-                iframe.style.height = '300px';
-                previewDiv.appendChild(iframe);
-            } else {
-                const p = document.createElement('p');
-                p.textContent = 'File preview not supported';
-                previewDiv.appendChild(p);
-            }
-        }
+function restoreCursor(cell, position) {
+  const selection = window.getSelection();
+  if (!selection) return;
+  const range = document.createRange();
+  range.setStart(cell.firstChild || cell, Math.min(position, cell.textContent.length));
+  range.collapse(true);
+  selection.removeAllRanges();
+  selection.addRange(range);
+}
 
-        reader.readAsDataURL(file);
+function handleInlineEdit(ev) {
+  const cell = ev.target;
+  if (!cell.matches("td.price-cell, td[data-renter-id]")) return;
+
+  const isTenant = cell.hasAttribute("data-renter-id");
+
+  const selection = window.getSelection();
+  const range = selection.rangeCount ? selection.getRangeAt(0) : null;
+  const cursor = range ? range.startOffset : 0;
+
+  // Reformat value while typing
+  const formatted = formatCellValue(cell, cell.textContent, isTenant);
+  cell.textContent = formatted;
+
+  restoreCursor(cell, cursor);
+
+  // Update totals
+  const table = cell.closest("table.custom-bg-table");
+  if (table) recalcTable(table);
+}
+
+// Attach event safely
+if (!window.inlineHandlerBoundV2) {
+  document.addEventListener("input", handleInlineEdit);
+  window.inlineHandlerBoundV2 = true;
+}
+
+// ===============================
+// 🧮 ROW & GRAND TOTAL REWORKED
+// ===============================
+window.recalcTable = function (table) {
+  const rows = table.querySelectorAll("tbody tr[data-utility_id]");
+  const renterTotals = {};
+  let grandTotal = 0;
+
+  rows.forEach(row => {
+    const price = parseFloat((row.querySelector(".price-cell")?.textContent || "").replace(/[^\d.]/g, "")) || 0;
+    let rowTotal = 0;
+
+    row.querySelectorAll("td[data-renter-id]").forEach(td => {
+      const renterId = td.dataset.renterId;
+      const val = parseFloat(td.textContent.replace(/[^\d.]/g, "")) || 0;
+      renterTotals[renterId] = (renterTotals[renterId] || 0) + val;
+      rowTotal += val;
+    });
+
+    const totalCell = row.querySelector(".total-row-cell");
+    if (totalCell) {
+      totalCell.textContent = `$${rowTotal.toFixed(2)}`;
+      totalCell.classList.toggle("cell-green", Math.abs(price - rowTotal) < 0.01);
+      totalCell.classList.toggle("cell-red", Math.abs(price - rowTotal) >= 0.01);
     }
+
+    grandTotal += rowTotal;
+  });
+
+  // Update footer total row
+  const totalRow = table.querySelector("tr.fw-bold.bg-light");
+  if (totalRow) {
+    const colTotal = totalRow.querySelector(".column-total");
+    if (colTotal) colTotal.textContent = `$${grandTotal.toFixed(2)}`;
+
+    Object.entries(renterTotals).forEach(([rid, val]) => {
+      const cell = totalRow.querySelector(`.renter-total-cell-${rid} div:last-child`);
+      if (cell) cell.textContent = `${val.toFixed(2)}$`;
+    });
+
+    const lastTotal = totalRow.querySelector(".table-total-cell");
+    if (lastTotal) lastTotal.textContent = `$${grandTotal.toFixed(2)}`;
+  }
+
+  recalcGrandTotals();
+};
+
+window.recalcGrandTotals = function () {
+  const tables = document.querySelectorAll("table.custom-bg-table");
+  let overall = 0;
+  const renterGrand = {};
+
+  tables.forEach(table => {
+    table.querySelectorAll("tr[data-utility_id]").forEach(row => {
+      const total = parseFloat((row.querySelector(".total-row-cell")?.textContent || "").replace(/[^\d.]/g, "")) || 0;
+      overall += total;
+      row.querySelectorAll("td[data-renter-id]").forEach(td => {
+        const rid = td.dataset.renterId;
+        const val = parseFloat(td.textContent.replace(/[^\d.]/g, "")) || 0;
+        renterGrand[rid] = (renterGrand[rid] || 0) + val;
+      });
+    });
+  });
+
+  const grandTotalEl = document.querySelector(".grand_total");
+  if (grandTotalEl) grandTotalEl.textContent = `$${overall.toFixed(2)}`;
+
+  Object.entries(renterGrand).forEach(([rid, val]) => {
+    const cell = document.querySelector(`.grand-renter-total-${rid}`);
+    if (cell) cell.textContent = `${val.toFixed(2)}$`;
+  });
+};
+
+// Initialize on page load
+document.addEventListener("DOMContentLoaded", () => {
+  setTimeout(() => {
+    document.querySelectorAll("table.custom-bg-table").forEach((table) => {
+      recalcTable(table);
+    });
+    recalcGrandTotals();
+  }, 300);
+});
+}
+</script>
+
+<script>
+// ✅ Prevent re-attaching the same handler multiple times
+if (!window.utilityButtonHandlerBound) {
+  window.utilityButtonHandlerBound = true;
+
+  document.addEventListener("click", async function (e) {
+    const t = e.target.closest(".utility-toggle-btn");
+    if (!t) return;
+    e.preventDefault();
+
+    // ✅ Prevent multiple clicks while one save/edit is running
+    if (t.classList.contains("busy")) return;
+    t.classList.add("busy");
+
+    const mode = t.dataset.mode || "save";
+    const card = t.closest(".card");
+    if (!card) {
+      t.classList.remove("busy");
+      return;
+    }
+
+    const table = card.querySelector("table.custom-bg-table");
+    if (!table) {
+      t.classList.remove("busy");
+      return;
+    }
+
+    if (mode === "save") {
+      // 🧩 Collect data
+      const utilities = [];
+      table.querySelectorAll("tbody tr[data-utility_id]").forEach((row) => {
+        const utility_id = row.getAttribute("data-utility_id");
+        const price = parseFloat(
+          (row.querySelector(".price-cell")?.textContent || "").replace(/[^\d.]/g, "")
+        ) || 0;
+
+        const renters = {};
+        row.querySelectorAll("td[data-renter-id]").forEach((cell) => {
+          const rid = cell.getAttribute("data-renter-id");
+          const pct = parseFloat(cell.textContent.replace("$", "")) || 0;
+          renters[rid] = pct;
+        });
+
+        utilities.push({ utility_id, price, renters });
+      });
+
+      const invoiceMonth =
+        document.getElementById("invoiceMonth")?.value ||
+        new Date().toISOString().slice(0, 7);
+
+      try {
+        const response = await fetch("{{ route('utility-invoices.save-shares') }}", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRF-TOKEN": "{{ csrf_token() }}",
+          },
+          body: JSON.stringify({
+            property_id: "{{ $property->id }}",
+            invoice_month: invoiceMonth,
+            utilities,
+          }),
+        });
+
+        const data = await response.json();
+
+        if (response.ok && (data.status === true || data.status === "success")) {
+          toastrs(data.status, data.message, data.status);
+
+          // Lock editing
+          table.querySelectorAll('td[contenteditable="true"]').forEach((cell) => {
+            cell.setAttribute("contenteditable", "false");
+          });
+
+          t.dataset.mode = "edit";
+          t.textContent = "EDIT / UPDATE";
+        } else {
+          console.error("Save failed:", data);
+          toastrs("error", data.message || "Failed to save utilities.", "error");
+        }
+      } catch (err) {
+        console.error("Network error:", err);
+        toastrs("error", "Network error while saving.", "error");
+      } finally {
+        setTimeout(() => t.classList.remove("busy"), 500);
+      }
+    } else if (mode === "edit") {
+      // 🧩 Enable editing again
+      table.querySelectorAll("td.price-cell, td[data-renter-id]").forEach((cell) => {
+        cell.setAttribute("contenteditable", "true");
+      });
+      t.dataset.mode = "save";
+      t.textContent = "SAVE";
+      t.classList.remove("busy");
+    }
+  });
 }
 
 </script>
 <script>
-document.querySelectorAll('.toggle-edit-btn').forEach(btn => {
-    const utilityId = btn.dataset.utilityId;
-    const table = document.querySelector(`tr[data-utility_id="${utilityId}"]`)?.closest('table');
-    if (!table) return;
+/* 🧩 Improved: Prevent multiple triggers and handle cancel safely */
+if (!window.billUploadHandlerBound) {
+  window.billUploadHandlerBound = true;
 
-    // All editable cells in this table
-    const editableCells = table.querySelectorAll('td[contenteditable="true"]');
-    // All date inputs for this utility
-    const dateInputs = table.closest('div').querySelectorAll('input[type="text"]');
+  document.addEventListener('change', async function (e) {
+    const fileInput = e.target.closest('.billUpload');
+    if (!fileInput) return;
 
-    // Function to lock table
-    const lockTable = () => {
-        editableCells.forEach(cell => cell.setAttribute('contenteditable', 'false'));
-        dateInputs.forEach(input => input.setAttribute('readonly', true));
-    };
-
-    // Function to unlock table
-    const unlockTable = () => {
-        editableCells.forEach(cell => cell.setAttribute('contenteditable', 'true'));
-        dateInputs.forEach(input => input.removeAttribute('readonly'));
-    };
-
-    // On page load, lock table if already saved
-    if (btn.textContent.trim() === 'EDIT / UPDATE') {
-        lockTable();
+    // 🛑 Skip if no file selected (user canceled)
+    if (!fileInput.files || !fileInput.files.length) {
+      console.log('File selection canceled.');
+      return;
     }
 
-    btn.addEventListener('click', function() {
-        if (this.textContent.trim() === 'SAVE') {
-            // Save data logic here (AJAX or form submit)
-            lockTable(); // Lock cells
-            this.textContent = 'EDIT / UPDATE';
-            alert('Saved successfully!');
-        } else if (this.textContent.trim() === 'EDIT / UPDATE') {
-            // Unlock table for editing
-            unlockTable();
-            this.textContent = 'SAVE';
-        }
-    });
-});
+    // 🧩 Find main utility id
+    const card = fileInput.closest('.card.table-custom-card');
+    const mainId = card?.querySelector('.start-date')?.dataset.mainId;
+    if (!mainId) {
+      console.error('Main Utility ID not found for bill upload.');
+      return;
+    }
 
-</script>
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-    const toggleButtons = document.querySelectorAll('.toggle-edit-btn');
-    const generateInvoiceContainer = document.getElementById('generateInvoiceBtnContainer');
-    const generateInvoiceBtn = document.getElementById('generateInvoiceBtn');
+    // 🧠 Disable input temporarily to prevent double-trigger
+    fileInput.disabled = true;
 
-    // Check if Generate Invoice button should be visible
-    const updateGrandTotal = () => {
-        let grandPrice = 0;
-        const renterTotals = {};
-        document.querySelectorAll('table.custom-bg-table').forEach(table => {
-            // per table: use column-total if available else sum rows
-            const colTotal = table.querySelector('.column-total');
-            if (colTotal) {
-                grandPrice += parseFloat((colTotal.textContent || '').replace(/[^\d.\-]/g,'')) || 0;
-            } else {
-                table.querySelectorAll('tbody tr').forEach(row => {
-                    const priceCell = row.querySelector('.price-cell');
-                    if (priceCell) grandPrice += parseFloat((priceCell.textContent||'').replace(/[^\d.\-]/g,''))||0;
-                });
-            }
-            // accumulate renter totals from footer cells
-            table.querySelectorAll('td[class^="renter-total-cell-"]').forEach(cell => {
-                const m = cell.className.match(/renter-total-cell-(\d+)/);
-                if (!m) return;
-                const rid = m[1];
-                const val = parseFloat((cell.textContent||'').replace(/[^\d.\-]/g,''))||0;
-                renterTotals[rid] = (renterTotals[rid]||0) + val;
-            });
-        });
-        const grandCell = document.querySelector('.grand-price-cell.grand_total');
-        if (grandCell) grandCell.textContent = '$' + grandPrice.toFixed(2);
-        Object.keys(renterTotals).forEach(rid => {
-            const cell = document.querySelector('.grand-renter-total-' + rid);
-            if (cell) cell.textContent = renterTotals[rid].toFixed(2);
-        });
-    };
+    const propertyId = "{{ $property->id }}";
+    const invoiceMonth = document.getElementById("invoiceMonth")?.value || new Date().toISOString().slice(0, 7);
 
-    const checkInvoiceReady = () => {
-        let allSaved = true;
-        let allBillsUploaded = true;
-        let allDataFilled = true;
+    const formData = new FormData();
+    formData.append('bill_file', fileInput.files[0]);
+    formData.append('property_id', propertyId);
+    formData.append('utility_id', mainId); // ✅ main_id for upload
+    formData.append('invoice_month', invoiceMonth);
 
-        toggleButtons.forEach(btn => {
-            const utilityId = btn.dataset.utilityId;
-            const table = document.querySelector(`tr[data-utility_id="${utilityId}"]`)?.closest('table');
-            if (!table) return;
+    try {
+      const response = await fetch("{{ route('utility-invoices.upload-bill') }}", {
+        method: 'POST',
+        headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+        body: formData
+      });
 
-            // Table must be saved
-            if (btn.textContent.trim() === 'SAVE') allSaved = false;
+      const data = await response.json();
 
-            // Check table data: require price > 0 only
-            table.querySelectorAll('tbody tr').forEach(row => {
-                const priceCell = row.querySelector('.price-cell');
-                if (!priceCell) return;
-                if ((parseFloat(priceCell.textContent.replace('$','')) || 0) <= 0) allDataFilled = false;
-            });
-        });
+      if (response.ok && data.status === 'success') {
+        toastrs('success', data.message, 'success');
 
-        // Check all file uploads
-        document.querySelectorAll('input[type="file"]').forEach(fileInput => {
-            if (!fileInput.dataset.uploaded || fileInput.dataset.uploaded !== "true") allBillsUploaded = false;
-        });
+        // ✅ Update UI for this main_id only
+        const afterUploadDiv = document.getElementById(`after-upload-${mainId}`);
+        const uploadSection = document.getElementById(`upload-section-${mainId}`);
 
-        // Update grand total; show button only if all conditions met (saved + uploads + prices filled)
-        updateGrandTotal();
-        generateInvoiceContainer.style.display = (allSaved && allBillsUploaded && allDataFilled) ? 'flex' : 'none';
-    };
-
-    // Initialize Save/Edit buttons
-    toggleButtons.forEach(btn => {
-        const table = document.querySelector(`tr[data-utility_id="${btn.dataset.utilityId}"]`)?.closest('table');
-        if(!table) return;
-
-        // Lock saved tables
-        if(btn.textContent.trim() === 'EDIT / UPDATE'){
-            table.querySelectorAll('td[contenteditable="true"]').forEach(cell => cell.setAttribute('contenteditable','false'));
+        if (afterUploadDiv) {
+          afterUploadDiv.classList.remove('d-none');
+          afterUploadDiv.innerHTML = `
+            <button type="button" class="btn btn-info btn-sm btn-preview"
+                    data-utility-id="${mainId}"
+                    data-file-path="${data.path}">
+              Preview Bill
+            </button>
+            <button type="button" class="btn btn-warning btn-sm btn-modify mt-1"
+                    data-utility-id="${mainId}">
+              Modify Bill
+            </button>`;
         }
 
-        btn.addEventListener('click', function(){
-            if(this.textContent.trim() === 'SAVE'){
-                table.querySelectorAll('td[contenteditable="true"]').forEach(cell => cell.setAttribute('contenteditable','false'));
-                this.textContent = 'EDIT / UPDATE';
-                alert('Saved successfully!');
-            } else {
-                table.querySelectorAll('td[contenteditable="true"]').forEach(cell => cell.setAttribute('contenteditable','true'));
-                this.textContent = 'SAVE';
-            }
-            checkInvoiceReady();
-        });
-    });
+        if (uploadSection) uploadSection.classList.add('d-none');
 
-    // Handle file uploads
-    document.querySelectorAll('input[type="file"]').forEach(fileInput => {
-        fileInput.addEventListener('change', () => {
-            if(fileInput.files && fileInput.files[0]){
-                fileInput.dataset.uploaded = "true";
-            }
-            checkInvoiceReady();
-        });
-    });
+        document.dispatchEvent(new Event("billUploadSuccess"));
+      } else {
+        toastrs('error', data.message || 'Failed to upload bill.', 'error');
+      }
+    } catch (err) {
+      console.error('Bill upload failed:', err);
+      toastrs('error', 'Network error while uploading bill.', 'error');
+    } finally {
+      // ✅ Always clear file input and re-enable
+      fileInput.value = "";
+      fileInput.disabled = false;
+    }
+  });
 
-    // Auto-update grand total on price edits
-    document.addEventListener('input', (e) => {
-        if (e.target && e.target.closest('.price-cell')) {
-            updateGrandTotal();
-        }
-    });
+  // 🧾 Preview Bill Logic
+  document.addEventListener('click', (e) => {
+    const previewBtn = e.target.closest('.btn-preview');
+    if (!previewBtn) return;
 
-    // Generate Invoice
-    generateInvoiceBtn.addEventListener('click', () => {
-        if(!confirm("Are you sure you want to generate the invoice? This action cannot be undone.")) return;
+    const filePath = previewBtn.dataset.filePath;
+    if (filePath) {
+      window.open(`/${filePath}`, '_blank');
+    } else {
+      alert('Bill file not found.');
+    }
+  });
 
-        const dueDate = document.querySelector('input[name="due_date"]').value;
-        const monthMap = {January:'01',February:'02',March:'03',April:'04',May:'05',June:'06',July:'07',August:'08',September:'09',October:'10',November:'11',December:'12'};
-        const label = (document.getElementById('monthLabel')?.textContent || '').trim();
-        const parts = label.split(/\s+/);
-        const invoiceMonth = (parts.length === 2 && monthMap[parts[0]]) ? `${parts[1]}-${monthMap[parts[0]]}` : new Date().toISOString().slice(0,7);
+  // 📝 Modify Bill Logic
+  document.addEventListener('click', (e) => {
+    const modifyBtn = e.target.closest('.btn-modify');
+    if (!modifyBtn) return;
 
-        // Build invoices payload from tables
-        const invoicesMap = {};
-        document.querySelectorAll('tr[data-utility_id]').forEach(row => {
-            const utilityId = parseInt(row.getAttribute('data-utility_id')) || null;
-            const table = row.closest('table');
-            const price = parseFloat((row.querySelector('.price-cell')?.textContent || '').replace('$','')) || 0;
-            const category = row.querySelector('td:first-child')?.textContent.trim() || '';
-            const dateInputs = table.closest('div').querySelectorAll('input[type="text"]');
-            const startDate = dateInputs[0]?.value || null;
-            const endDate = dateInputs[1]?.value || null;
-
-            row.querySelectorAll('td[class^="renter-cell-"]').forEach(cell => {
-                const renterId = parseInt(cell.getAttribute('data-renter-id'));
-                const pct = parseFloat((cell.textContent || '').replace('%','')) || 0;
-                if (!renterId || pct <= 0) return;
-                if(!invoicesMap[renterId]){
-                    invoicesMap[renterId] = { tenant_id: renterId, amount: 0, details: [] };
-                }
-                const share = +(price * (pct/100)).toFixed(2);
-                invoicesMap[renterId].amount += share;
-                invoicesMap[renterId].details.push({
-                    property_utility_id: utilityId,
-                    category: category,
-                    amount: share,
-                    start_date: startDate,
-                    end_date: endDate
-                });
-            });
-        });
-
-        const payload = {
-            property_id: '{{ $property->id }}',
-            invoice_month: invoiceMonth,
-            due_date: dueDate,
-            invoices: Object.values(invoicesMap)
-        };
-
-        fetch(`/utility-invoices/generate`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-            },
-            body: JSON.stringify(payload)
-        })
-        .then(async (res) => {
-            let data;
-            try { data = await res.json(); } catch(e) { data = { ok:false, message: 'Invalid server response' }; }
-            if (res.ok && data && data.ok){
-                alert("Invoice has been generated and sent. No further changes allowed.");
-
-                // Lock all tables and buttons
-                toggleButtons.forEach(btn => {
-                    const table = document.querySelector(`tr[data-utility_id="${btn.dataset.utilityId}"]`)?.closest('table');
-                    if(!table) return;
-                    table.querySelectorAll('td[contenteditable="true"]').forEach(cell => cell.setAttribute('contenteditable','false'));
-                    btn.disabled = true;
-                });
-
-                // Disable file uploads
-                document.querySelectorAll('input[type="file"]').forEach(fileInput => fileInput.disabled = true);
-
-                // Disable Generate Invoice button
-                generateInvoiceBtn.disabled = true;
-            } else {
-                const errors = (data && data.errors) ? JSON.stringify(data.errors) : '';
-                console.error('Generate invoice error:', data);
-                alert((data && data.message) ? data.message : 'Failed to create/update invoices. Check console.');
-            }
-        })
-        .catch(err => {
-            console.error('Network error generating invoice:', err);
-            alert("Invoice generation error: " + err.message);
-        });
-    });
-
-    // Initial check
-    checkInvoiceReady();
-});
+    const utilityId = modifyBtn.dataset.utilityId;
+    const uploadSection = document.getElementById(`upload-section-${utilityId}`);
+    if (uploadSection) {
+      // Don’t show the section visually — just trigger the hidden input
+      const fileInput = uploadSection.querySelector('input[type="file"]');
+      if (fileInput) {
+        fileInput.click();
+      }
+    }
+  });
+}
 </script>
 
 
 <script>
-    const billUpload = document.getElementById("billUpload");
-    const uploadSection = document.getElementById("upload-section");
-    const afterUpload = document.getElementById("after-upload");
+document.addEventListener("click", async (e) => {
+  const generateBtn = e.target.closest("#generateInvoiceBtn");
+  if (!generateBtn) return; // only run for the right button
 
-    let uploadedFile = null;
+  const invoiceMonth = document.getElementById("invoiceMonth")?.value || new Date().toISOString().slice(0, 7);
+  const invoicesMap = {};
 
-    billUpload.addEventListener("change", function() {
-      if (billUpload.files.length > 0) {
-        uploadedFile = billUpload.files[0];
-        uploadSection.classList.add("d-none");
-        afterUpload.classList.remove("d-none");
+  document.querySelectorAll("tr[data-utility_id]").forEach(row => {
+    const utilityId = parseInt(row.getAttribute("data-utility_id")) || null;
+    const category = row.querySelector("td:first-child")?.textContent.trim() || "";
+    const price = parseFloat((row.querySelector(".price-cell")?.textContent || "").replace(/[^\d.]/g, "")) || 0;
+    const dateInputs = row.closest(".card-body")?.querySelectorAll('input[type="date"]');
+    const startDate = dateInputs?.[0]?.value || null;
+    const endDate = dateInputs?.[1]?.value || null;
+
+    row.querySelectorAll("td[data-renter-id]").forEach(cell => {
+      const renterId = parseInt(cell.getAttribute("data-renter-id"));
+      const val = parseFloat((cell.textContent || "").replace(/[^\d.]/g, "")) || 0;
+      if (!renterId || val <= 0) return;
+
+      if (!invoicesMap[renterId]) {
+        invoicesMap[renterId] = { tenant_id: renterId, amount: 0, details: [] };
       }
+
+      invoicesMap[renterId].amount += val;
+      invoicesMap[renterId].details.push({
+        property_utility_id: utilityId,
+        category,
+        amount: val,
+        start_date: startDate,
+        end_date: endDate,
+      });
+    });
+  });
+
+  const payload = {
+    property_id: document.querySelector("#companyDetails")?.getAttribute("property_id"),
+    invoice_month: invoiceMonth,
+    invoices: Object.values(invoicesMap),
+  };
+
+  window.pendingInvoicePayload = payload;
+  const modalBody = document.getElementById("invoicePreviewContent");
+  modalBody.innerHTML = `<div class="text-center p-4">Loading preview...</div>`;
+
+  const modal = new bootstrap.Modal(document.getElementById("invoicePreviewModal"));
+
+  try {
+    const response = await fetch(`/get-invoice-preview`, {
+      method: "POST",
+      credentials: "same-origin",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRF-TOKEN": "{{ csrf_token() }}",
+      },
+      body: JSON.stringify(payload),
+    });
+    const html = await response.text();
+    modalBody.innerHTML = html;
+  } catch (err) {
+    console.error("Preview failed:", err);
+    modalBody.innerHTML = `<div class="alert alert-danger">Failed to load preview.</div>`;
+  }
+
+  modal.show();
+});
+</script>
+
+<script>
+/* 🧩 Fix: Prevent multiple "Confirm & Send" triggers */
+if (!window.confirmInvoiceHandlerBound) {
+  window.confirmInvoiceHandlerBound = true;
+
+  document.addEventListener("click", async (e) => {
+    const confirmBtn = e.target.closest("#confirmGenerateInvoice");
+    if (!confirmBtn) return;
+
+    // 🛑 Prevent multiple clicks
+    if (confirmBtn.classList.contains("busy")) return;
+    confirmBtn.classList.add("busy");
+
+    const payload = window.pendingInvoicePayload;
+    if (!payload) {
+      toastrs('error', 'No preview data found.', 'error');
+      confirmBtn.classList.remove("busy");
+      return;
+    }
+
+    try {
+      const res = await fetch(`/utility_invoicesgenerate`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRF-TOKEN": "{{ csrf_token() }}",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+      if (res.ok && data.ok) {
+        Swal.fire({
+          icon: "success",
+          title: "Invoice Sent",
+          html: `${data.created?.length || 0} created, ${data.updated?.length || 0} updated`,
+        }).then(() => window.location.reload());
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "Failed",
+          text: data.message || "Could not generate invoices.",
+        });
+      }
+    } catch (err) {
+      Swal.fire({ icon: "error", title: "Network Error", text: err.message });
+    } finally {
+      confirmBtn.classList.remove("busy");
+    }
+  });
+}
+</script>
+
+<script>
+  window.generateContainer = window.generateContainer || document.getElementById("generateInvoiceBtnContainer");
+</script>
+
+
+
+<script>
+function checkCompanyCompletion(card) {
+  const saveBtn = card.querySelector(".utility-toggle-btn");
+  if (!saveBtn) return;
+
+  const mainId = card.querySelector('.start-date')?.dataset.mainId;
+  if (!mainId) return;
+
+  const rows = card.querySelectorAll("tbody tr[data-utility_id]");
+  if (!rows.length) return;
+
+  const allGreen = Array.from(rows).every(row => {
+    const totalCell = row.querySelector(".total-row-cell");
+    return totalCell && totalCell.classList.contains("cell-green");
+  });
+
+  const afterUpload = document.getElementById(`after-upload-${mainId}`);
+  const allBillsUploaded = afterUpload && !afterUpload.classList.contains("d-none");
+
+  const isPrefilled =
+    saveBtn.dataset.mode === "edit" ||
+    saveBtn.textContent.trim().toUpperCase().includes("EDIT");
+
+  if ((allGreen && allBillsUploaded) && isPrefilled) {
+    saveBtn.classList.add("d-none");
+  } else {
+    saveBtn.classList.remove("d-none");
+  }
+}
+
+/* Hook into recalcTable */
+const originalRecalcTable = window.recalcTable;
+window.recalcTable = function (table) {
+  if (typeof originalRecalcTable === "function") originalRecalcTable(table);
+  const card = table.closest(".card.table-custom-card");
+  if (card) checkCompanyCompletion(card);
+};
+
+/* Run once after DOM ready */
+document.addEventListener("DOMContentLoaded", () => {
+  setTimeout(() => {
+    document.querySelectorAll(".card.table-custom-card").forEach(checkCompanyCompletion);
+  }, 1000);
+});
+</script>
+
+<script>
+(() => {
+  console.log("🚀 Invoice readiness logic (final stable version) initialized");
+
+  function enableGenerateBtn() {
+    const container = document.getElementById("generateInvoiceBtnContainer");
+    const button = document.getElementById("generateInvoiceBtn");
+    if (!container || !button) return;
+
+    // force enable
+    container.style.display = "flex";
+    container.classList.remove("disabled", "d-none");
+    button.removeAttribute("disabled");
+    button.classList.remove("disabled");
+    button.style.opacity = "1";
+    button.style.pointerEvents = "auto";
+  }
+
+  function disableGenerateBtn() {
+    const container = document.getElementById("generateInvoiceBtnContainer");
+    const button = document.getElementById("generateInvoiceBtn");
+    if (!container || !button) return;
+
+    container.style.display = "none";
+    button.setAttribute("disabled", true);
+    button.classList.add("disabled");
+    button.style.pointerEvents = "none";
+    button.style.opacity = "0.5";
+  }
+
+  function checkIfInvoiceCanBeGenerated() {
+    const cards = document.querySelectorAll(".card.table-custom-card");
+    if (!cards.length) return disableGenerateBtn();
+
+    let allReady = true;
+    cards.forEach((card) => {
+      const mainId = card.querySelector(".start-date")?.dataset.mainId;
+      const rows = card.querySelectorAll("tr[data-utility_id]");
+      const allGreen = Array.from(rows).every(row =>
+        row.querySelector(".total-row-cell")?.classList.contains("cell-green")
+      );
+
+      const afterUpload = document.getElementById(`after-upload-${mainId}`);
+      const billUploaded = afterUpload && !afterUpload.classList.contains("d-none");
+
+      if (!allGreen || !billUploaded) allReady = false;
     });
 
-    document.getElementById("previousBtn").addEventListener("click", function() {
-      if (uploadedFile) {
-        const fileURL = URL.createObjectURL(uploadedFile);
-        // Open file in new tab
-        window.open(fileURL, "_blank");
-      }
-    });
-  </script>
+    if (allReady) {
+      console.log("✅ All cards ready → Generate Invoice ENABLED (force)");
+      enableGenerateBtn();
+    } else {
+      console.log("⛔ Not ready → Generate Invoice DISABLED");
+      disableGenerateBtn();
+    }
+  }
 
+  // hooks
+  document.addEventListener("billUploadSuccess", checkIfInvoiceCanBeGenerated);
+  document.addEventListener("utilitySaveSuccess", checkIfInvoiceCanBeGenerated);
+
+  const prevRecalc = window.recalcTable;
+  window.recalcTable = function (table) {
+    if (typeof prevRecalc === "function") prevRecalc(table);
+    checkIfInvoiceCanBeGenerated();
+  };
+
+  document.addEventListener("DOMContentLoaded", () => setTimeout(checkIfInvoiceCanBeGenerated, 800));
+})();
+</script>
+
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const invoiceMonth = "{{ $invoiceMonth }}";
+  const currentMonth = "{{ $currentMonth }}";
+  const previousMonth = "{{ $previousMonth }}";
+  
+  const isEditableMonth = [currentMonth, previousMonth].includes(invoiceMonth);
+
+  if (!isEditableMonth) {
+    console.log(`${invoiceMonth} is locked (not editable month)`);
+
+    document.querySelectorAll("td[contenteditable]").forEach(td => {
+      td.setAttribute("contenteditable", "false");
+      td.classList.add("bg-light");
+    });
+
+    document.querySelectorAll(".utility-toggle-btn, #generateInvoiceBtnContainer, [id^='upload-section-']").forEach(el => {
+      el.classList.add("d-none");
+    });
+  }
+});
+</script>
+<script>
+/* ✅ Safe, optimized date change handler (no duplicate triggers, debounced) */
+if (!window.dateSaveHandlerBound) {
+  window.dateSaveHandlerBound = true;
+
+  let dateSaveTimer = null;
+  let lastPayload = null;
+
+  document.addEventListener("change", (e) => {
+    const input = e.target;
+    if (!input.classList.contains("start-date") && !input.classList.contains("end-date")) return;
+
+    const card = input.closest(".card.table-custom-card");
+    const mainId = input.dataset.mainId;
+    if (!mainId || !card) return;
+
+    const propertyId = "{{ $property->id }}";
+    const invoiceMonth = "{{ $invoiceMonth }}";
+    const startInput = card.querySelector(`.start-date[data-main-id="${mainId}"]`);
+    const endInput = card.querySelector(`.end-date[data-main-id="${mainId}"]`);
+    const startDate = startInput?.value || null;
+    const endDate = endInput?.value || null;
+
+    // prepare payload
+    const payload = {
+      property_id: propertyId,
+      utility_id: mainId,
+      invoice_month: invoiceMonth,
+      start_date: startDate,
+      end_date: endDate,
+    };
+
+    // skip if same as last one (no change)
+    if (JSON.stringify(payload) === JSON.stringify(lastPayload)) {
+      console.log("⏭️ Skipping duplicate date save request");
+      return;
+    }
+    lastPayload = payload;
+
+    // clear any pending request
+    clearTimeout(dateSaveTimer);
+
+    // debounce: only fire after 500 ms
+    dateSaveTimer = setTimeout(async () => {
+      try {
+        const response = await fetch("{{ route('utility-invoices.save-dates') }}", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRF-TOKEN": "{{ csrf_token() }}"
+          },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await response.json();
+        if (response.ok && data.status === "success") {
+          toastrs("success", data.message || "Dates saved successfully", "success");
+        } else {
+          toastrs("error", data.message || "Failed to save dates", "error");
+        }
+      } catch (err) {
+        console.error("Date save failed:", err);
+        toastrs("error", "Network error while saving dates", "error");
+      }
+    }, 500);
+  });
+}
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  setTimeout(() => {
+    console.log("♻️ Final override — syncing button enable state");
+
+    const btn = document.getElementById("generateInvoiceBtn");
+    const container = document.getElementById("generateInvoiceBtnContainer");
+
+    if (!btn || !container) {
+      console.warn("Generate Invoice button not found");
+      return;
+    }
+
+    // If script earlier said it should be enabled, reapply
+    if (!btn.disabled && container.style.display === "flex") {
+      btn.removeAttribute("disabled");
+      btn.classList.remove("disabled");
+      container.classList.remove("disabled", "d-none");
+      container.style.display = "flex";
+      btn.style.opacity = "1";
+      console.log("✅ Final override applied — Button re-enabled and visible");
+    }
+
+    // Re-run readiness check to ensure latest state applies
+    if (typeof window.runInvoiceCheck === "function") {
+      window.runInvoiceCheck();
+    }
+  }, 2000); // wait for all earlier scripts to finish locking
+});
+</script>

@@ -21,6 +21,7 @@ class TenantContract extends Model
         'late_fee',
         'security_deposit',
         'notice_period_months',
+        'invoice_due_date',
     ];
 
     protected $casts = [
@@ -43,5 +44,15 @@ class TenantContract extends Model
     public function owner()
     {
         return $this->belongsTo(\App\Models\Owner::class);
+    }
+
+    public function renewals()
+    {
+        return $this->hasMany(ContractRenewal::class);
+    }
+
+    public function latePayments()
+    {
+        return $this->hasMany(LatePaymentRule::class);
     }
 }

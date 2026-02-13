@@ -13,12 +13,15 @@ class Property extends Model
         'description',
         'type',
         'country',
-        'state',
-        'city',
+        'state_id',
+        'city_id',
         'zip_code',
         'address',
         'parent_id',
         'is_active',
+        'mortgage_amount',
+        'insurance_amount', 
+        'amenities_amount', 
     ];
 
     public static $Type=[
@@ -61,5 +64,10 @@ class Property extends Model
     public function state()
     {
         return $this->belongsTo(State::class, 'state_id');
+    }
+
+    public function owner()
+    {
+        return $this->belongsTo(User::class, 'parent_id', 'id');
     }
 }

@@ -25,7 +25,7 @@
         </form>
 
         <div class="table-responsive">
-            <table class="table table-bordered table-striped align-middle">
+            <table class="table table-bordered table-striped align-middle" id="invoiceTable">
                 <thead class="table-dark">
                     <tr>
                         <th>Property Name</th>
@@ -37,45 +37,42 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <!-- Example row -->
-                    <tr>
-                        <td>NYC - Times Square Apartment</td>
-                        <td>Michael Johnson</td>
-                        <td>INV-1001</td>
-                        <td>2025-09-05</td>
-                        <td>$1,200</td>
-                        <td>
-                          <i class="ti ti-eye mx-1" data-bs-toggle="tooltip" data-bs-title="View"></i>
-                          <i class="ti ti-download mx-1" data-bs-toggle="tooltip" data-bs-title="Download"></i>
-                      </td>
-                    </tr>
-                    <tr>
-                        <td>Los Angeles - Sunset Villa</td>
-                        <td>Emily Davis</td>
-                        <td>INV-1002</td>
-                        <td>2025-09-06</td>
-                        <td>$1,500</td>
-                        <td>
-                          <i class="ti ti-eye mx-1" data-bs-toggle="tooltip" data-bs-title="View"></i>
-                          <i class="ti ti-download mx-1" data-bs-toggle="tooltip" data-bs-title="Download"></i>
-                      </td>
-                    </tr>
-                    <tr>
-                        <td>Chicago - Lakeview Condo</td>
-                        <td>Robert Brown</td>
-                        <td>INV-1003</td>
-                        <td>2025-09-07</td>
-                        <td>$1,800</td>
-                       <td>
-                          <i class="ti ti-eye mx-1" data-bs-toggle="tooltip" data-bs-title="View"></i>
-                          <i class="ti ti-download mx-1" data-bs-toggle="tooltip" data-bs-title="Download"></i>
-                      </td>
-                    </tr>
+                    @forelse($otherInvoices as $otherInvoice)
+                        <tr>
+                            <td>{{ $otherInvoice->property->name ?? 'N/A' }}</td>
+                            <td>{{ $otherInvoice->tenant->user->name ?? 'N/A' }}</td>
+                            <td>{{ $otherInvoice->invoice_no }}</td>
+                            <td>{{ $otherInvoice->invoice_date->format('m-d-Y') }}</td>
+                            <td>${{ number_format($otherInvoice->amount, 2) }}</td>
+                            <td>
+                                <a href="{{ route('other_invoices.email_preview', $otherInvoice->id) }}" data-bs-toggle="tooltip" title="View">
+                                    <i class="ti ti-eye mx-1"></i>
+                                </a>
+                                <a href="" data-bs-toggle="tooltip" title="Download">
+                                    <i class="ti ti-download mx-1"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="6" class="text-center text-muted">No invoices found.</td>
+                        </tr>
+                    @endforelse
                 </tbody>
             </table>
         </div>
     </div>
 </div>
 
-
+{{-- 🔍 Simple Client-side Search --}}
+<script>
+    document.getElementById('tableFilter').addEventListener('keyup', function() {
+        const filter = this.value.toLowerCase();
+        document.querySelectorAll('#invoiceTable tbody tr').forEach(row => {
+            const propertyName = row.cells[0].textContent.toLowerCase();
+            const invoiceNo = row.cells[2].textContent.toLowerCase();
+            row.style.display = (propertyName.includes(filter) || invoiceNo.includes(filter)) ? '' : 'none';
+        });
+    });
+</script>
 @endsection

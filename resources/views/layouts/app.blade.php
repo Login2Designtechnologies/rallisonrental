@@ -71,6 +71,7 @@
             </div>
         </div>
     </div>
+@stack('script')
 </body>
 <!-- [Body] end -->
 

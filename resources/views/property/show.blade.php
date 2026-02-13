@@ -22,7 +22,31 @@
 
 
 @section('content')
-<div class="card bg-custom border p-25">
+
+<style>
+#carouselExampleCaptions .w-25.h-auto .d-block.wid-50.rounded{width: 100px;height: 100px;}
+#carouselExampleCaptions .carousel-inner {height: 300px;}
+#carouselExampleCaptions .carousel-inner .d-block.w-100.rounded{ height: 300px;object-fit: cover;}
+.profile-tabs .nav-link.active{color: #19aa69;}
+.profile-tabs .nav-link:hover .material-icons-two-tone {background-color: #000;}
+.profile-tabs .nav-item .nav-link.active .material-icons-two-tone{background-color: #19aa69;}
+
+
+@media (max-width:575px){
+    #carouselExampleCaptions .carousel-inner {height: 200px;}
+    #carouselExampleCaptions .carousel-inner .d-block.w-100.rounded{ height: 200px;object-fit: cover;}
+#carouselExampleCaptions .w-25.h-auto .d-block.wid-50.rounded {
+    width: 100%;
+    height: 70px;
+  }
+    .property-page .profile-tabs{display: flex;flex-wrap: nowrap;overflow-x: scroll;}
+
+.property-page .profile-tabs .nav-item .nav-link {white-space: nowrap;font-size: 13px;}
+.property-sec{padding:0px !important}
+}
+</style>
+
+<div class="card bg-custom border p-25 property-sec">
    <!--  <div class="row">
         <div class="col-sm-12">
             <div class="">
@@ -48,10 +72,10 @@
 
         </div>
     </div> -->
-    <div class="row property-page mt-3">
+    <div class="row property-page">
         <div class="col-sm-12">
-            <div class="card bg-custom border">
-                <div class="card-header pb-0">
+            <div class="card bg-custom border mb-0">
+                <div class="card-header pb-0 p-2">
                     <ul class="nav nav-tabs profile-tabs" id="myTab" role="tablist">
                         <li class="nav-item">
                             <a class="nav-link active" id="profile-tab-1" data-bs-toggle="tab" href="#profile-1"
@@ -83,6 +107,13 @@
                                 {{ __('Utilities') }}
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="profile-tab-5" data-bs-toggle="tab" href="#profile-5" role="tab"
+                                aria-selected="true">
+                                <i class="ti ti-bulb me-2"></i>
+                                {{ __('Our Cost') }}
+                            </a>
+                        </li>
 
                     </ul>
                 </div>
@@ -94,7 +125,7 @@
                                     <div class="row justify-content-center">
                                         <div class="col-xl-12 col-xxl-12">
                                             <div class="card box-card w-100">
-                                                <div class="card-body">
+                                                <div class="card-body p-0">
                                                     <div class="row align-items-center">
                                                         <!-- <div class="col-md-5">
                                                             <div class="sticky-md-top product-sticky">
@@ -190,16 +221,16 @@
                                                                 data-bs-toggle="tooltip"
                                                                 data-bs-original-title="{{ __('Type') }}">{{ \App\Models\Property::$Type[$property->type] }}</span>
                                                             <h5 class="mt-4 ">{{ __('Property Details') }}</h5>
-                                                            <hr class="my-3" />
+                                                            
                                                             <p class="">
                                                                 {{ $property->description }}
                                                             </p>
-
-                                                            <h5 class="">{{ __('Property Address') }}</h5>
                                                             <hr class="my-3" />
+                                                            <h5 class="">{{ __('Property Address') }}</h5>
+                                                            <!-- <hr class="my-3" /> -->
                                                             <div class="mb-1 row">
                                                                 <label
-                                                                    class="col-form-label col-lg-3 col-sm-12 text-lg-end ">
+                                                                    class="col-form-label col-lg-2 col-sm-12 text-lg-start ">
                                                                     {{ __('Address') }} :
 
                                                                 </label>
@@ -210,7 +241,7 @@
                                                             </div>
                                                             <div class="mb-1 row">
                                                                 <label
-                                                                    class="col-form-label col-lg-3 col-sm-12 text-lg-end ">
+                                                                    class="col-form-label col-lg-2 col-sm-12 text-lg-start ">
                                                                     {{ __('Location') }} :
 
                                                                 </label>
@@ -221,7 +252,7 @@
                                                             </div>
                                                             <div class="mb-1 row">
                                                                 <label
-                                                                    class="col-form-label col-lg-3 col-sm-12 text-lg-end ">
+                                                                    class="col-form-label col-lg-2 col-sm-12 text-lg-start ">
                                                                     {{ __('Zip Code') }} :
 
                                                                 </label>
@@ -245,17 +276,17 @@
                             </div>
                         </div>
                         <div class="tab-pane " id="profile-2" role="tabpanel" aria-labelledby="profile-tab-2">
-                            <div class="row">
+                            <div class="row g-3">
 
                             @if($units->isNotEmpty())
 
                                 @foreach ($units as $unit)
                                     <div class="col-xxl-3 col-xl-4 col-md-6">
-                                        <div class="card follower-card">
+                                        <div class="card follower-card mb-0">
                                             <div class="card-body p-3">
                                                 <div class="d-flex align-items-start mb-3">
                                                     <div class="flex-grow-1 ">
-                                                        <h2 class="mb-1 text-truncate">{{ ucfirst($unit->name) }}</h2>
+                                                        <h4 class="mb-1 text-truncate">{{ ucfirst($unit->name) }}</h4>
                                                     </div>
                                                     <div class="flex-shrink-0">
                                                         <div class="dropdown">
@@ -379,7 +410,7 @@
                                             <tr>
                                                 <th>#</th>
                                                 <th>Amenity Name</th>
-                                                <!-- <th>Price</th> -->
+                                                <th>Cost</th>
                                                 <th>Status</th>
                                                 <!-- <th class="text-center">Action</th> -->
                                             </tr>
@@ -389,7 +420,7 @@
                                             <tr>
                                                 <td class="text-center">{{ $index + 1 }}</td>
                                                 <td>{{ $amenity->name }}</td>
-                                                <!-- <td>$150</td> -->
+                                                <td>${{ $amenity->price }}</td>
                                                 <td>{{ $amenity->status == 1 ? 'Active' : 'Inactive' }}</td>
                                                 {{--<!-- <td class="text-center">
                                                     <a href="{{url('edit-Amenities/'.$amenity->id.'/'.$property->id)}}" class="btn btn-sm btn-primary" title="Edit">
@@ -445,6 +476,42 @@
                                                 <!-- </td> -->
                                             </tr>
                                     @endforeach
+                                            
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                        </div>
+                        <div class="tab-pane " id="profile-5" role="tabpanel" aria-labelledby="profile-tab-5">
+                           <div class="w-100">
+                                <div class="row align-items-center g-2">
+                                        <div class="col">
+                                            <h5>Our Cost</h5>
+                                        </div>
+                                    </div>
+                                <div class="table-responsive">
+                                    <table class="table table-bordered mb-0 custom-bg-table">
+                                        <thead class="table-theme">
+                                            <tr>
+                                                <th>#</th>
+                                                <th> Mortgage Amount </th>
+                                                <th> Insurance Amount </th>
+                                                <th> Amenities Amount </th>
+                                                <!-- <th>Price</th> -->
+                                                <th>Status</th>
+                                                <!-- <th class="text-center">Action</th> -->
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td class="text-center"></td>
+                                                <td></td>
+                                                <td></td>
+                                                <td></td>
+                                                <td></td>
+                                               
+                                            </tr>
                                             
                                         </tbody>
                                     </table>

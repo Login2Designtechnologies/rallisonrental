@@ -41,194 +41,189 @@ use App\Models\User;
 
 require __DIR__ . '/auth.php';
 
+Route::get('/logout', function () {
+    Auth::logout();
+    return redirect('/login');
+});
+
+Route::get('storage/upload/{path}', function ($path) {
+    $fullPath = storage_path('upload/' . $path);
+    if (!file_exists($fullPath)) {
+        abort(404);
+    }
+    return response()->file($fullPath);
+})->where('path', '.*');
+
 Route::get('/', [HomeController::class, 'index'])->middleware(
     [
 
-        'XSS',
+        'XSS','auth'
     ]
 );
 Route::get('home', [HomeController::class, 'index'])->name('home')->middleware(
     [
 
-        'XSS',
+        'XSS','auth'
     ]
 );
 Route::get('dashboard', [HomeController::class, 'index'])->name('dashboard')->middleware(
     [
 
-        'XSS',
-    ]
-);
-
-
-Route::get('dashboard', [HomeController::class, 'index'])->name('dashboard')->middleware(
-    [
-        'XSS',
+        'XSS','auth'
     ]
 );
 
 Route::get('payments', [HomeController::class, 'payments'])->name('payments')->middleware(
     [
-        'XSS',
-    ]
-);
-Route::get('manage-notice', [HomeController::class, 'manage_notice'])->name('manage_notice')->middleware(
-    [
-        'XSS',
-    ]
-);
-Route::get('add-notice', [HomeController::class, 'add_notice'])->name('add_notice')->middleware(
-    [
-        'XSS',
-    ]
-);
-Route::get('edit-notice', [HomeController::class, 'edit_notice'])->name('edit_notice')->middleware(
-    [
-        'XSS',
+        'XSS','auth'
     ]
 );
 
+Route::get('payments-search', [HomeController::class, 'payments_search'])->name('payments-search')->middleware(
+    [
+        'XSS','auth'
+    ]
+);
 
-Route::get('manage-template', [HomeController::class, 'manage_template'])->name('manage_template')->middleware(
-    [
-        'XSS',
-    ]
-);
-Route::get('add-template', [HomeController::class, 'add_template'])->name('add_template')->middleware(
-    [
-        'XSS',
-    ]
-);
-Route::get('edit-template', [HomeController::class, 'edit_template'])->name('edit_template')->middleware(
-    [
-        'XSS',
-    ]
-);
 
 
 Route::get('ticket-support', [HomeController::class, 'ticket_support'])->name('ticket_support')->middleware(
     [
-        'XSS',
+        'XSS','auth'
     ]
 );
 Route::get('add-ticket', [HomeController::class, 'add_ticket'])->name('add_ticket')->middleware(
     [
-        'XSS',
+        'XSS','auth'
     ]
 );
-Route::get('view-ticket', [HomeController::class, 'view_ticket'])->name('view_ticket')->middleware(
+Route::get('view-ticket/{id}', [HomeController::class, 'view_ticket'])->name('view_ticket')->middleware(
     [
-        'XSS',
+        'XSS','auth'
+    ]
+);
+Route::post('ownerviewticket-store', [HomeController::class, 'ownerviewticket_store'])->name('ownerviewticket-store')->middleware(
+    [
+        'XSS','auth'
     ]
 );
 Route::get('late-fees', [HomeController::class, 'late_fees'])->name('late_fees')->middleware(
     [
-        'XSS',
+        'XSS','auth'
     ]
 );
 Route::get('add-fee', [HomeController::class, 'add_fee'])->name('add_fee')->middleware(
     [
-        'XSS',
+        'XSS','auth'
     ]
 );
 Route::get('edit-late-fee', [HomeController::class, 'edit_late_fee'])->name('edit_late_fee')->middleware(
     [
-        'XSS',
+        'XSS','auth'
     ]
 );
 Route::get('other', [HomeController::class, 'other'])->name('other')->middleware(
     [
-        'XSS',
+        'XSS','auth'
     ]
 );
 Route::get('add-other', [HomeController::class, 'add_other'])->name('add_other')->middleware(
     [
-        'XSS',
+        'XSS','auth'
     ]
 );
-Route::get('edit-other-invoice', [HomeController::class, 'edit_other_invoice'])->name('edit_other_invoice')->middleware(
+
+Route::post('/other-invoice', [HomeController::class, 'store_other_invoice'])->name('other_invoice.store');
+
+Route::get('other-invoice/email-preview/{otherInvoice}', [HomeController::class, 'emailPreview'])
+    ->name('other_invoices.email_preview');
+
+Route::post('other-invoice/send-email/{otherInvoice}', [HomeController::class, 'sendEmail'])
+    ->name('other_invoices.send_email');
+
+Route::delete('other-invoice/remove/{id}', [HomeController::class, 'remove_other_invoice'])->name('remove_other_invoice');
+
+Route::get('payment/pay-now/{otherInvoice}', [HomeController::class, 'payNow'])
+    ->name('payment.pay_now');    
+
+Route::get('edit-other-invoice/{id}', [HomeController::class, 'edit_other_invoice'])->name('edit_other_invoice')->middleware(
     [
-        'XSS',
+        'XSS','auth'
     ]
 );
+
+Route::post('/update-other-invoice/{id}', [HomeController::class, 'update_other_invoice'])
+    ->name('update_other_invoice')
+    ->middleware(['XSS']);
 
 // Tenant Dashbaord
-Route::get('tenant-profile', [HomeController::class, 'tenant_profile'])->name('tenant_profile')->middleware(
-    [
-        'XSS',
-    ]
-);
+Route::middleware(['auth', 'XSS'])->group(function () {
+    
+    Route::get('tenant-profile', [HomeController::class, 'tenant_profile'])
+        ->name('tenant_profile');
 
-Route::post('/tenant-profile/{tenant}', [HomeController::class, 'update'])->name('tenant-profile.update');
+    Route::post('tenant-profile/{tenant}', [HomeController::class, 'update'])
+        ->name('tenant-profile.update');
 
-Route::get('property-details', [HomeController::class, 'property_details'])->name('property_details')->middleware(
-    [
-        'XSS',
-    ]
-);
+    Route::get('property-details', [HomeController::class, 'property_details'])
+        ->name('property_details');
 
-Route::get('payment-section', [HomeController::class, 'payment_section'])->name('payment_section')->middleware(
-    [
-        'XSS',
-    ]
-);
+    Route::get('payment-section', [HomeController::class, 'payment_section'])
+        ->name('payment_section');
 
+    Route::get('tenant-ticket-support', [HomeController::class, 'tenant_ticket_support'])
+        ->name('tenant_ticket_support');
 
-Route::get('tenant-ticket-support', [HomeController::class, 'tenant_ticket_support'])->name('tenant_ticket_support')->middleware(
-    [
-        'XSS',
-    ]
-);
-Route::get('tenant-view-ticket', [HomeController::class, 'tenant_view_ticket'])->name('tenant_view_ticket')->middleware(
-    [
-        'XSS',
-    ]
-);
-Route::get('add-tenant-ticket', [HomeController::class, 'add_tenant_ticket'])->name('add_tenant_ticket')->middleware(
-    [
-        'XSS',
-    ]
-);
-Route::get('tenant-notices', [HomeController::class, 'tenant_notices'])->name('tenant_notices')->middleware(
-    [
-        'XSS',
-    ]
-);
-Route::get('tenant-documents', [HomeController::class, 'tenant_documents'])->name('tenant_documents')->middleware(
-    [
-        'XSS',
-    ]
-);
+    Route::get('tenant-view-ticket/{id}', [HomeController::class, 'tenant_view_ticket'])
+        ->name('tenant_view_ticket');
 
-Route::get('tenant/document/{id}/download', [HomeController::class, 'download'])->name('tenant.document.download');
+    Route::post('viewticket-store', [HomeController::class, 'viewticket_store'])
+        ->name('viewticket-store');
 
-Route::get('utilities-invoices', [HomeController::class, 'utilities_invoices'])->name('utilities_invoices')->middleware(
-    [
-        'XSS',
-    ]
-);
-Route::get('tenant-late-fees', [HomeController::class, 'tenant_late_fees'])->name('tenant_late_fees')->middleware(
-    [
-        'XSS',
-    ]
-);
-Route::get('tenant-other-invoice', [HomeController::class, 'tenant_other_invoice'])->name('tenant_other_invoice')->middleware(
-    [
-        'XSS',
-    ]
-);
-Route::get('view-invoice', [HomeController::class, 'view_invoice'])->name('view_invoice')->middleware(
-    [
-        'XSS',
-    ]
-);
+    Route::get('add-tenant-ticket', [HomeController::class, 'add_tenant_ticket'])
+        ->name('add_tenant_ticket');
+		
+	Route::post('/tickets', [HomeController::class, 'store'])->name('tickets.store');
+
+    Route::get('tenant-notices', [HomeController::class, 'tenant_notices'])
+        ->name('tenant_notices');
+
+    Route::get('tenant-notices-detail/{id}', [HomeController::class, 'tenantnotices_detail'])
+        ->name('tenant-notices-detail');
+
+    Route::get('tenant-documents', [HomeController::class, 'tenant_documents'])
+        ->name('tenant_documents');
+
+    Route::get('tenant-documents-detail/{id}', [HomeController::class, 'tenant_documents_detail'])
+        ->name('tenant-documents-detail');
+
+    Route::get('tenant/document/{id}/download', [HomeController::class, 'download'])
+        ->name('tenant.document.download');
+
+    Route::get('utilities-invoices', [HomeController::class, 'utilities_invoices'])
+        ->name('utilities_invoices');
+
+    Route::get('tenant-late-fees', [HomeController::class, 'tenant_late_fees'])
+        ->name('tenant_late_fees');
+
+    Route::get('tenant-other-invoice', [HomeController::class, 'tenant_other_invoice'])
+        ->name('tenant_other_invoice');
+
+    Route::get('view-invoice', [HomeController::class, 'view_invoice'])
+        ->name('view_invoice');
+
+    Route::get('view-payment', [HomeController::class, 'view_payment'])
+        ->name('view_payment');
+
+    Route::get('make-payment', [HomeController::class, 'make_payment'])
+        ->name('make_payment');
+});
 
 //-------------------------------User-------------------------------------------
 
 Route::resource('users', UserController::class)->middleware(
     [
-        'auth',
-        'XSS',
+        'XSS','auth'
     ]
 );
 
@@ -241,16 +236,16 @@ Route::get('setauth/{id}',  function ($id) {
 Route::get('login/otp', [OTPController::class, 'show'])->name('otp.show')->middleware(
     [
 
-        'XSS',
+        'XSS','auth'
     ]
 );
 Route::post('login/otp', [OTPController::class, 'check'])->name('otp.check')->middleware(
     [
 
-        'XSS',
+        'XSS','auth'
     ]
 );
-Route::get('login/2fa/disable', [OTPController::class, 'disable'])->name('2fa.disable')->middleware(['XSS',]);
+Route::get('login/2fa/disable', [OTPController::class, 'disable'])->name('2fa.disable')->middleware(['XSS','auth']);
 
 //-------------------------------Subscription-------------------------------------------
 
@@ -259,8 +254,7 @@ Route::get('login/2fa/disable', [OTPController::class, 'disable'])->name('2fa.di
 Route::group(
     [
         'middleware' => [
-            'auth',
-            'XSS',
+            'XSS','auth'
         ],
     ],
     function () {
@@ -279,8 +273,7 @@ Route::group(
 Route::group(
     [
         'middleware' => [
-            'auth',
-            'XSS',
+            'XSS','auth'
         ],
     ],
     function () {
@@ -292,8 +285,7 @@ Route::group(
 Route::group(
     [
         'middleware' => [
-            'auth',
-            'XSS',
+            'XSS','auth'
         ],
     ], function (){
     Route::get('settings', [SettingController::class,'index'])->name('setting.index');
@@ -316,6 +308,60 @@ Route::group(
 
     Route::get('language/{lang}', [SettingController::class,'lanquageChange'])->name('language.change');
     Route::post('theme/settings', [SettingController::class,'themeSettings'])->name('theme.settings');
+
+    Route::get('manage-notice', [SettingController::class, 'manage_notice'])->name('manage_notice')->middleware(
+    [
+        'XSS','auth'
+    ]
+    );
+    Route::get('add-notice', [SettingController::class, 'add_notice'])->name('add_notice')->middleware(
+        [
+            'XSS','auth'
+        ]
+    );
+    Route::post('manage-notice-store', [SettingController::class, 'managenotice_store'])->name('manage-notice-store')->middleware(
+        [
+            'XSS','auth'
+        ]
+    );
+    Route::get('edit-notice/{id}', [SettingController::class, 'edit_notice'])->name('edit_notice')->middleware(
+        [
+            'XSS','auth'
+        ]
+    );
+    Route::post('managenotice-update/{id}', [SettingController::class, 'managenotice_update'])->name('managenotice-update')->middleware(
+        [
+            'XSS','auth'
+        ]
+    );
+
+
+    Route::get('manage-template', [SettingController::class, 'manage_template'])->name('manage_template')->middleware(
+        [
+            'XSS','auth'
+        ]
+    );
+    Route::get('add-template', [SettingController::class, 'add_template'])->name('add_template')->middleware(
+        [
+            'XSS','auth'
+        ]
+    );
+    Route::post('managetemplate-store', [SettingController::class, 'managetemplate_store'])->name('managetemplate-store')->middleware(
+        [
+            'XSS','auth'
+        ]
+    );
+    Route::get('edit-template/{id}', [SettingController::class, 'edit_template'])->name('edit_template')->middleware(
+        [
+            'XSS','auth'
+        ]
+    );
+    Route::post('managetemp-update/{id}', [SettingController::class, 'managetemp_update'])->name('managetemp-update')->middleware(
+        [
+            'XSS','auth'
+        ]
+    );
+
 }
 );
 
@@ -323,15 +369,13 @@ Route::group(
 //-------------------------------Role & Permissions-------------------------------------------
 Route::resource('permission', PermissionController::class)->middleware(
     [
-        'auth',
-        'XSS',
+        'XSS','auth'
     ]
 );
 
 Route::resource('role', RoleController::class)->middleware(
     [
-        'auth',
-        'XSS',
+        'XSS','auth'
     ]
 );
 
@@ -341,8 +385,7 @@ Route::resource('role', RoleController::class)->middleware(
 //-------------------------------Note-------------------------------------------
 Route::resource('note', NoticeBoardController::class)->middleware(
     [
-        'auth',
-        'XSS',
+        'XSS','auth'
     ]
 );
 
@@ -350,8 +393,7 @@ Route::resource('note', NoticeBoardController::class)->middleware(
 //-------------------------------Notification-------------------------------------------
 Route::resource('notification', NotificationController::class)->middleware(
     [
-        'auth',
-        'XSS',
+        'XSS','auth'
     ]
 );
 
@@ -360,8 +402,7 @@ Route::resource('notification', NotificationController::class)->middleware(
 //-------------------------------Contact-------------------------------------------
 Route::resource('contact', ContactController::class)->middleware(
     [
-        'auth',
-        'XSS',
+        'XSS','auth'
     ]
 );
 
@@ -373,8 +414,7 @@ Route::resource('contact', ContactController::class)->middleware(
 Route::group(
     [
         'middleware' => [
-            'auth',
-            'XSS',
+            'XSS','auth'
         ],
     ],
     function () {
@@ -390,8 +430,7 @@ Route::group(
 Route::group(
     [
         'middleware' => [
-            'auth',
-            'XSS',
+            'XSS','auth'
         ],
     ],
     function () {
@@ -404,7 +443,11 @@ Route::group(
         Route::get('units', [PropertyController::class, 'units'])->name('unit.index');
         Route::get('all_invoices', [PropertyController::class, 'all_invoices'])->name('utility-invoices.all');
         Route::get('all_invoicescreate', [PropertyController::class, 'all_invoicescreate'])->name('utility-invoices.create');
-        Route::get('utility_invoicesgenerate', [PropertyController::class, 'utility_invoicesgenerate'])->name('utility-invoices.generate');
+        Route::post('utility_invoicesgenerate', [PropertyController::class, 'utility_invoicesgenerate'])->name('utility-invoices.generate');
+        Route::post('/utility-invoices/save-shares', [PropertyController::class, 'saveUtilityShares'])->name('utility-invoices.save-shares');
+        Route::post('/utility-invoices/upload-bill', [PropertyController::class, 'uploadBill'])->name('utility-invoices.upload-bill');
+		Route::post('utility-invoices/save-dates', [PropertyController::class, 'saveDates'])->name('utility-invoices.save-dates');
+        Route::post('/get-invoice-preview', [PropertyController::class, 'getInvoicePreview']);
         Route::get('get_cities/{state_id}', [PropertyController::class, 'get_cities'])->name('get_cities');
         Route::put('property/{pid}/unit/{id}/update', [PropertyController::class, 'unitUpdate'])->name('unit.update');
         Route::delete('property/{pid}/unit/{id}/destroy', [PropertyController::class, 'unitDestroy'])->name('unit.destroy');
@@ -427,6 +470,7 @@ Route::group(
         Route::post('addUtilities-update/{id}/{propertyid}', [PropertyController::class, 'addUtilities_update'])->name('addUtilities-update');
         
         Route::get('selectProperty', [PropertyController::class, 'selectProperty'])->name('property.selectProperty');
+		Route::post('/property/image/delete', [PropertyController::class, 'deleteImage'])->name('property.image.delete');
     }
 );
 
@@ -435,13 +479,20 @@ Route::group(
 //-------------------------------Tenant-------------------------------------------
 Route::resource('tenant', TenantController::class)->middleware(
     [
-        'auth',
-        'XSS',
+        'XSS','auth'
     ]
 );
 
+Route::middleware(['auth', 'XSS'])->group(function () {
+    Route::post('/tenant/payment-status/update', [TenantController::class, 'updatePaymentStatus'])->name('tenant.payment.update');
+});
 
 Route::post('tenant-contractsupdate/{tenant?}', [TenantController::class, 'tenant_contractsupdate'])->name('tenant-contractsupdate');
+
+
+Route::get('owner-generate-notice/{id?}/{tenantid?}', [TenantController::class, 'owner_generate_notice'])->name('owner-generate-notice');
+
+Route::post('/owner-send-doc/{userid?}/{tenantid?}', [TenantController::class, 'owner_send_doc'])->name('owner-send-doc');
 
 Route::post('/tenants/{tenant}/resend', [TenantController::class, 'resendInvoice'])
     ->name('tenants.resend');
@@ -450,8 +501,7 @@ Route::post('/tenants/{tenant}/resend', [TenantController::class, 'resendInvoice
 //-------------------------------Type-------------------------------------------
 Route::resource('type', TypeController::class)->middleware(
     [
-        'auth',
-        'XSS',
+        'XSS','auth'
     ]
 );
 
@@ -460,8 +510,7 @@ Route::resource('type', TypeController::class)->middleware(
 Route::group(
     [
         'middleware' => [
-            'auth',
-            'XSS',
+            'XSS','auth'
         ],
     ],
     function () {
@@ -478,16 +527,14 @@ Route::group(
 //-------------------------------Expense-------------------------------------------
 Route::resource('expense', ExpenseController::class)->middleware(
     [
-        'auth',
-        'XSS',
+        'XSS','auth'
     ]
 );
 
 //-------------------------------Maintainer-------------------------------------------
 // Route::resource('amenities_utilities', MaintainerController::class)->middleware(
 //     [
-//         'auth',
-//         'XSS',
+//         'XSS','auth'
 //     ]
 // );
 
@@ -497,8 +544,7 @@ Route::resource('expense', ExpenseController::class)->middleware(
 Route::group(
     [
         'middleware' => [
-            'auth',
-            'XSS',
+            'XSS','auth'
         ],
     ],
     function () {
@@ -515,8 +561,7 @@ Route::group(
 Route::group(
     [
         'middleware' => [
-            'auth',
-            'XSS',
+            'XSS','auth'
         ],
     ],
     function () {
@@ -533,8 +578,7 @@ Route::group(
 Route::group(
     [
         'middleware' => [
-            'auth',
-            'XSS',
+            'XSS','auth'
         ],
     ],
     function () {
@@ -549,7 +593,7 @@ Route::group(
 
 Route::get('email-verification/{token}', [VerifyEmailController::class, 'verifyEmail'])->name('email-verification')->middleware(
     [
-        'XSS',
+        'XSS','auth'
     ]
 
 
@@ -557,23 +601,20 @@ Route::get('email-verification/{token}', [VerifyEmailController::class, 'verifyE
 //-------------------------------FAQ-------------------------------------------
 Route::resource('FAQ', FAQController::class)->middleware(
     [
-        'auth',
-        'XSS',
+        'XSS','auth'
     ]
 );
 
 //-------------------------------Home Page-------------------------------------------
 Route::resource('homepage', HomePageController::class)->middleware(
     [
-        'auth',
-        'XSS',
+        'XSS','auth'
     ]
 );
 //-------------------------------FAQ-------------------------------------------
 Route::resource('pages', PageController::class)->middleware(
     [
-        'auth',
-        'XSS',
+        'XSS','auth'
     ]
 );
 Route::get('page/{slug}', [PageController::class, 'page'])->name('page');
@@ -584,7 +625,6 @@ Route::impersonate();
 //-------------------------------Auth page-------------------------------------------
 Route::resource('authPage', AuthPageController::class)->middleware(
     [
-        'auth',
-        'XSS',
+        'XSS','auth'
     ]
 );

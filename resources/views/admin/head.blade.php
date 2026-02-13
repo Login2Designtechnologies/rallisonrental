@@ -50,7 +50,7 @@
     <link rel="stylesheet" href="{{ asset('assets/fonts/fontawesome.css') }}" />
     <link rel="stylesheet" href="{{ asset('assets/fonts/material.css') }}" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="{{ asset('assets/css/style.css?v=dasddsdsdsdd%dsda') }}" id="main-style-link" />
+    <link rel="stylesheet" href="{{ asset('assets/css/style.css?v=dasddsdsdsdd%dsdsa') }}" id="main-style-link" />
     <link rel="stylesheet" href="{{ asset('assets/css/style-preset.css') }}" />
     <link rel="stylesheet" href="{{ asset('assets/css/plugins/dropzone.min.css') }}" />
 
